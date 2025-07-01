@@ -1,0 +1,50 @@
+.custom-multi-select .ant-select-selector {
+    width: 100% !important;
+    /* padding: 1.125rem 0.625rem !important; px-2.5 py-2 */
+    padding: 0.275rem 0.625rem;
+    color: #000000 !important; /* text-[#000000] */
+    font-size: 0.875rem !important; /* text-sm */
+    font-family: 'Poppins', sans-serif !important; /* font-poppins */
+    background: transparent !important; /* bg-transparent */
+    font-weight: 500 !important; /* font-medium */
+    outline: none !important; /* outline-none */
+    font-style: normal !important; /* not-italic */
+    border: 1px solid #6E6E6E !important;
+    border-radius: 2px;
+    line-height: 1.5 !important; /* leading-normal */
+    height: 100% !important;
+    background-color: white !important;
+}
+
+.custom-multi-select.ant-select-disabled .ant-select-selector {
+    /* background-color: #6e6e6e34 !important; */
+    background-color: #eceff1 !important;
+}
+
+.ant-select-dropdown {
+    z-index: 10000 !important;
+}
+
+/* Placeholder styles */
+.custom-multi-select .ant-select-selector::placeholder {
+    font-family: 'Poppins', sans-serif !important; /* placeholder:font-poppins */
+    font-size: 0.875rem !important; /* placeholder:text-sm */
+    line-height: 1.5 !important; /* placeholder:leading-normal */
+    font-weight: 500 !important; /* placeholder:font-medium */
+    color: #6E6E6E !important; /* placeholder:text-[#6E6E6E] */
+    font-style: normal !important; /* placeholder:not-italic */
+}
+
+.custom-multi-select .ant-select-selector .ant-select-selection-placeholder {
+    font-family: 'Poppins' !important; /* placeholder:font-poppins */
+    font-size: 0.875rem !important; /* placeholder:text-sm */
+    line-height: 1.5 !important; /* placeholder:leading-normal */
+    font-weight: 500 !important; /* placeholder:font-medium */
+    color: #6E6E6E !important; /* placeholder:text-[#6E6E6E] */
+    font-style: normal !important; /* placeholder:not-italic */
+}
+
+.custom-multi-select .ant-select-arrow {
+    margin-top: -5px !important;
+    color: #6E6E6E !important; /* placeholder:text-[#6E6E6E] */
+}

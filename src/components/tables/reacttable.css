@@ -1,0 +1,9 @@
+.customPagination .ant-pagination-item.ant-pagination-item-active {
+    background-color: #000000;
+    border-color: #000000;
+    color: white;
+}
+
+.customPagination.ant-pagination .ant-pagination-item-active a {
+    color: white;
+}

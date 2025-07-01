@@ -1,0 +1,21 @@
+.ant-tabs-nav {
+  margin-bottom: 0 !important;
+}
+
+
+/* Tab.css */
+
+.custom-tabs .ant-tabs-tab.ant-tabs-tab-active {
+    background-color: #e0f7fa; /* light blue background */
+    border-color: #91d5ff; /* optional: customize border */
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .custom-tabs .ant-tabs-tab {
+    transition: background-color 0.3s ease;
+  }
+  
+  .custom-tabs .ant-tabs-tab:hover {
+    background-color: #f0faff;
+  }
+  

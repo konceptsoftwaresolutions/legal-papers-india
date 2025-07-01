@@ -1,0 +1,14 @@
+$black-color: #000000 !important;
+
+.my-select-field {
+    .ant-select-selector {
+        border-color: $black-color;
+        .ant-select-selection-placeholder {
+            color: $black-color;
+        }
+    }   
+
+    .ant-select-arrow {
+        color: $black-color;
+    }
+}

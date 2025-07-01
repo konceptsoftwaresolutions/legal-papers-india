@@ -1,0 +1,178 @@
+/* fonts */
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Orbitron:wght@400..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+/* Tailwind's base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* fonts */
+* {
+  font-family: "Poppins", sans-serif !important;
+}
+.font-poppins {
+  font-family: "Poppins";
+  font-style: normal;
+}
+
+.font-montserrat {
+  font-family: "Montserrat";
+  font-style: normal;
+}
+
+/* =========================== application config ============================ */
+/* root */
+:root {
+  /* --main-gradient: linear-gradient(131.35deg, #104CD9 0%, #002273 100%); */
+  /* linear-gradient(90deg, #bba3ff 0%, #a88cfa 41.09%, #8256ff 105.09%) */
+  /* --main-gradient: linear-gradient(20deg, rgba(141,110,230,1) 0%, rgba(137,108,221,1) 10%, rgba(130,86,255,1) 90%); */
+  /* --main-gradient: linear-gradient(80deg, rgba(119,85,215,1) 0%, rgba(99,68,191,1) 10%, rgba(96,65,181,1) 90%); */
+  /* --main-gradient: linear-gradient(320deg,#00237d,#e2282b); */
+  --main-gradient: linear-gradient(90deg, #2b85e6, #fd7d32);
+  --main-black: linear-gradient(
+    170.56deg,
+    #313131,
+    #292929 22.61%,
+    #161616 54.08%,
+    #000
+  );
+}
+
+/* background */
+.main-bg {
+  background: var(--main-gradient);
+}
+
+.main-black-bg {
+  background: var(--main-black);
+}
+
+/* border */
+.main-border {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: linear-gradient(#252525, #252525) padding-box,
+    var(--main-gradient) border-box;
+}
+
+.main-border-hover:hover {
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: linear-gradient(#252525, #252525) padding-box,
+    var(--main-gradient) border-box;
+}
+
+/* text */
+.main-text {
+  font-family: "Poppins";
+  font-style: normal;
+  line-height: 1.5;
+}
+
+/* scroll */
+/* For WebKit browsers (Chrome, Safari) */
+::-webkit-scrollbar {
+  width: 6px; /* Narrower scrollbar width */
+  height: 6px; /* Narrower scrollbar height for horizontal scrolling */
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 8px; /* Rounded edges */
+  /* Optionally remove border for a tighter look */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+/* custom styles */
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px; /* Narrower scrollbar width */
+  height: 4px; /* Narrower scrollbar height for horizontal scrolling */
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  /* background: #f1f1f1; */
+  background: transparent;
+  border-radius: 8px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 8px; /* Rounded edges */
+  /* Optionally remove border for a tighter look */
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+/* navbar */
+/* .main-nav-dropdown {
+  top: 62px !important;
+} */
+
+.custom-tile:after {
+  background: hsla(0, 0%, 100%, 0.102);
+  border-radius: 50%;
+  content: "";
+  height: 230px;
+  right: -10px;
+  position: absolute;
+  top: 76px;
+  width: 230px;
+}
+a:hover {
+  color: #000000e0 !important;
+}
+
+.show-mob-div {
+  left: 0px;
+}
+
+.mob-slider-button {
+  position: fixed;
+  right: 19.5rem;
+  z-index: 99;
+}
+
+.show-sidebar-div {
+  left: 0 !important;
+  position: fixed;
+}
+
+.ant-picker-clear {
+  width: 100% !important;
+  text-align: right !important;
+}
+
+@media only screen and (min-width: 768px) {
+  .mob-slider-button {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .sidebar-div {
+    position: absolute;
+    z-index: 99;
+    width: max-content;
+    left: -500px;
+    transition: 0.2 ease-in-out;
+  }
+  .content-div {
+    width: 100% !important;
+  }
+}
+
+.cstm-drop .ant-select-selector {
+  border: none !important;
+  min-height: "20px" !important;
+}
