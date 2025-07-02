@@ -301,8 +301,8 @@ const Renewal = () => {
             console.log("clicked", e);
             e.stopPropagation();
             if (e.ctrlKey) {
-              const link = `/${role}/editLead`;
-              navigate(link, { state: { leadData: row } });
+              const url = `/${role}/editlead?leadId=${row.leadId}`;
+              window.open(url, "_blank");
             } else {
               const link = `/${role}/editLead`;
               navigate(link, { state: { leadData: row } });

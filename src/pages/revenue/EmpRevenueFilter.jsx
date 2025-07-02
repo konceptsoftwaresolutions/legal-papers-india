@@ -61,6 +61,7 @@ const EmpRevenueFilter = ({
         getDateFilterRevenue(payload, (error, dateData) => {
           if (error) {
             console.error("API Error:", error);
+            setDateTilesData(null);
           } else {
             console.log("API Response:", dateData);
             setDateTilesData(dateData);

@@ -107,7 +107,6 @@ const empSingRevenueTop = () => {
           (error, revenueData) => {
             if (error) {
               console.error("API Error:", error);
-              
             } else {
               console.log("API Response:", revenueData);
               setEmpTilesData(revenueData);

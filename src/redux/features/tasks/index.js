@@ -53,7 +53,7 @@ export const getAllTasks = () => {
 //   handleData();
 // };
 
-export const deleteTask = (payload) => {
+export const deleteTask = (payload, callback = () => { }) => {
   return async (dispatch) => {
     try {
       const response = await axiosInstance.post("/taskRoutes/delete", {
@@ -62,6 +62,7 @@ export const deleteTask = (payload) => {
       if (response.status === 200) {
         const message = response.data.message || "Deleted successfully!";
         toast.success(message)
+        callback(true)
       }
     } catch (error) {
       let message = "ERROR"

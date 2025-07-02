@@ -14,19 +14,20 @@ import "react-toastify/dist/ReactToastify.css"; // Import the styles
 import "./styles/selectField.scss";
 import { useDispatch } from "react-redux";
 import { setMarketing } from "./redux/features/marketing";
+import Reminders from "./pages/Reminders/Reminders";
+import { NotificationProvider } from "./context/notification";
 
 function App() {
   return (
     <>
-      {/* <ProvidedRoutes>
-          <Routing />
-      </ProvidedRoutes> */}
-      <BrowserRouter>
-        <Toaster position="top-right" reverseOrder={false} />
-        <ToastContainer position="top-center" />
-        <Routes />
-        {/* <Routing /> */}
-      </BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
+          <Toaster position="top-right" reverseOrder={false} />
+          <ToastContainer position="top-center" />
+          <Routes />
+          <Reminders />
+        </BrowserRouter>
+      </NotificationProvider>
     </>
   );
 }

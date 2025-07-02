@@ -1,0 +1,117 @@
+.icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fe3e3e;
+  box-shadow: 0 0 0 3px rgba(218, 53, 35, 0.5);
+  border-radius: 50%;
+  margin-right: 10px;
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+}
+
+.reminders-container {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  z-index: 1000;
+  display: none;
+
+  .alert {
+    display: flex;
+    padding: 0;
+    margin: 0;
+    border: none;
+    margin-top: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.24);
+
+    .alert-content {
+      margin: 0;
+      padding: 20px;
+      background: #ce210a;
+      color: #fff;
+      display: flex;
+      border-radius: 4px 0 0 4px;
+
+      p {
+        font-family: inherit;
+        margin-bottom: 0;
+        transition: all 0.4s ease-out;
+        &.alert-title {
+          font-size: 14px;
+          font-weight: 500;
+
+          text-overflow: ellipsis;
+          width: 700px;
+          white-space: nowrap;
+          overflow: hidden;
+          transition: all 0.4s ease-out;
+          @media screen and (max-width: 900px) {
+            white-space: wrap;
+            width: 200px;
+          }
+        }
+
+        &.alert-meta {
+          opacity: 0.6;
+          font-size: 12px;
+        }
+      }
+
+      .inner-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #feab3e;
+        box-shadow: 0 0 0 3px rgba(254, 171, 162, 0.5);
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      .hid {
+        display: inline-block;
+        opacity: 1;
+        transition: all 0.4s linear;
+      }
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 1.2em;
+
+      &:hover {
+        color: #feab3e;
+      }
+    }
+  }
+  .no-reminders {
+    padding: 10px 15px;
+    margin: 10px;
+    text-align: center;
+    background-color: #f2f2f2;
+    border: 1px solid #d9d9d9;
+    border-radius: 8px;
+    color: #333;
+    font-size: 14px;
+
+    @media (max-width: 600px) {
+      font-size: 12px;
+    }
+  }
+}
+.reminders-container.visible {
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s linear;
+}

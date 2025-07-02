@@ -22,9 +22,13 @@ const Tasks = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const getData = () => {
     dispatch(getAllTasks());
     dispatch(getNotificationData());
+  };
+
+  useEffect(() => {
+    getData();
   }, [dispatch]);
 
   const { allTasks } = useSelector((state) => state.tasks);
@@ -70,7 +74,13 @@ const Tasks = () => {
 
   const handleTaskDelete = (taskId) => {
     // console.log(taskId)
-    dispatch(deleteTask(taskId));
+    dispatch(
+      deleteTask(taskId, (success) => {
+        if (success) {
+          getData();
+        }
+      })
+    );
   };
 
   return (
@@ -127,8 +137,8 @@ const Tasks = () => {
           {filteredTasks ? (
             <>
               <DataTable
-                columns={columns(handleTaskDelete , role , navigate)}
-                data={filteredTasks ? filteredTasks : []}
+                columns={columns(handleTaskDelete, role, navigate)}
+                data={filteredTasks ? [...filteredTasks].reverse() : []}
                 selectableRows
                 noDataComponent="There is no record to display..."
                 customStyles={tableCustomStyles}

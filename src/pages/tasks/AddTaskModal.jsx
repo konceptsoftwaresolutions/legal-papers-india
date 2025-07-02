@@ -25,7 +25,12 @@ const AddTaskModal = ({ showTaskModal, setShowTaskModal, leadData }) => {
   };
 
   const onSubmit = (data) => {
-    const { reminder, time, ...rest } = data;
+    const {
+      // leadData: {},
+      reminder,
+      time,
+      ...rest
+    } = data;
 
     // Combine date and time into a single ISO string
     const reminderDateTime = new Date(`${reminder}T${time}`).toISOString();

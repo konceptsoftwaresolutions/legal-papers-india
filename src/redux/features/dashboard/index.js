@@ -53,10 +53,55 @@ export const getDashTilesData = () => {
             const response = await axiosInstance.get("/leadRoutes/leadReport");
             if (response.status === 200) {
                 const tilesData = response.data;
-                dispatch(setDashboard(tilesData ))
+                dispatch(setDashboard(tilesData))
             }
         } catch (error) {
             toast.error(error)
         }
     }
 }
+
+
+
+export const getDashboardGraphData = (selectedYear, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+
+            const response = await axiosInstance.post("/getDashboardMetrics", { year: selectedYear });
+            // console.log(response)
+            if (response.status === 200) {
+                const dashboardData = response.data;
+                // console.log(dashboardData)
+                callback(true, dashboardData)
+                // dispatch(setDashboard({ dashboardData }))
+            }
+        } catch (error) {
+            callback(false)
+            toast.error(error?.response?.data?.message)
+            // console.log(error); 
+        } finally {
+            console.log("fina")
+        }
+    };
+};
+
+
+
+export const getTheRemainderTaskNotifications = (selectedYear, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+
+            const response = await axiosInstance.post("/taskRoutes/remainderTask", { year: selectedYear });
+
+            if (response.status === 200) {
+                const dashboardData = response.data;
+                callback(true, dashboardData)
+            }
+        } catch (error) {
+            callback(false)
+            toast.error(error?.response?.data?.message)
+        } finally {
+            console.log("fina")
+        }
+    };
+};
