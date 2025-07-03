@@ -53,9 +53,9 @@ const IECRenewalLeads = () => {
     }
   }, [window.location.search]);
 
-  useEffect(() => {
-    dispatch(getNotificationData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getNotificationData());
+  // }, [dispatch]);
 
   const page = useMemo(() => {
     let pageNo = path.searchQuary?.[0]?.page;

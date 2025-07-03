@@ -26,7 +26,7 @@ const Bucket = () => {
     dispatch(getOpenNCBucketLeadsData());
     dispatch(getTotalNCBucketLeadsData());
     dispatch(getTotalBucketLeadsData());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [dispatch]);
 
   return (

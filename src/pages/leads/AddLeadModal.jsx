@@ -131,6 +131,13 @@ const AddLeadModal = ({ showQuotation, setShowQuotation }) => {
               label="Address"
               type="desc"
             />
+            <InputField
+              name="validity"
+              control={control}
+              errors={errors}
+              label="Validity"
+              type="date"
+            />
           </div>
           <Button
             type="submit"

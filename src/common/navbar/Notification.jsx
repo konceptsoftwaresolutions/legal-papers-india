@@ -12,15 +12,19 @@ import { TbArrowElbowLeft } from "react-icons/tb";
 import { RxCross2 } from "react-icons/rx";
 import {
   approveLocationReq,
+  getNotificationData,
   rejectLocationNotification,
   removeLeadNotification,
 } from "../../redux/features/notification";
 import { IoNotificationsOffCircle } from "react-icons/io5";
+import { useLocation } from "react-router-dom";
 
 const Notification = ({
   image = "https://cdn-icons-png.flaticon.com/512/9703/9703596.png",
 }) => {
   const dispatch = useDispatch();
+
+  const location = useLocation();
 
   const { notificationData } = useSelector((state) => state.notification);
   const { role } = useSelector((state) => state.auth);
@@ -35,11 +39,6 @@ const Notification = ({
 
   // State for scroll position
   const [scrollY, setScrollY] = useState(0);
-
-  // Handle menu click
-  const handleMenuClick = () => {
-    setVisible(!visible);
-  };
 
   const handleApproval = (data) => {
     if (data) {
@@ -59,17 +58,6 @@ const Notification = ({
       console.log("remove called", data);
       dispatch(removeLeadNotification(data));
     }
-  };
-
-  const ProfileButton = ({ icon, text, to = null }) => {
-    return (
-      <MyLink to={to}>
-        <div className="flex justify-center items-center text-[15px] py-2 gap-x-2">
-          {icon}
-          <span>{text}</span>
-        </div>
-      </MyLink>
-    );
   };
 
   const NotificationCard = () => {
@@ -140,7 +128,7 @@ const Notification = ({
             </>
           )}
 
-          {notificationData?.general && role === "operationsExecutive" ? (
+          {notificationData?.general && role != "superAdmin" ? (
             <>
               {notificationData?.general?.map((notification, index) => {
                 return (
@@ -192,7 +180,19 @@ const Notification = ({
           )}
 
           {(notificationData?.superAdminNotification).length === 0 &&
-          (notificationData?.general).length === 0 ? (
+          role === "superAdmin" ? (
+            <>
+              <div className="flex justify-center items-center gap-2 pb-3">
+                <IoNotificationsOffCircle size={30} />
+                <p className="text-xl font-semibold text-center">
+                  No new notifications !!!
+                </p>
+              </div>
+            </>
+          ) : (
+            ""
+          )}
+          {(notificationData?.general).length === 0 && role != "superAdmin" ? (
             <>
               <div className="flex justify-center items-center gap-2 pb-3">
                 <IoNotificationsOffCircle size={30} />
@@ -208,6 +208,10 @@ const Notification = ({
       </>
     );
   };
+
+  useEffect(() => {
+    dispatch(getNotificationData());
+  }, [location]);
 
   // Define dropdown menu items
   const menu = (

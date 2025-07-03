@@ -93,7 +93,7 @@ const NcBucketShareBySelecting = () => {
     dispatch(getAllSalesExecutive());
     dispatch(getProfileBasedUser());
     dispatch(getUserExecutives());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [path.location]);
 
   const {

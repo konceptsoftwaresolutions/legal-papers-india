@@ -54,9 +54,9 @@ const FollowUps = () => {
     dispatch(getOperationsFollowUpLead(page, filters ? true : false, filters));
   }, [dispatch, page, filter, filters]);
 
-  useEffect(() => {
-    dispatch(getNotificationData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getNotificationData());
+  // }, [dispatch]);
 
   const { followUpData, followUpLoader } = useSelector(
     (state) => state.followUps

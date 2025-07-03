@@ -4,6 +4,10 @@ import useAxios from "../../../hooks/useAxios";
 
 const axiosInstance = useAxios();
 const initialState = {
+    notificationData: {
+        taskReminder: [],
+    }
+
 };
 
 const notificationSlice = createSlice({
@@ -16,11 +20,19 @@ const notificationSlice = createSlice({
                 state[key] = action.payload[key];
             });
         },
+        removeReminder: (state, action) => {
+            const idToRemove = action.payload;
+            if (state.notificationData?.taskReminder) {
+                state.notificationData.taskReminder = state.notificationData.taskReminder.filter(
+                    (item) => item._id !== idToRemove
+                );
+            }
+        },
     },
 });
 
 // Export setNotifications now since we changed it in the reducer
-export const { setNotifications } = notificationSlice.actions;
+export const { setNotifications, removeReminder } = notificationSlice.actions;
 export default notificationSlice.reducer;
 
 
@@ -45,7 +57,7 @@ export const approveLocationReq = (data) => {
             });
             if (response.status === 200) {
                 // let message = response.data.message || "Access Granted";
-                let message =  "Access Granted";
+                let message = "Access Granted";
                 toast.success(message);
                 dispatch(getNotificationData());
             }

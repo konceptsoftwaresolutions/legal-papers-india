@@ -24,7 +24,7 @@ const Tasks = () => {
 
   const getData = () => {
     dispatch(getAllTasks());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   };
 
   useEffect(() => {

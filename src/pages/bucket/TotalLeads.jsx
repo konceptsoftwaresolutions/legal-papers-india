@@ -13,7 +13,7 @@ const TotalLeads = () => {
   const path = usePath();
 
   useEffect( () => {
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   } , [dispatch])
 
   const { totalBucketLeads } = useSelector((state) => state.leads);

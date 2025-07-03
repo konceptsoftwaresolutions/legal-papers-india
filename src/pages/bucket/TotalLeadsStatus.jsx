@@ -73,7 +73,7 @@ const TotalLeadsStatus = () => {
   ];
 
   useEffect(() => {
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [dispatch]);
 
   useEffect(() => {

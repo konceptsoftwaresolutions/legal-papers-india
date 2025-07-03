@@ -16,7 +16,7 @@ const AllUsers = () => {
 
   useEffect(() => {
     dispatch(getDashboardData());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [dispatch]);
 
   const navigate = useNavigate();

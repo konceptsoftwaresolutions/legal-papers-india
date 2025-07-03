@@ -84,7 +84,7 @@ const EditLead = () => {
   console.log(role);
 
   useEffect(() => {
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
     dispatch(getAllOperationsExecutive());
   }, [dispatch]);
 
@@ -582,6 +582,7 @@ const EditLead = () => {
   }
 
   const restrictedFields = {
+    // just add the fiedls name to makediabled by rle
     salesExecutive: ["salesStatus", "remark", "status2"],
 
     operationsTl: [
@@ -594,9 +595,8 @@ const EditLead = () => {
     ],
     // admin: [],
     salesTl: [
-      "salesExecutiveName",
       "salesStatus",
-      "nameOfBusinessEntity",
+      // "nameOfBusinessEntity",
       "emailId",
       "mobileNumber",
       "status2",

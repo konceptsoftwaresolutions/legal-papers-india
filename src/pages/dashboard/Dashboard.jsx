@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState();
   useEffect(() => {
     dispatch(getDashboardData());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [dispatch]);
 
   const { dashboardData } = useSelector((state) => state.dashboard);
@@ -85,7 +85,7 @@ const Dashboard = () => {
           {!(role === "operationsTl" || role === "operationsExecutive") && (
             <div className="flex flex-col gap-2">
               <AreaChart
-                title={`Month On Month Closure - ${selectedYear}`}
+                title={`Month On Month Closure `}
                 series={series2}
                 areaColor="#4caf50"
               />

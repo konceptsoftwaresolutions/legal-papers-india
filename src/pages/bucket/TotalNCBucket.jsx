@@ -12,7 +12,7 @@ const TotalNCBucket = () => {
   const path = usePath();
 
   useEffect(() => {
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [dispatch]);
   const { totalNCBucketLeads } = useSelector((state) => state.leads);
   const { serviceCategoryQuantityTotal } = useSelector((state) => state.bucket);

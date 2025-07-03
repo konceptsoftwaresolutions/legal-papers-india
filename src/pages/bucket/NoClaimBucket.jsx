@@ -40,9 +40,9 @@ const NoClaimBucket = () => {
     );
   };
 
-  useEffect(() => {
-    dispatch(getNotificationData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getNotificationData());
+  // }, [dispatch]);
 
   return (
     <>

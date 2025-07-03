@@ -20,14 +20,11 @@ import { NotificationProvider } from "./context/notification";
 function App() {
   return (
     <>
-      <NotificationProvider>
-        <BrowserRouter>
-          <Toaster position="top-right" reverseOrder={false} />
-          <ToastContainer position="top-center" />
-          <Routes />
-          <Reminders />
-        </BrowserRouter>
-      </NotificationProvider>
+      <BrowserRouter>
+        <Toaster position="top-right" reverseOrder={false} />
+        <ToastContainer position="top-center" />
+        <Routes />
+      </BrowserRouter>
     </>
   );
 }

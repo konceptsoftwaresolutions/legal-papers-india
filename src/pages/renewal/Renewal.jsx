@@ -65,7 +65,7 @@ const Renewal = () => {
     dispatch(getAllSalesExecutive());
     dispatch(getProfileBasedUser());
     dispatch(getUserExecutives());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
     // dispatch(getAllRenewals());
   }, []);
 

@@ -62,7 +62,7 @@ const Leads = () => {
     dispatch(getAllSalesExecutive());
     dispatch(getProfileBasedUser());
     dispatch(getUserExecutives());
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, []);
 
   const {

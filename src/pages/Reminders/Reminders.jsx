@@ -4,13 +4,17 @@ import { IoMdClose } from "react-icons/io";
 import { IoSettingsSharp } from "react-icons/io5";
 import { IoMdAlarm } from "react-icons/io";
 import { NotificationContext } from "../../context/notification";
+import { useDispatch, useSelector } from "react-redux";
+import { removeReminder } from "../../redux/features/notification";
 
 const Reminders = () => {
-  const { notifications, removeReminder } = useContext(NotificationContext);
+  const dispatch = useDispatch();
   const [isReminderVisible, setReminderVisible] = useState(false);
 
-  const handleRemove = (taskId) => {
-    removeReminder(taskId);
+  const { notificationData } = useSelector((state) => state.notification);
+
+  const handleRemove = (id) => {
+    dispatch(removeReminder(id));
   };
 
   return (
@@ -22,8 +26,8 @@ const Reminders = () => {
         className={`reminders-container ${isReminderVisible ? "visible" : ""}`}
         onMouseLeave={() => setReminderVisible(false)}
       >
-        {notifications?.reminder?.length > 0 ? (
-          notifications?.reminder?.map((reminder) => (
+        {notificationData?.reminder?.length > 0 ? (
+          notificationData?.reminder?.map((reminder) => (
             <div key={reminder.taskId} className="alert">
               <div className="alert-content">
                 <div className="inner-icon">

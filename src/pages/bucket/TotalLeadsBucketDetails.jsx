@@ -49,7 +49,7 @@ const TotalLeadsBucketDetails = () => {
   };
 
   useEffect(() => {
-    dispatch(getNotificationData());
+    // dispatch(getNotificationData());
   }, [dispatch]);
 
   useEffect(() => {

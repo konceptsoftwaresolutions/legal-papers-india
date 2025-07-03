@@ -40,9 +40,9 @@ const NCBucket3months = () => {
     );
   };
 
-  useEffect(() => {
-    dispatch(getNotificationData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getNotificationData());
+  // }, [dispatch]);
 
   return (
     <>

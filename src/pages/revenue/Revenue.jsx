@@ -12,9 +12,9 @@ const Revenue = () => {
 
   const { role } = useSelector((state) => state.auth);
 
-  useEffect(() => {
-    dispatch(getNotificationData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getNotificationData());
+  // }, [dispatch]);
   return (
     <>
       <div className="p-3 space-y-5">

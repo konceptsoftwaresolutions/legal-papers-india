@@ -54,9 +54,9 @@ const UserDetails = () => {
       .catch((err) => console.log(err));
   }, [dispatch, userData]);
 
-  useEffect(() => {
-    dispatch(getNotificationData());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(getNotificationData());
+  // }, [dispatch]);
 
   const {
     handleSubmit,
