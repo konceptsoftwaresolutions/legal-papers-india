@@ -188,6 +188,15 @@ const EditLead = () => {
     name: "payment",
   });
 
+  const {
+    fields: leadFiles,
+    append: appendLeadFile,
+    remove: removeLeadFile,
+  } = useFieldArray({
+    control,
+    name: "leadFiles",
+  });
+
   // Watch all payment fields at once
   const payments = useWatch({ control, name: "payment" });
 
@@ -1649,6 +1658,105 @@ const EditLead = () => {
                           </button>
                         )}
                       </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </FieldsCont>
+
+          {/* ---------------------LEAD FILES----------------- */}
+          <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
+            <Heading text="Lead Files" className="text-white" />
+            {role !== "operationsExecutive" && role !== "operationsTl" && (
+              <button
+                type="button"
+                className={`main-bg text-white px-4 py-2 rounded text-xl ${
+                  !isEditable ? "opacity-40" : ""
+                }`}
+                onClick={() =>
+                  appendLeadFile({
+                    note: "",
+                    fileUrl: "",
+                  })
+                }
+              >
+                <IoMdAddCircle />
+              </button>
+            )}
+          </div>
+
+          <FieldsCont>
+            <div className="">
+              {leadFiles?.length === 0 ? (
+                <p className="text-gray-500 text-center">No Files Uploaded</p>
+              ) : (
+                leadFiles?.map((file, index) => (
+                  <div
+                    key={file._id || index}
+                    className={`mb-8 ${
+                      index >= 1 ? "border-t border-black pt-5 my-8" : ""
+                    }`}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                      {/* File Name */}
+                      <InputField
+                        control={control}
+                        name={`leadFiles.${index}.note`}
+                        errors={errors}
+                        type="text"
+                        defaultValue={file.note}
+                        label="File Name"
+                        disabled={
+                          !isEditable ||
+                          role === "operationsTl" ||
+                          role === "operationsExecutive"
+                        }
+                      />
+
+                      {/* Upload Image */}
+                      <InputField
+                        control={control}
+                        name={`leadFiles.${index}.fileUrl`}
+                        errors={errors}
+                        type="file"
+                        defaultValue={file.fileUrl}
+                        label="Upload Image"
+                        disabled={
+                          !isEditable ||
+                          role === "operationsTl" ||
+                          role === "operationsExecutive"
+                        }
+                      />
+
+                      {/* Download Preview Button */}
+                      <div className="flex items-end">
+                        {file.fileUrl ? (
+                          <a
+                            href={file.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded"
+                          >
+                            Download
+                          </a>
+                        ) : (
+                          <p className="text-sm text-gray-400">No File</p>
+                        )}
+                      </div>
+
+                      {/* Delete Button */}
+                      {isEditable && (
+                        <div className="flex items-end">
+                          <button
+                            type="button"
+                            onClick={() => removeLeadFile(index)}
+                            className="bg-red-600 hover:bg-red-700 text-white p-3 rounded-md text-xl"
+                          >
+                            <MdDelete />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))

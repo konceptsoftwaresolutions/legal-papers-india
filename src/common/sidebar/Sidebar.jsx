@@ -106,6 +106,12 @@ const Sidebar = ({ collapse = false, onCollapse = () => {} }) => {
             icon: <MdMessage size={"18px"} />,
             active: path.endPoint === "marketing-analytics",
           },
+          {
+            text: "Client Files",
+            path: "clientfiles",
+            icon: <MdMessage size={"18px"} />,
+            active: path.endPoint === "clientfiles",
+          },
         ]
       : []),
   ];

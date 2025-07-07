@@ -65,6 +65,9 @@ import EmailTemplate from "../pages/marketing/email/EmailTemplate";
 import SMSTemplate from "../pages/marketing/sms/SMSTemplate";
 import WhatsAppTemplate from "../pages/marketing/whatsapp/WhatsAppTemplate";
 import MarketingAnalytics from "../pages/marketing/analytics/MarketingAnalytics";
+import ClientFiles from "../pages/clientFile/ClientFiles";
+import AddClientFile from "../pages/clientFile/AddClientFile";
+import EditClientFile from "../pages/clientFile/EditClientFile";
 
 const Routes = () => {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
@@ -417,7 +420,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <MarketingAnalytics />
             </ProtectedRoutes>
@@ -432,7 +436,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <Marketing />
             </ProtectedRoutes>
@@ -447,7 +452,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <Email />
             </ProtectedRoutes>
@@ -462,7 +468,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <EmailTemplate />
             </ProtectedRoutes>
@@ -477,7 +484,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <SMS />
             </ProtectedRoutes>
@@ -492,7 +500,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <SMSTemplate />
             </ProtectedRoutes>
@@ -507,7 +516,8 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <Whatsapp />
             </ProtectedRoutes>
@@ -522,9 +532,34 @@ const Routes = () => {
                 "salesTl",
                 "salesExecutive",
                 "operationsTl",
-                "operationsExecutive",]}
+                "operationsExecutive",
+              ]}
             >
               <WhatsAppTemplate />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/clientfiles",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <ClientFiles />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/add-client-file",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <AddClientFile />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/edit-client-file/:id",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <EditClientFile />
             </ProtectedRoutes>
           ),
         },
