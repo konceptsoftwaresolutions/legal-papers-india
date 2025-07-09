@@ -68,6 +68,9 @@ import MarketingAnalytics from "../pages/marketing/analytics/MarketingAnalytics"
 import ClientFiles from "../pages/clientFile/ClientFiles";
 import AddClientFile from "../pages/clientFile/AddClientFile";
 import EditClientFile from "../pages/clientFile/EditClientFile";
+import UsedNCBucket from "../pages/bucket/UsedNCBucket";
+import UsedNCBucketDetails from "../pages/bucket/UsedNCBucketDetails";
+import UsedNCBucketShare from "../pages/bucket/UsedNCBucketShare";
 
 const Routes = () => {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
@@ -222,6 +225,21 @@ const Routes = () => {
           ),
         },
         {
+          path: "/:type/used-nc-bucket",
+          element: (
+            <ProtectedRoutes
+              isAuthenticated={isAuthenticated}
+              notAllowedRoles={[
+                "salesExecutive",
+                "operationsTl",
+                "operationsExecutive",
+              ]}
+            >
+              <UsedNCBucket />
+            </ProtectedRoutes>
+          ),
+        },
+        {
           path: "/:type/admin-bucket-details",
           element: (
             <ProtectedRoutes
@@ -248,6 +266,21 @@ const Routes = () => {
               ]}
             >
               <AdminBucketDetailsThreeMonths />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/used-nc-bucket-details",
+          element: (
+            <ProtectedRoutes
+              isAuthenticated={isAuthenticated}
+              notAllowedRoles={[
+                "salesExecutive",
+                "operationsTl",
+                "operationsExecutive",
+              ]}
+            >
+              <UsedNCBucketDetails />
             </ProtectedRoutes>
           ),
         },
@@ -319,6 +352,10 @@ const Routes = () => {
         {
           path: "/:type/nc-bucket-share-by-selecting-3-months",
           element: <ThreeMonthsNCBucketSharing />,
+        },
+        {
+          path: "/:type/used-nc-bucket-share-by-selecting",
+          element: <UsedNCBucketShare />,
         },
         {
           path: "/:type/assigned-nc-bucket",

@@ -17,7 +17,10 @@ import usePath from "../../../hooks/usePath";
 import MyButton from "../../../components/buttons/MyButton";
 import { getAllLeads } from "../../../redux/features/leads";
 import { useLocation } from "react-router-dom";
-import { getAllEmailFilteredLeadIDs, getAllFilteredLeadIDs } from "../../../redux/features/marketing";
+import {
+  getAllEmailFilteredLeadIDs,
+  getAllFilteredLeadIDs,
+} from "../../../redux/features/marketing";
 
 const MarketingLeadFilter = ({
   isOpen = false,
@@ -106,6 +109,14 @@ const MarketingLeadFilter = ({
     {
       value: "fssairegistrationportal.org",
       label: "fssairegistrationportal.org",
+    },
+    {
+      value: "fssairegistration-portal.org",
+      label: "fssairegistration-portal.org",
+    },
+    {
+      value: "ieccode-portal.org",
+      label: "ieccode-portal.org",
     },
 
     { value: "ieccode-india.org", label: "ieccode-india.org" },
@@ -273,7 +284,7 @@ const MarketingLeadFilter = ({
         <InputField
           control={control}
           errors={errors}
-          label="Lead Sourcesss"
+          label="Lead Source"
           name="leadSource"
           type="select"
           options={leadSourceOptions}

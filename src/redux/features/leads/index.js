@@ -268,6 +268,26 @@ export const getOpenNCBucketLeadsThreeMonthsData = () => {
   };
 };
 
+export const getUsedNCBucketLeadsThreeMonthsData = (callback = () => { }) => {
+  return async (dispatch) => {
+    try {
+      const response = await axiosInstance.get(
+        "/noClaimBucketRoutes/getServiceCategoryQuantityUsedNCBucket"
+      );
+      if (response.status === 200) {
+        const data = response.data.result;
+        console.log(data)
+        callback(true, data)
+        // dispatch(setLeads({ openNCBucketLeadsThreeMonths: data ? [...data]?.reverse() : [] }));
+      }
+    } catch (error) {
+      callback(false)
+      // console.log(error)
+      toast.error(error.response.data);
+    }
+  };
+};
+
 export const getAssignedNCBucketLeadsData = (
   page = "1",
   filter,

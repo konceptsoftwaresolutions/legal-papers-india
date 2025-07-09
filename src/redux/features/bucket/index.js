@@ -57,6 +57,22 @@ export const getServiceCategoryStatusQuantityThreeMonthsThunkMiddleware = (servi
     }
 }
 
+export const getServiceCategoryStatusQuantityUsedNCBucketThunkMiddleware = (serviceCategory, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            const response = await axios.post('/noClaimBucketRoutes/getServiceCategoryStatusQuantityUsedNCBucket', { serviceCategory });
+            if (response.status === 200) {
+                const data = response.data?.result;
+                callback(true, data)
+                dispatch(setBucket({ serviceCategoryStatusQuantityThreeMonths: data }));
+            }
+        } catch (error) {
+            callback(false)
+            handleError(error);
+        }
+    }
+}
+
 export const getServiceCategoryStatusLeadsDataThunkMiddleware = (payload) => {
     return async (dispatch) => {
         try {
@@ -78,6 +94,22 @@ export const getServiceCategoryStatusLeadsDataThreeMonthsThunkMiddleware = (payl
                 dispatch(setBucket({ serviceCategoryStatusLeadsDataThreeMonths: response.data }));
             }
         } catch (error) {
+            handleError(error);
+        }
+    }
+}
+
+
+export const getServiceCategoryStatusLeadsDataUsedNCBucketThunkMiddleware = (payload, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            const response = await axios.post('/noClaimBucketRoutes/getServiceCategoryStatusLeadsDataUsedNCBucket', payload);
+            if (response.status === 200) {
+
+                dispatch(setBucket({ serviceCategoryStatusLeadsDataThreeMonths: response.data }));
+            }
+        } catch (error) {
+            callback(false)
             handleError(error);
         }
     }
@@ -190,10 +222,10 @@ export const getAdminBucketDetails = ({ payload }) => {
 
 
 
-export const assignLeadBySearchNCBucket = (payload , callback = () => { }) => {
+export const assignLeadBySearchNCBucket = (payload, callback = () => { }) => {
     return async (dispatch) => {
         try {
-            const response = await axios.post(`/noClaimBucketRoutes/assignBucketLeadByLeadIds`, payload );
+            const response = await axios.post(`/noClaimBucketRoutes/assignBucketLeadByLeadIds`, payload);
             if (response.status === 200) {
                 let data = response.data;
                 callback(true)

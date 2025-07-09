@@ -11,6 +11,7 @@ import {
   leadSourceOptions,
   serviceCategoryOption,
   typeOfBusinessOptions,
+  validityOptions,
 } from "../../constants/options";
 import { IoIosCloseCircle } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
@@ -136,7 +137,8 @@ const AddLeadModal = ({ showQuotation, setShowQuotation }) => {
               control={control}
               errors={errors}
               label="Validity"
-              type="date"
+              type="option"
+              options={validityOptions}
             />
           </div>
           <Button

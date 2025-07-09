@@ -20,6 +20,14 @@ const leadSourceOptions = [
     value: "fssairegistrationportal.org",
     label: "fssairegistrationportal.org",
   },
+  {
+    value: "fssairegistration-portal.org",
+    label: "fssairegistration-portal.org",
+  },
+  {
+    value: "ieccode-portal.org",
+    label: "ieccode-portal.org",
+  },
   { value: "ieccode-india.org", label: "ieccode-india.org" },
   { value: "iecode-india.org", label: "iecode-india.org" },
   {

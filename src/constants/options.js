@@ -1,5 +1,13 @@
 
 
+export const validityOptions = [
+  { label: '1 Year', value: '1 Year' },
+  { label: '2 Year', value: '2 Year' },
+  { label: '3 Year', value: '3 Year' },
+  { label: '4 Year', value: '4 Year' },
+  { label: '5 Year', value: '5 Year' },
+]
+
 export const certificateOptions = [
   { label: "GST Registration", value: "" },
   { label: "IEC Registration", value: "" },

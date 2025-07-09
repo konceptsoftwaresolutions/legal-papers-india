@@ -22,7 +22,7 @@ const Bucket = () => {
   if (role) console.log(role);
 
   useEffect(() => {
-    dispatch(getOpenNCBucketLeadsThreeMonthsData())
+    dispatch(getOpenNCBucketLeadsThreeMonthsData());
     dispatch(getOpenNCBucketLeadsData());
     dispatch(getTotalNCBucketLeadsData());
     dispatch(getTotalBucketLeadsData());
@@ -38,6 +38,14 @@ const Bucket = () => {
             title="Open nc bucket leads"
             subText="before 3 months "
             to="no-claim-bucket-3-months"
+          />
+        )}
+
+        {(role === "superAdmin" || role === "salesTl") && (
+          <BucketCard
+            icon={<TbBucket size={50} />}
+            title="Used nc bucket leads"
+            to="used-nc-bucket"
           />
         )}
 

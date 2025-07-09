@@ -87,6 +87,14 @@ const LeadFilter = ({
       value: "fssairegistrationportal.org",
       label: "fssairegistrationportal.org",
     },
+    {
+      value: "fssairegistration-portal.org",
+      label: "fssairegistration-portal.org",
+    },
+    {
+      value: "ieccode-portal.org",
+      label: "ieccode-portal.org",
+    },
 
     { value: "ieccode-india.org", label: "ieccode-india.org" },
     { value: "iecode-india.org", label: "iecode-india.org" },
@@ -304,7 +312,7 @@ const LeadFilter = ({
         <InputField
           control={control}
           errors={errors}
-          label="Lead Sourcesss"
+          label="Lead Source"
           name="leadSource"
           type="select"
           options={leadSourceOptions}
