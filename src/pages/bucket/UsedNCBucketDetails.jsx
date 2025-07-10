@@ -35,9 +35,11 @@ const UsedNCBucketDetails = () => {
   const [rowState, setRowState] = useState({});
 
   const convertOptions = (data) => {
+    if (!Array.isArray(data)) return [{ label: "Select an option", value: "" }];
+
     return [
-      { label: "Select a option", value: "" },
-      ...data?.map((item) => ({
+      { label: "Select an option", value: "" },
+      ...data.map((item) => ({
         label: item?.name,
         value: item?.name,
       })),

@@ -32,14 +32,14 @@ const Bucket = () => {
   return (
     <>
       <div className="p-3 flex justify-center flex-wrap gap-x-20 gap-y-10 pt-20 items-center">
-        {(role === "superAdmin" || role === "salesTl") && (
+        {/* {(role === "superAdmin" || role === "salesTl") && (
           <BucketCard
             icon={<TbBucket size={50} />}
             title="Open nc bucket leads"
             subText="before 3 months "
             to="no-claim-bucket-3-months"
           />
-        )}
+        )} */}
 
         {(role === "superAdmin" || role === "salesTl") && (
           <BucketCard
