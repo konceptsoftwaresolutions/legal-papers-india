@@ -230,33 +230,44 @@ const RevenueTop = () => {
           />
 
           <NumberCard
-            title="NC Bucket transfer (Move NC Bucket)"
+            title="Lead Page to NC Bucket"
             showSign={false}
             number={tilesData?.ncBucketMoved || "0"} // ✅ ncBucketMoved
           />
 
           <NumberCard
-            title="Bucket Transfers (TL Sent)"
+            title="NC Data transfer"
             showSign={false}
             number={tilesData?.bucketTransferredByTL || "0"} // ✅ bucketTransferredByTL
           />
 
           <NumberCard
-            title="NC Bucket Transfers (from TL)"
+            title="NC Page to Bucket"
             showSign={false}
             number={tilesData?.ncBucketTransferredByTL || "0"} // ✅ ncBucketTransferredByTL
           />
 
           <NumberCard
-            title="NC Activity (TL)"
+            title="NC Activity"
             showSign={false}
             number={tilesData?.ncActivityByTL || "0"} // ✅ ncActivityByTL
           />
 
           <NumberCard
-            title="Activity on All Leads (Excl. NC)"
+            title="Lead Page Activity"
             showSign={false}
             number={tilesData?.otherLeadsActivity || "0"} // ✅ otherLeadsActivity
+          />
+
+          <NumberCard
+            title="Renewal page Activity"
+            showSign={false}
+            number={tilesData?.renewalLeadsActivity || "0"} // ✅ otherLeadsActivity
+          />
+          <NumberCard
+            title="All Page activity"
+            showSign={false}
+            number={tilesData?.totalUniqueActivity || "0"} // ✅ otherLeadsActivity
           />
         </div>
       </div>
