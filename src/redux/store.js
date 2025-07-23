@@ -15,6 +15,7 @@ import masterReducer from './features/masterSearch'
 import bucketReducer from "./features/bucket";
 import marketingReducer from './features/marketing'
 import clientFilesReducer from './features/clientFiles/clientFilesSlice'
+import serviceReducer from './features/services'
 import { thunk } from "redux-thunk";
 
 const rootReducer = combineReducers({
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   bucket: bucketReducer,
   marketing: marketingReducer,
   clientFiles: clientFilesReducer,
+  services: serviceReducer,
 });
 
 const persistConfig = {
@@ -49,6 +51,7 @@ const persistConfig = {
     "notification",
     "master",
     "clientFiles",
+    "services",
   ],
 };
 

@@ -37,6 +37,10 @@ import DocUploadModal from "./DocUploadModal";
 import AddTaskModal from "../tasks/AddTaskModal";
 import ByeByeModal from "./ByeByeModal";
 import toast from "react-hot-toast";
+import GeneratePerformaModal from "./GeneratePerformaModal";
+import { getAllServices } from "../../redux/features/services";
+import AllPerformaInvoices from "./AllPerformaInvoices";
+import PDFPreviewer from "./PDFPreviewer";
 
 // import Remarks from "./Remarks"; operationsTl operationsExecutive
 
@@ -51,6 +55,13 @@ const EditLead = () => {
   const { user } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();
+  const { items: allServices } = useSelector((state) => state.services);
+
+  useEffect(() => {
+    if (!allServices || allServices.length === 0) {
+      dispatch(getAllServices());
+    }
+  }, [dispatch, allServices]);
 
   useEffect(() => {
     if (isScroll) {
@@ -77,6 +88,7 @@ const EditLead = () => {
   const [docModal, setDocModal] = useState(false);
   const [uploadedDoc, setUploadedDoc] = useState();
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showPerformaModal, setShowPerformaModal] = useState(false);
 
   const [moveNcBtnClicked, setMoveNcBtnClicked] = useState(false);
 
@@ -1132,12 +1144,18 @@ const EditLead = () => {
                   disabled={isFieldDisabled("leadId", role, isEditable)}
                 />
               )} */}
-              <div className="flex justify-start items-end">
+              <div className="flex justify-start items-end gap-2">
                 <Button
                   className="capitalize"
                   onClick={() => setShowTaskModal(!showTaskModal)}
                 >
                   Create Task
+                </Button>
+                <Button
+                  className="capitalize"
+                  onClick={() => setShowPerformaModal(true)}
+                >
+                  Generate Performa Invoice
                 </Button>
               </div>
             </div>
@@ -1764,6 +1782,15 @@ const EditLead = () => {
             </div>
           </FieldsCont>
 
+          <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
+            <Heading text="All Performa Invoices" className="text-white" />
+          </div>
+
+          <div className="bg-[#6b788517] py-5 rounded-lg">
+            <AllPerformaInvoices leadId={leadData?._id} />
+            {/* <PDFPreviewer /> */}
+          </div>
+
           <div className="flex gap-x-3 gap-y-1 flex-wrap justify-between sticky bottom-1 p-2 main-bg shadow-lg rounded-md mt-3">
             <Button type="submit" disabled={!isEditable}>
               Save
@@ -1855,6 +1882,12 @@ const EditLead = () => {
         showTaskModal={showTaskModal}
         leadData={leadData}
         setShowTaskModal={setShowTaskModal}
+      />
+      <GeneratePerformaModal
+        open={showPerformaModal}
+        onClose={() => setShowPerformaModal(false)}
+        leadData={leadData}
+        services={allServices}
       />
     </>
   );

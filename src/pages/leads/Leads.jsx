@@ -4,11 +4,12 @@ import InputField from "../../components/fields/InputField";
 import MyButton from "../../components/buttons/MyButton";
 import LeadFilter from "./LeadFilter";
 import { LuListFilter } from "react-icons/lu";
-import { BiExport } from "react-icons/bi";
+import { BiExport, BiUpload } from "react-icons/bi";
 import { FaPlus } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import * as XLSX from "xlsx";
 import {
+  bulkUploadLeads,
   getAllLeads,
   getAllSalesExecutive,
   handleBulkSalesAssign,
@@ -31,6 +32,8 @@ import { getNotificationData } from "../../redux/features/notification";
 import { Spinner } from "@material-tailwind/react";
 import PasswordModal from "./PasswordModal";
 import useAxios from "../../hooks/useAxios";
+import BulkUploadModal from "./LeadBulkUploadModal";
+import toast from "react-hot-toast";
 
 const Leads = () => {
   const dispatch = useDispatch();
@@ -244,6 +247,18 @@ const Leads = () => {
     }
   };
 
+  const [showModal, setShowModal] = useState(false);
+
+  const handleDataUpload = (data) => {
+    dispatch(
+      bulkUploadLeads(data, (success, res) => {
+        if (success) {
+          toast.success("Leads uploaded!");
+        }
+      })
+    );
+  };
+
   return (
     <>
       <LeadFilter
@@ -317,6 +332,18 @@ const Leads = () => {
             <LuListFilter size={16} />
             <span>Filter</span>
           </MyButton>
+          {console.log("Current role:", role)}
+          {!(role === "operationsTl" || role === "operationsExecutive") && (
+            <>
+              <MyButton
+                className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+                onClick={() => setShowModal(true)}
+              >
+                <BiUpload size={16} />
+                Bulk Upload
+              </MyButton>
+            </>
+          )}
 
           {!(role === "operationsTl" || role === "operationsExecutive") && (
             <>
@@ -404,6 +431,11 @@ const Leads = () => {
         passModal={passModal}
         setPassModal={setPassModal}
         onSave={handleExport}
+      />
+      <BulkUploadModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        onUpload={handleDataUpload}
       />
     </>
   );

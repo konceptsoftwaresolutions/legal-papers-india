@@ -595,3 +595,25 @@ export const adminBucketNCLeadShare = (payload) => {
     }
   }
 }
+
+export const bulkUploadLeads = (excelData, callback = () => {}) => {
+  return async (dispatch) => {
+    try {
+      dispatch(setLeads({ leadLoader: true }));
+
+      const response = await axiosInstance.post("/leadRoutes/bulkUpload", {
+        leads: excelData, // assuming backend expects array under "leads"
+      });
+
+      if (response.status === 200) {
+        toast.success("Leads uploaded successfully");
+        callback(true, response.data);
+        dispatch(setLeads({ leadLoader: false }));
+      }
+    } catch (error) {
+      dispatch(setLeads({ leadLoader: false }));
+      toast.error("Failed to upload leads");
+      console.error("Bulk upload error:", error);
+    }
+  };
+};

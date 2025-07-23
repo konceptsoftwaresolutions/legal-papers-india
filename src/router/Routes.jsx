@@ -71,6 +71,10 @@ import EditClientFile from "../pages/clientFile/EditClientFile";
 import UsedNCBucket from "../pages/bucket/UsedNCBucket";
 import UsedNCBucketDetails from "../pages/bucket/UsedNCBucketDetails";
 import UsedNCBucketShare from "../pages/bucket/UsedNCBucketShare";
+import PerformaInvoiceNo from "../pages/performaInvoice/PerformaInvoiceNo";
+import Services from "../pages/services/Services";
+import AddService from "../pages/services/AddService";
+import EditService from "../pages/services/EditService";
 
 const Routes = () => {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
@@ -597,6 +601,38 @@ const Routes = () => {
           element: (
             <ProtectedRoutes isAuthenticated={isAuthenticated}>
               <EditClientFile />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/performainvoice",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <PerformaInvoiceNo />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/services",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <Services />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/add-service",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <AddService />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/edit-service/:id",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <EditService />
             </ProtectedRoutes>
           ),
         },
