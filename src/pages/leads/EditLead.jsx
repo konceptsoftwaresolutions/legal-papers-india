@@ -41,6 +41,8 @@ import GeneratePerformaModal from "./GeneratePerformaModal";
 import { getAllServices } from "../../redux/features/services";
 import AllPerformaInvoices from "./AllPerformaInvoices";
 import PDFPreviewer from "./PDFPreviewer";
+import GenerateTaxModal from "./GenerateTaxModal";
+import AllTaxInvoices from "./AllTaxInvoices";
 
 // import Remarks from "./Remarks"; operationsTl operationsExecutive
 
@@ -89,6 +91,7 @@ const EditLead = () => {
   const [uploadedDoc, setUploadedDoc] = useState();
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showPerformaModal, setShowPerformaModal] = useState(false);
+  const [openTaxModal, setOpenTaxModal] = useState(false);
 
   const [moveNcBtnClicked, setMoveNcBtnClicked] = useState(false);
 
@@ -1157,6 +1160,12 @@ const EditLead = () => {
                 >
                   Generate Performa Invoice
                 </Button>
+                <Button
+                  onClick={() => setOpenTaxModal(true)}
+                  className="capitalize"
+                >
+                  Generate Tax Entry
+                </Button>
               </div>
             </div>
           </FieldsCont>
@@ -1785,9 +1794,16 @@ const EditLead = () => {
           <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
             <Heading text="All Performa Invoices" className="text-white" />
           </div>
-
-          <div className="bg-[#6b788517] py-5 rounded-lg">
+          <div className="bg-[#6b788517] p-5 rounded-lg">
             <AllPerformaInvoices leadId={leadData?._id} />
+            {/* <PDFPreviewer /> */}
+          </div>
+
+          <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
+            <Heading text="All Tax Invoices" className="text-white" />
+          </div>
+          <div className="bg-[#6b788517] p-5 rounded-lg">
+            <AllTaxInvoices leadId={leadData?._id} />
             {/* <PDFPreviewer /> */}
           </div>
 
@@ -1886,6 +1902,12 @@ const EditLead = () => {
       <GeneratePerformaModal
         open={showPerformaModal}
         onClose={() => setShowPerformaModal(false)}
+        leadData={leadData}
+        services={allServices}
+      />
+      <GenerateTaxModal
+        open={openTaxModal}
+        onClose={() => setOpenTaxModal(false)}
         leadData={leadData}
         services={allServices}
       />

@@ -75,6 +75,7 @@ import PerformaInvoiceNo from "../pages/performaInvoice/PerformaInvoiceNo";
 import Services from "../pages/services/Services";
 import AddService from "../pages/services/AddService";
 import EditService from "../pages/services/EditService";
+import TaxInvoiceNo from "../pages/taxInvoice/TaxInvoiceNo";
 
 const Routes = () => {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
@@ -605,10 +606,18 @@ const Routes = () => {
           ),
         },
         {
-          path: "/:type/performainvoice",
+          path: "/:type/proformainvoice",
           element: (
             <ProtectedRoutes isAuthenticated={isAuthenticated}>
               <PerformaInvoiceNo />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/taxinvoice",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <TaxInvoiceNo />
             </ProtectedRoutes>
           ),
         },

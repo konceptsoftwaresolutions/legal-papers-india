@@ -2,6 +2,7 @@
 import React from "react";
 import { PDFViewer } from "@react-pdf/renderer";
 import GeneratePerformaPDF from "./GeneratePerformaPDF";
+import GenerateTaxPDF from "./GenerateTaxPDF";
 
 const dummyFormData = {
   name: "Test Client",
@@ -41,6 +42,7 @@ const PDFPreviewer = () => {
     <div className="h-[90vh] border-2 border-blue-500 my-4">
       <PDFViewer width="100%" height="100%">
         <GeneratePerformaPDF formData={dummyFormData} invoiceNo={12345} />
+        {/* <GenerateTaxPDF formData={dummyFormData} invoiceNo={483} /> */}
       </PDFViewer>
     </div>
   );

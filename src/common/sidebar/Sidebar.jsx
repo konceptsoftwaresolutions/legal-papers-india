@@ -15,7 +15,7 @@ import { RiListCheck2 } from "react-icons/ri";
 // hooks
 import usePath from "../../hooks/usePath";
 import { useSelector } from "react-redux";
-import { MdBuild, MdDescription, MdMessage } from "react-icons/md";
+import { MdBuild, MdDescription, MdMessage, MdReceiptLong } from "react-icons/md";
 
 const Sidebar = ({ collapse = false, onCollapse = () => {} }) => {
   const path = usePath();
@@ -113,10 +113,16 @@ const Sidebar = ({ collapse = false, onCollapse = () => {} }) => {
             active: path.endPoint === "clientfiles",
           },
           {
-            text: "Performa Invoice No",
-            path: "performainvoice",
+            text: "Proforma Invoice No",
+            path: "proformainvoice",
             icon: <MdDescription size={"18px"} />,
-            active: path.endPoint === "performainvoice",
+            active: path.endPoint === "proformainvoice",
+          },
+          {
+            text: "Tax Invoice No",
+            path: "taxinvoice",
+            icon: <MdReceiptLong size={"18px"} />,
+            active: path.endPoint === "taxinvoice",
           },
           {
             text: "Services",
