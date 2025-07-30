@@ -24,7 +24,7 @@ const notificationSlice = createSlice({
             const idToRemove = action.payload;
             if (state.notificationData?.taskReminder) {
                 state.notificationData.taskReminder = state.notificationData.taskReminder.filter(
-                    (item) => item._id !== idToRemove
+                    (item) => item.taskId !== idToRemove
                 );
             }
         },

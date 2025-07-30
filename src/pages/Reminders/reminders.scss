@@ -1,3 +1,82 @@
+.reminders-fixed {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.reminder-card {
+  position: relative;
+  width: 320px;
+  padding: 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(40, 40, 40, 0.8),
+    rgba(20, 20, 20, 0.6)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  color: #f1f1f1;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  .card-header {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+  }
+
+  .badge {
+    font-size: 11px;
+    background: linear-gradient(135deg, #f7c180, #f5d1ae);
+    color: #000;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  p {
+    margin: 6px 0;
+    line-height: 1.5;
+    font-size: 13.5px;
+    color: #f9f9f9;
+
+    strong {
+      color: #ffd;
+      font-weight: 600;
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover {
+      color: #f7c180;
+    }
+  }
+}
+
 .icon {
   width: 60px;
   height: 60px;
@@ -10,7 +89,7 @@
   margin-right: 10px;
   position: fixed;
   right: 20px;
-  bottom: 70px;
+  bottom: 50px;
   z-index: 1000;
 }
 
@@ -26,6 +105,7 @@
     padding: 0;
     margin: 0;
     border: none;
+    border-radius: 16px;
     margin-top: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.24);
 
@@ -80,20 +160,20 @@
         transition: all 0.4s linear;
       }
     }
-    .close-btn {
-      background: transparent;
-      border: none;
-      color: white;
-      cursor: pointer;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 1.2em;
+    // .close-btn {
+    //   background: transparent;
+    //   border: none;
+    //   color: white;
+    //   cursor: pointer;
+    //   position: absolute;
+    //   top: 10px;
+    //   right: 10px;
+    //   font-size: 1.2em;
 
-      &:hover {
-        color: #feab3e;
-      }
-    }
+    //   &:hover {
+    //     color: #feab3e;
+    //   }
+    // }
   }
   .no-reminders {
     padding: 10px 15px;

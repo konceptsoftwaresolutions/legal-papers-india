@@ -487,6 +487,7 @@ const EditLead = () => {
             handleMoveNCBucket(leadData.leadId, (success) => {
               if (success) {
                 getLeadDataByLeadId(leadId);
+                navigate(-1);
               }
             })
           );
