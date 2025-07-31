@@ -402,7 +402,14 @@ const Leads = () => {
                     No data to be displayed...
                   </p>
                 }
-                customStyles={tableCustomStyles}
+                customStyles={{
+                  ...tableCustomStyles,
+                  rows: {
+                    style: {
+                      cursor: "default", // 👈 disable pointer for whole row
+                    },
+                  },
+                }}
                 // onRowClicked={handleRowClick}
                 selectableRows
                 onSelectedRowsChange={handleChange}

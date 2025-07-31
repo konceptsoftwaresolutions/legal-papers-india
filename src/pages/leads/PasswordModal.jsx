@@ -17,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { addLead } from "../../redux/features/leads";
 import toast from "react-hot-toast";
 
-const PasswordModal = ({ passModal, setPassModal , onSave }) => {
+const PasswordModal = ({ passModal, setPassModal, onSave }) => {
   const dispatch = useDispatch();
 
   const {
@@ -42,7 +42,7 @@ const PasswordModal = ({ passModal, setPassModal , onSave }) => {
         return null;
       }
 
-        onSave(data?.password);
+      onSave(data?.password);
       reset();
       handleCloseModal();
     } else {

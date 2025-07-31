@@ -2,11 +2,17 @@
 
 export const validityOptions = [
   { label: '1 Year', value: '1 Year' },
-  { label: '2 Year', value: '2 Year' },
-  { label: '3 Year', value: '3 Year' },
-  { label: '4 Year', value: '4 Year' },
-  { label: '5 Year', value: '5 Year' },
-]
+  { label: '2 Years', value: '2 Years' },
+  { label: '3 Years', value: '3 Years' },
+  { label: '4 Years', value: '4 Years' },
+  { label: '5 Years', value: '5 Years' },
+  { label: '6 Years', value: '6 Years' },
+  { label: '7 Years', value: '7 Years' },
+  { label: '8 Years', value: '8 Years' },
+  { label: '9 Years', value: '9 Years' },
+  { label: '10 Years', value: '10 Years' },
+];
+
 
 export const certificateOptions = [
   { label: "GST Registration", value: "" },

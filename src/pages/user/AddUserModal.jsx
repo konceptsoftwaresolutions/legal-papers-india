@@ -31,13 +31,13 @@ const AddUserModal = ({ userModal, setUserModal }) => {
 
   const onSubmit = (data) => {
     setUserModal(!userModal);
-    console.log(data);
     const payload = {
       email: data.email,
       name: data.name,
       mobile: data.mobile,
       profile: data.profile,
       password: data.password,
+      dob: data.dob,
     };
     dispatch(addNewUser(payload));
     reset();
@@ -87,6 +87,14 @@ const AddUserModal = ({ userModal, setUserModal }) => {
             />
 
             <InputField
+              type="date"
+              name="dob"
+              control={control}
+              errors={errors}
+              label="D.O.B"
+            />
+
+            <InputField
               control={control}
               name="password"
               errors={errors}
@@ -103,7 +111,11 @@ const AddUserModal = ({ userModal, setUserModal }) => {
               mode="single"
             />
           </div>
-          <Button type="submit" className="mt-4 main-bg" loading={addUserLoader}>
+          <Button
+            type="submit"
+            className="mt-4 main-bg"
+            loading={addUserLoader}
+          >
             Add
           </Button>
         </form>

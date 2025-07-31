@@ -19,6 +19,7 @@ import {
   operationsStatusOption,
   paymentModeOptions,
   salesStatusOptions,
+  serviceCategoryOption,
   taxRateOptions,
 } from "../../constants/options";
 import { FaFileDownload } from "react-icons/fa";
@@ -360,7 +361,7 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveEmail);
+    formData.append("salesExecutiveName", data.salesExecutiveName);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -471,7 +472,7 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveEmail);
+    formData.append("salesExecutiveName", data.salesExecutiveName);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -571,7 +572,7 @@ const EditLead = () => {
           }))
         : [];
     formData.append("documents", JSON.stringify(documents));
-    formData.append("salesExecutiveName", data.salesExecutiveEmail);
+    formData.append("salesExecutiveName", data.salesExecutiveName);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -624,6 +625,7 @@ const EditLead = () => {
       // "nameOfBusinessEntity",
       "emailId",
       "mobileNumber",
+      "salesExecutiveName",
       "status2",
     ],
     superAdmin: [
@@ -994,6 +996,7 @@ const EditLead = () => {
                   errors={errors}
                   name="serviceCategory"
                   label="Service Category"
+                  options={serviceCategoryOption}
                   disabled={isFieldDisabled(
                     "serviceCategory",
                     role,

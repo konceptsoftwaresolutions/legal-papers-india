@@ -176,6 +176,14 @@ const UserDetails = () => {
               disabled={!isEditable}
             />
             <InputField
+              type="date"
+              name="dob"
+              control={control}
+              errors={errors}
+              label="D.O.B"
+              disabled={!isEditable}
+            />
+            <InputField
               type="option"
               options={userOptions}
               name="profile"

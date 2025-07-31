@@ -322,7 +322,7 @@ const SearchModal = ({ showQuotation, setShowQuotation }) => {
 
       console.log(assignedField, assignedName, userData);
 
-      if (userData?.name === assignedName) {
+      if (userData?.name === assignedName || userData?.email === assignedName) {
         navigate(link, { state: { leadData: row } });
         handleCloseModal();
       }
