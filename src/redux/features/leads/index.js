@@ -448,6 +448,24 @@ export const handleBulkSalesAssign = (payload) => {
   }
 }
 
+export const handleBulkSalesAssignNormalLeads = (payload) => {
+  return async (dispatch) => {
+    try {
+      const response = await axiosInstance.post("/leadRoutes/leadAssignBulkNormalLeads", payload)
+      if (response.status === 200) {
+        const message = response.data.message || "Assigned successfully!";
+        toast.success(message)
+      }
+    } catch (error) {
+      let message = "ERROR"
+      if (error.hasOwnProperty('response')) {
+        message = error.response.data
+        toast.error(message)
+      }
+    }
+  }
+}
+
 export const handleIECBulkSalesAssign = (payload) => {
   return async (dispatch) => {
     try {

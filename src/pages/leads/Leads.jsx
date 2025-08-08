@@ -12,7 +12,7 @@ import {
   bulkUploadLeads,
   getAllLeads,
   getAllSalesExecutive,
-  handleBulkSalesAssign,
+  handleBulkSalesAssignNormalLeads,
   handleImpLeadForward,
   handleLeadForward,
 } from "../../redux/features/leads";
@@ -34,6 +34,7 @@ import PasswordModal from "./PasswordModal";
 import useAxios from "../../hooks/useAxios";
 import BulkUploadModal from "./LeadBulkUploadModal";
 import toast from "react-hot-toast";
+import AnniversaryBanner from "../../common/anniversary/AnniversaryBanner";
 
 const Leads = () => {
   const dispatch = useDispatch();
@@ -164,7 +165,7 @@ const Leads = () => {
       selectedRows: selectedRows,
     };
     console.log(payload);
-    dispatch(handleBulkSalesAssign(payload));
+    dispatch(handleBulkSalesAssignNormalLeads(payload));
   };
 
   const handleExecutiveAssign = () => {
@@ -174,7 +175,7 @@ const Leads = () => {
       selectedRows: selectedRows,
     };
     console.log(payload);
-    dispatch(handleBulkSalesAssign(payload));
+    dispatch(handleBulkSalesAssignNormalLeads(payload));
   };
 
   const handleForward = (data) => {
@@ -272,6 +273,7 @@ const Leads = () => {
       />
 
       <div className="flex flex-col w-full px-4 gap-y-4 py-5">
+      {/* <AnniversaryBanner /> */}
         <div className="grid grid-cols-2">
           <Heading text="Leads" showHeading />
         </div>

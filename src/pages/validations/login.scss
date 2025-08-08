@@ -1,26 +1,310 @@
 .login-field {
-    label {
+  label {
+    color: white !important;
+    font-weight: 400 !important;
+  }
+
+  div {
+    border-color: white !important;
+
+    input {
+      color: white !important;
+      font-weight: 400 !important;
+
+      &::placeholder {
         color: white !important;
         font-weight: 400 !important;
+      }
     }
 
-    div {
-        border-color: white !important;
+    svg {
+      color: white !important;
     }
+  }
+}
 
-    div {
-        input {
-            color: white !important;
-            font-weight: 400 !important;
-        }
+/* Keyframe Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-        input::placeholder {
-            color: white !important;
-            font-weight: 400 !important;
-        }
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px #fff, 0 0 20px #f50057, 0 0 30px #9e1b32;
+  }
+  50% {
+    box-shadow: 0 0 20px #f50057, 0 0 40px #9e1b32, 0 0 60px #ff4081;
+  }
+}
 
-        svg {
-            color: white !important;
-        }
-    }
+@keyframes boomPulse {
+  0% {
+    box-shadow: 0 0 0px rgba(255, 64, 129, 0.6), 0 0 0px rgba(158, 27, 50, 0.6);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 64, 129, 0.9),
+      0 0 60px rgba(158, 27, 50, 0.9);
+    transform: scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(255, 64, 129, 0);
+    transform: scale(1);
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(100%) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-120%) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes wobble {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  50% {
+    transform: rotate(-2deg);
+  }
+  75% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.02);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes hatFall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(220px) rotate(25deg);
+  }
+  100% {
+    transform: translateY(300px) rotate(45deg);
+    opacity: 0;
+  }
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floatEmoji {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-120vh);
+    opacity: 0;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Celebration UI Styles */
+.celebration-bg {
+  background: linear-gradient(135deg, #1e1e2f, #371b3d);
+  min-height: 100vh;
+  position: relative;
+}
+
+.anniversary-badge {
+  background: linear-gradient(90deg, #ff4081, #9e1b32);
+  animation: pulseGlow 2s infinite;
+  color: white;
+}
+
+.login-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.25rem;
+
+  &.boom {
+    animation: boomPulse 0.8s ease-out;
+  }
+}
+
+.balloon-wrapper {
+  position: absolute;
+  bottom: -80px;
+  width: 60px;
+  height: 120px;
+  animation: floatUp 12s linear infinite;
+}
+
+.balloon {
+  position: relative;
+  width: 60px;
+  height: 80px;
+  background: radial-gradient(circle at 30% 30%, #ff6ec7, #9e1b32);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: visible;
+  animation: wobble 6s ease-in-out infinite;
+
+  .shine {
+    position: absolute;
+    top: 15%;
+    left: 25%;
+    width: 15px;
+    height: 25px;
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 50%;
+    filter: blur(2px);
+  }
+
+  .knot {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 8px;
+    background: #9e1b32;
+    border-radius: 50% 50% 10% 10%;
+  }
+
+  .string {
+    position: absolute;
+    bottom: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 60px;
+    background: #ddd;
+    border-radius: 1px;
+  }
+}
+
+.hat-drop {
+  position: fixed;
+  top: -50px;
+  font-size: 28px;
+  animation: hatFall 3.4s ease-in forwards;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.confetti-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.button-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.15),
+    transparent 60%
+  );
+  mix-blend-mode: overlay;
+  border-radius: 0.75rem;
+  animation: pulseGlow 3s infinite;
+}
+
+.celebration-text {
+  animation: appear 1.2s ease-out forwards;
+}
+
+.animated-input {
+  @apply bg-black/30 border border-white/30 text-white placeholder:text-gray-300 focus:ring-2 focus:ring-pink-500;
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite linear;
+}
+
+.animate-floatEmoji {
+  animation: floatEmoji 6s linear forwards;
+}
+
+.animate-bounceIn {
+  animation: bounceIn 1.4s ease-out both;
+}
+
+.pulse-button {
+  animation: pulseGlow 3s infinite;
 }

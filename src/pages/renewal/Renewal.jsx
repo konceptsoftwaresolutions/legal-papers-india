@@ -170,7 +170,7 @@ const Renewal = () => {
       selectedRows: selectedRows,
     };
     console.log(payload);
-    dispatch(handleBulkSalesAssign(payload));
+    dispatch(handleBulkSalesAssignNormalLeads(payload));
   };
 
   const handleExecutiveAssign = () => {
@@ -180,7 +180,7 @@ const Renewal = () => {
       selectedRows: selectedRows,
     };
     console.log(payload);
-    dispatch(handleBulkSalesAssign(payload));
+    dispatch(handleBulkSalesAssignNormalLeads(payload));
   };
 
   const handleForward = (data) => {

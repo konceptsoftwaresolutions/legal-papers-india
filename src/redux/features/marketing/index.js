@@ -6,7 +6,7 @@ const axiosInstance = useAxios();
 
 const initialState = {
     allWhatsAppTemplates: null,
-
+    allInhouseTemplates: null,
 };
 
 const marketingSlice = createSlice({
@@ -543,6 +543,213 @@ export const getSingleEmailCampaignLogs = (payload, callback = () => { }) => {
             console.log(error)
             let message = error.response.data.message;
             toast.error(message);
+        }
+    };
+};
+
+
+// whatsapp in house 
+export const createInHouseWhatsAppTemplate = (payload, setIsLoading, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            setIsLoading(true)
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/create", payload);
+            if (response.status === 201) {
+                toast.success("Template Create Successfully ..")
+                callback(true)
+                setIsLoading(false)
+            }
+        } catch (error) {
+            setIsLoading(false)
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        } finally {
+            setIsLoading(false)
+        }
+    };
+};
+
+export const deleteWAInHouseTemplate = (payload, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/delete", { id: payload });
+            if (response.status === 200) {
+                toast.success("Template Create Successfully ..")
+                callback(true)
+
+            }
+        } catch (error) {
+
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        } finally {
+
+        }
+    };
+};
+
+export const sendWAInHouseSampleMessage = (payload, setIsLoading, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            setIsLoading(true)
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/sendSingleWhatsappFromNewVendor", payload);
+            if (response.status === 200) {
+                setIsLoading(false)
+                toast.success("WhatsApp message queued")
+                callback(true)
+            }
+        } catch (error) {
+            setIsLoading(false)
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        }
+    };
+};
+
+export const getWAInHouseTemplateById = (payload, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/getById", { id: payload });
+            if (response.status === 200) {
+                console.log(response.data)
+                callback(true, response.data)
+
+            }
+        } catch (error) {
+            callback(false)
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        }
+    };
+};
+
+export const getAllWhatsAppInHouseTemplates = (callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            const response = await axiosInstance.get("/whatsappInHouseTemplate/getAll");
+            if (response.status === 200) {
+                callback(true)
+                // console.log(response.data)
+                const dataArray = response?.data?.map((item, index) => {
+                    return {
+                        label: item.name, value: item._id
+                    }
+                })
+                // console.log(dataArray)
+                callback(dataArray)
+                dispatch(
+                    setMarketing({ allWhatsAppTemplates: dataArray })
+                )
+            }
+        } catch (error) {
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        }
+    };
+};
+
+export const getDropDownFieldsForVariablesInHouse = () => {
+    return async (dispatch) => {
+        try {
+            const response = await axiosInstance.get("/whatsappInHouseTemplate/fieldsForDropDownSelectionForVariables");
+            if (response.status === 200) {
+
+                const dropdownOptions = response?.data?.fields.map((item) => {
+                    return { label: item, value: item }
+                })
+                dispatch(
+                    setMarketing({ dropdownVar: dropdownOptions })
+                )
+
+            }
+        } catch (error) {
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        }
+    };
+}
+
+export const getInHouseDropdownVariableValue = (payload, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/getValueBySingleHeader", payload);
+            if (response.status === 200) {
+
+                callback(true, response.data.value)
+
+            }
+        } catch (error) {
+            callback(false)
+            let message = "Error";
+            if (error.hasOwnProperty("response")) {
+                message = error.response.data;
+                toast.error(message);
+            }
+        }
+    };
+};
+
+export const getAllFilteredLeadID = (filterObject = {}, callback = () => { }, setLeadsLoading) => {
+    return async (dispatch) => {
+        try {
+            setLeadsLoading(true)
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/filtered-lead-ids", {
+                filterObject: filterObject,
+            });
+            if (response.status === 200) {
+                setLeadsLoading(false)
+                console.log(response)
+                callback(true, response.data)
+            }
+        } catch (error) {
+            setLeadsLoading(false)
+
+            toast.error(error);
+            // console.log(error);
+        }
+    };
+};
+
+export const whatsAppInHouseTemplateSaveSend = (payload, setSavesendLoading, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            setSavesendLoading(true)
+            const response = await axiosInstance.post("/whatsappInHouseTemplate/sendMultiWhatsapp", payload);
+            if (response.status === 200) {
+                setSavesendLoading(false)
+                // console.log(response)
+                toast.success(response.data.message)
+                callback(true)
+            }
+        } catch (error) {
+            setSavesendLoading(false)
+            console.log(error)
+            let message = error.response.data.message;
+            toast.error(message);
+            // callback(false)
+            // let message = "Error";
+            // if (error.hasOwnProperty("response")) {
+
+            // }
         }
     };
 };

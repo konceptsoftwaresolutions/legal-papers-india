@@ -76,6 +76,8 @@ import Services from "../pages/services/Services";
 import AddService from "../pages/services/AddService";
 import EditService from "../pages/services/EditService";
 import TaxInvoiceNo from "../pages/taxInvoice/TaxInvoiceNo";
+import WhatsAppInHouse from "../pages/marketing/whatsappInHouse/WhatsAppInHouse";
+import WhatsAppInHouseTemplate from "../pages/marketing/whatsappInHouse/WhatsAppInHouseTemplate";
 
 const Routes = () => {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
@@ -578,6 +580,38 @@ const Routes = () => {
               ]}
             >
               <WhatsAppTemplate />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/whatsapp-inhouse",
+          element: (
+            <ProtectedRoutes
+              isAuthenticated={isAuthenticated}
+              notAllowedRoles={[
+                "salesTl",
+                "salesExecutive",
+                "operationsTl",
+                "operationsExecutive",
+              ]}
+            >
+              <WhatsAppInHouse />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/whatsappinhousetemplate",
+          element: (
+            <ProtectedRoutes
+              isAuthenticated={isAuthenticated}
+              notAllowedRoles={[
+                "salesTl",
+                "salesExecutive",
+                "operationsTl",
+                "operationsExecutive",
+              ]}
+            >
+              <WhatsAppInHouseTemplate />
             </ProtectedRoutes>
           ),
         },

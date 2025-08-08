@@ -13,7 +13,7 @@ import Pagination from "../../components/pagination/Pagination";
 import {
   // getiecRenewalLeadsData,
   getIECRenewalLeads,
-  handleBulkSalesAssign,
+  handleBulkSalesAssignNormalLeads,
   handleIECBulkSalesAssign,
   handleImpLeadForward,
   handleLeadForward,

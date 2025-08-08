@@ -24,6 +24,10 @@ const Marketing = () => {
     navigate(`/${role}/whatsappcampaign`);
   };
 
+  const handleWhatsappInHouseNavigation = () => {
+    navigate(`/${role}/whatsapp-inhouse`);
+  };
+
   return (
     <>
       <div className="grid grid-cols-2 p-5">
@@ -52,6 +56,14 @@ const Marketing = () => {
         >
           <FaWhatsapp size={30} />
           <span className="ml-2">WhatsApp</span>
+        </div>
+
+        <div
+          className="flex items-center justify-center bg-green-600 text-white p-6 py-10 rounded-lg cursor-pointer hover:bg-green-700 transition"
+          onClick={handleWhatsappInHouseNavigation}
+        >
+          <FaWhatsapp size={30} />
+          <span className="ml-2">WhatsApp In House</span>
         </div>
       </div>
       {/* <div className="p-5">

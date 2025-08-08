@@ -44,6 +44,7 @@ import AllPerformaInvoices from "./AllPerformaInvoices";
 import PDFPreviewer from "./PDFPreviewer";
 import GenerateTaxModal from "./GenerateTaxModal";
 import AllTaxInvoices from "./AllTaxInvoices";
+import LeadChats from "./LeadChats";
 
 // import Remarks from "./Remarks"; operationsTl operationsExecutive
 
@@ -361,7 +362,7 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveName);
+    formData.append("salesExecutiveName", data.salesExecutiveEmail);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -472,7 +473,7 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveName);
+    formData.append("salesExecutiveName", data.salesExecutiveEmail);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -1810,6 +1811,15 @@ const EditLead = () => {
             <AllTaxInvoices leadId={leadData?._id} />
             {/* <PDFPreviewer /> */}
           </div>
+
+          <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
+            <Heading text="Chat with Lead" className="text-white" />
+          </div>
+
+          <div className="bg-[#6b788517] p-5 rounded-lg">
+            <LeadChats />
+          </div>
+
 
           <div className="flex gap-x-3 gap-y-1 flex-wrap justify-between sticky bottom-1 p-2 main-bg shadow-lg rounded-md mt-3">
             <Button type="submit" disabled={!isEditable}>
