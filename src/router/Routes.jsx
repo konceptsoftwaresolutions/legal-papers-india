@@ -370,7 +370,7 @@ const Routes = () => {
             <ProtectedRoutes
               isAuthenticated={isAuthenticated}
               notAllowedRoles={[
-                "salesTl",
+                // "salesTl",
                 "operationsTl",
                 "operationsExecutive",
               ]}

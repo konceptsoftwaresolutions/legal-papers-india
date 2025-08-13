@@ -45,6 +45,12 @@ const CampaignTabs = ({
           }
         })
       );
+    } else if (label === "SMS Campaigns") {
+      setLogsData();
+      console.log("SMS Campaigns tab clicked");
+    } else if (label === "Whatsapp InHouse") {
+      setLogsData();
+      console.log("Whatsapp InHouse tab clicked");
     }
   };
   return (

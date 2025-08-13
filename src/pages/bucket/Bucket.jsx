@@ -57,7 +57,7 @@ const Bucket = () => {
           />
         )}
 
-        {role !== "salesTl" && (
+        {(role === "superAdmin" || role === "salesTl") && (
           <>
             <BucketCard
               icon={<TbBucketDroplet size={50} />}

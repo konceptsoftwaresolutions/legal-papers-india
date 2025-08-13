@@ -9,7 +9,7 @@ import { persistor } from "../../redux/store";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout } from "../../redux/features/auth";
 import toastify from "../../constants/toastify";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/legalpaperslogo.jpeg";
 
 const SidebarProvider = ({ collapse, onCollapse = () => {}, links = [] }) => {
   const dispatch = useDispatch();
@@ -63,19 +63,30 @@ const SidebarProvider = ({ collapse, onCollapse = () => {}, links = [] }) => {
   const MainComponent = () => (
     <>
       {/* layer1 */}
-      <section className="w-full main-black flex justify-between items-center py-4 main-text px-4">
-        <h2
-          className={`text-white transition-all ${
-            collapse ? "w-0 overflow-hidden hidden" : "w-auto"
-          }`}
-        >
-          {/* {userData?.name} */}
-          <img src={logo} className="max-w-[180px]"/>
-        </h2>
-        <TouchableOpacity onClick={handleCollapse}>
-          <RxHamburgerMenu size={22} />
-        </TouchableOpacity>
+      <section className="w-full bg-black flex items-center px-2 py-2 text-white">
+        {/* Logo */}
+        {!collapse && (
+          <div className="w-auto transition-all duration-300 ease-in-out">
+            <img
+              src={logo}
+              alt="Logo"
+              className="rounded object-fit"
+              style={{ height: 70, width: 200 }}
+            />
+          </div>
+        )}
+
+        {/* Spacer for center alignment */}
+        <div className={`flex-1 flex justify-${collapse ? "center" : "end"}`}>
+          <button
+            onClick={handleCollapse}
+            className="text-white p-2 rounded hover:bg-white/10 transition"
+          >
+            <RxHamburgerMenu size={22} />
+          </button>
+        </div>
       </section>
+
       {/* layer2 */}
       <section
         className={`flex flex-col my-3 ${

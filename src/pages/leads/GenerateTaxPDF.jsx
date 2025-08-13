@@ -182,6 +182,15 @@ const styles = StyleSheet.create({
     marginTop: 0,
     textAlign: "right",
   },
+  label: {
+    fontWeight: "bold",
+  },
+
+  detailText: {
+    fontSize: 10,
+    lineHeight: 1,
+    marginBottom: 6,
+  },
 });
 
 const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
@@ -260,9 +269,6 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           <Image src={logo} style={{ width: 140, height: "auto" }} />
 
           <View style={{ flex: 1, alignItems: "flex-end" }}>
-            <Text style={{ fontSize: 10, marginBottom: 3 }}>
-              (Original Copy)
-            </Text>
             <Text style={styles.heading}>INVOICE GST - {invoiceNo}</Text>
             <Text style={styles.topRight}>
               <Text style={styles.bold}>Date:</Text> {formatDate(date)}
@@ -557,11 +563,46 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
         {/* Bank details row with signature in right section */}
         <View style={styles.bankRow}>
           {/* Left side - Bank details */}
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bold}>Bank Details</Text>
-            <Text>Bank Name: ICICI Bank</Text>
-            <Text>Account No.: 72305000377</Text>
-            <Text>Branch & IFSC: ICIC0007235</Text>
+          <View style={{ width: "70%" }}>
+            <Text style={[styles.bold, { marginBottom: 10, marginTop: 10 , fontSize: 12 }]}>
+              Bank Details
+            </Text>
+
+            <View style={{ marginBottom: 20 }}>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>Bank Name: </Text>ICICI Bank
+              </Text>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>Account Holder: </Text>Legal Papers
+                India
+              </Text>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>Account Number: </Text>723505000377
+              </Text>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>IFSC Code: </Text>ICIC0007235
+              </Text>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>Branch: </Text>ICICI BANK LTD.,
+                BG-221, SANJAY GANDHI TRANSPORT NAGAR, DELHI - 110042
+              </Text>
+            </View>
+
+            <Text style={[styles.bold, { marginBottom: 10, fontSize: 12 }]}>UPI Payment</Text>
+
+            <View>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>Company Name: </Text>LEGAL PAPERS
+                INDIA
+              </Text>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>UPI ID: </Text>Legalpapersindia@icici
+              </Text>
+              <Text style={styles.detailText}>
+                <Text style={styles.label}>Payment Link: </Text>
+                https://legalpapersindia.com/phonepay.php
+              </Text>
+            </View>
           </View>
 
           {/* Right side - For Legal Papers + Signature */}

@@ -212,7 +212,7 @@ const RevenueTop = () => {
           /> */}
 
           <NumberCard
-            title="Total Leads (Auto + Self + NC + Lead Page to NC Bucket)"
+            title="Total Leads (Fresh & Self generated)"
             showSign={false}
             number={tilesData?.totalLeadsAll || "0"} // ✅ totalLeadsAll
           />

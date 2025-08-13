@@ -111,6 +111,9 @@ const LeadFilter = ({
       label: "fssaicertificateportal.org",
     },
     { value: "selfGeneratedLead", label: "Self Generated Lead" },
+    { value: "fssaicopywebsite", label: "FSSAI Copy Website" },
+    { value: "ieccopywebsite", label: "IEC Copy Webiste" },
+    { value: "gstcopywebsite", label: "GST Copy Website" },
   ];
 
   const onReset = () => {

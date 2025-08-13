@@ -4,6 +4,7 @@ import { IoIosCloseCircle } from "react-icons/io";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import MyButton from "../../components/buttons/MyButton";
+import LeadExcelTemplate, { headers } from "./LeadExcelTemplate";
 
 const BulkUploadModal = ({ showModal, setShowModal, onUpload }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -74,6 +75,48 @@ const BulkUploadModal = ({ showModal, setShowModal, onUpload }) => {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    // Create worksheet with headers defined explicitly
+    const worksheet = XLSX.utils.json_to_sheet(LeadExcelTemplate, {
+      header: headers,
+    });
+
+    // Add header row manually so it's recognized as row 1 (to bold it later)
+    XLSX.utils.sheet_add_aoa(worksheet, [headers], { origin: "A1" });
+
+    // Auto width
+    const columnWidths = headers.map((header) => {
+      const maxLength = Math.max(
+        header.length,
+        ...LeadExcelTemplate.map((row) =>
+          row[header] ? String(row[header]).length : 0
+        )
+      );
+      return { wch: maxLength + 2 };
+    });
+    worksheet["!cols"] = columnWidths;
+
+    // Make headers bold (row 0)
+    headers.forEach((_, colIdx) => {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: colIdx });
+      const cell = worksheet[cellAddress];
+      if (cell) {
+        cell.s = {
+          font: { bold: true },
+        };
+      }
+    });
+
+    // Create workbook and download
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Template");
+
+    XLSX.writeFile(workbook, "Lead_Upload_Template.xlsx", {
+      bookType: "xlsx",
+      cellStyles: true,
+    });
+  };
+
   return (
     <Dialog
       open={showModal}
@@ -94,7 +137,14 @@ const BulkUploadModal = ({ showModal, setShowModal, onUpload }) => {
         className="overflow-y-auto bg-transparent lg:p-5"
         style={{ maxHeight: "calc(90vh - 64px)" }}
       >
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 w-full">
+          <MyButton
+            onClick={handleDownloadTemplate}
+            className="w-fit bg-green-600 text-white"
+          >
+            Download Template
+          </MyButton>
+
           <input
             type="file"
             accept=".xlsx"

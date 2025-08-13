@@ -29,11 +29,11 @@ const MarketingAnalytics = () => {
       value: "sms",
       data: dummyData.insideSmsCampaigns,
     },
-    // {
-    //   label: "Whatsapp InHouse",
-    //   value: "whatsapp-inhouse",
-    //   data: dummyData.insideSmsCampaigns,
-    // },
+    {
+      label: "Whatsapp InHouse",
+      value: "whatsapp-inhouse",
+      data: dummyData.insideSmsCampaigns,
+    },
   ];
 
   useEffect(() => {

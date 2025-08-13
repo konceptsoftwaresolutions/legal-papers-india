@@ -375,7 +375,14 @@ const SearchModal = ({ showQuotation, setShowQuotation }) => {
               )}
               data={masterSearchLeads || []} // Defaults to an empty array if no data
               noDataComponent="No data to be displayed..."
-              customStyles={tableCustomStyles}
+              customStyles={{
+                ...tableCustomStyles,
+                rows: {
+                  style: {
+                    cursor: "default", // 👈 disable pointer for whole row
+                  },
+                },
+              }}
               selectableRows
               pagination
               // onRowClicked={handleRowClick}
