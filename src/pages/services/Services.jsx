@@ -1,20 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
-import {
-  deleteService,
-  getAllServices,
-  setServices,
-} from "../../redux/features/services";
+import { deleteService, getAllServices } from "../../redux/features/services";
 import { useNavigate } from "react-router-dom";
 import MyButton from "../../components/buttons/MyButton";
 import Heading from "../../common/Heading";
 import { LuListFilter, LuPlus } from "react-icons/lu";
 import FilterServices from "./FilterServices";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
+import { FiTrash2 } from "react-icons/fi";
+import { Spinner } from "@material-tailwind/react";
 
 const Services = () => {
-  const { items, currentPage, perPage } = useSelector((s) => s.services);
+  const { services, loading } = useSelector((s) => s.services);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -27,7 +25,7 @@ const Services = () => {
   }, [dispatch]);
 
   const filterServices = (criteria) => {
-    const filtered = items.filter((item) =>
+    const filtered = services.filter((item) =>
       Object.entries(criteria).every(([key, value]) =>
         String(item[key] || "")
           .toLowerCase()
@@ -59,24 +57,23 @@ const Services = () => {
     {
       name: "Action",
       cell: (row) => (
-        <div className="flex gap-3">
-          <button
-            onClick={() => handleEdit(row._id)}
-            className="text-blue-600 hover:underline"
-          >
-            Edit
-          </button>
+        <div className="flex gap-4">
           <button
             onClick={() => handleDelete(row._id)}
-            className="text-red-600 hover:underline"
+            className="text-red-600 hover:text-red-800 transition-colors"
+            title="Delete"
           >
-            Delete
+            <FiTrash2 size={18} />
           </button>
         </div>
       ),
+      ignoreRowClick: true, // prevents icon clicks from triggering row click
+      allowOverflow: true,
+      button: true,
     },
   ];
-  const displayData = isFilterActive ? filteredServices : items || [];
+
+  const displayData = isFilterActive ? filteredServices : services || [];
 
   return (
     <div className="p-4 w-full">
@@ -98,24 +95,35 @@ const Services = () => {
         </MyButton>
       </div>
 
-      {isFilterActive && (
-        <p className="text-sm text-center text-green-600 mb-2">
-          Filtered data showing
-        </p>
-      )}
+      {/* ✅ Spinner show while loading */}
+      {loading ? (
+        <div className="h-[90vh] w-full flex justify-center items-center gap-2">
+          <p className="md:text-lg flex gap-2">
+            <Spinner /> Loading ...
+          </p>
+        </div>
+      ) : (
+        <>
+          {isFilterActive && (
+            <p className="text-sm text-center text-green-600 mb-2">
+              You are viewing the filtered data...
+            </p>
+          )}
 
-      <DataTable
-        data={[...displayData].reverse()}
-        columns={cols}
-        customStyles={tableCustomStyles}
-        pagination
-        paginationPerPage={perPage}
-        paginationTotalRows={displayData.length}
-        paginationDefaultPage={currentPage || 1}
-        onChangePage={(page) => dispatch(setServices(page))}
-        onRowClicked={(row) => handleEdit(row.id)}
-        noDataComponent="No services found"
-      />
+          <DataTable
+            data={[...displayData].reverse()}
+            columns={cols}
+            customStyles={tableCustomStyles}
+            pagination
+            paginationPerPage={10}
+            paginationTotalRows={displayData.length}
+            paginationDefaultPage={1}
+            onRowClicked={(row) => handleEdit(row._id)}
+            noDataComponent="No services found"
+            selectableRows
+          />
+        </>
+      )}
 
       <FilterServices
         isOpen={filterOpen}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,7 @@ import MyButton from "../../components/buttons/MyButton";
 import Heading from "../../common/Heading";
 import { createService } from "../../redux/features/services";
 import "react-quill/dist/quill.snow.css";
+import { Spinner } from "@material-tailwind/react";
 
 // Quill config
 const quillModules = {
@@ -32,6 +33,7 @@ const quillFormats = [
 const AddService = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     control,
@@ -47,9 +49,23 @@ const AddService = () => {
   });
 
   const onSubmit = (data) => {
-    dispatch(createService(data));
-    toast.success("Service added successfully!");
-    navigate("/superAdmin/services");
+    setIsSubmitting(true);
+
+    const payload = {
+      name: data.name,
+      hsnCode: data.hsnCode,
+      price: data.price,
+      termsAndConditions: data.terms,
+    };
+
+    dispatch(
+      createService(payload, (success) => {
+        setIsSubmitting(false);
+        if (success) {
+          navigate("/superAdmin/services");
+        }
+      })
+    );
   };
 
   return (
@@ -107,8 +123,18 @@ const AddService = () => {
       </div>
 
       <div className="mt-6">
-        <MyButton className="main-bg px-4 py-2" type="submit">
-          Submit
+        <MyButton
+          className="main-bg px-4 py-2 flex items-center justify-center"
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <div className="w-full h-5 flex items-center gap-2 text-white text-sm">
+              <Spinner className="w-full h-full" /> Submitting...
+            </div>
+          ) : (
+            "Submit"
+          )}
         </MyButton>
       </div>
     </form>

@@ -31,8 +31,8 @@ export const createService = (payload, callback = () => { }) => {
     return async (dispatch) => {
         try {
             dispatch(setServices({ loading: true }));
-            const res = await axiosInstance.post("/api/services/create", payload);
-            if (res.status === 201) {
+            const res = await axiosInstance.post("/serviceRoutes/services", payload); // ✅ corrected
+            if (res.status === 201 || res.status === 200) {
                 toast.success("Service created successfully");
                 callback(true, res.data);
                 dispatch(getAllServices()); // Refresh list
@@ -47,29 +47,32 @@ export const createService = (payload, callback = () => { }) => {
 };
 
 // ✅ Get All Services
-export const getAllServices = (callback = () => { }) => {
-    return async (dispatch) => {
-        try {
-            dispatch(setServices({ loading: true }));
-            const res = await axiosInstance.get("/api/services");
-            if (res.status === 200) {
-                dispatch(setServices({ services: res.data, loading: false }));
-                callback(true, res.data);
-            }
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to fetch services");
-            dispatch(setServices({ loading: false }));
-            callback(false);
-        }
-    };
+export const getAllServices = (callback = () => {}) => {
+  return async (dispatch) => {
+    try {
+      dispatch(setServices({ loading: true }));
+      const res = await axiosInstance.get("/serviceRoutes/services");
+
+      if (res.status === 200) {
+        const serviceList = res.data?.data || []; // ✅ extract array only
+        dispatch(setServices({ services: serviceList, loading: false }));
+        callback(true, serviceList);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to fetch services");
+      dispatch(setServices({ loading: false }));
+      callback(false);
+    }
+  };
 };
+
 
 // ✅ Update Service
 export const updateService = (id, payload, callback = () => { }) => {
     return async (dispatch) => {
         try {
             dispatch(setServices({ loading: true }));
-            const res = await axiosInstance.put(`/api/services/${id}`, payload);
+            const res = await axiosInstance.post("/serviceRoutes/services/update", { id, ...payload }); // ✅ corrected
             if (res.status === 200) {
                 toast.success("Service updated successfully");
                 callback(true, res.data);
@@ -89,7 +92,7 @@ export const deleteService = (id, callback = () => { }) => {
     return async (dispatch) => {
         try {
             dispatch(setServices({ loading: true }));
-            const res = await axiosInstance.delete(`/api/services/${id}`);
+            const res = await axiosInstance.post("/serviceRoutes/services/delete", { id }); // ✅ corrected
             if (res.status === 200) {
                 toast.success("Service deleted successfully");
                 callback(true);

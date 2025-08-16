@@ -1,53 +1,48 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "react-data-table-component";
 import { useSelector, useDispatch } from "react-redux";
-import { getAllPerformaInvoices } from "../../redux/features/performa";
+import {
+  getAllPerformaInvoices,
+  downloadPerformaInvoicePDF,
+} from "../../redux/features/performa";
 import { MdDownload } from "react-icons/md";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
-import GeneratePerformaPDF from "./GeneratePerformaPDF";
 
-const AllPerformaInvoices = ({ leadId }) => {
+const AllPerformaInvoices = () => {
   const dispatch = useDispatch();
-  const { allPerformaInvoices } = useSelector((state) => state.performa || {});
+  const allPerformaInvoices = useSelector(
+    (state) => state.performaDetails?.allPerformaInvoices || []
+  );
   const [filteredData, setFilteredData] = useState([]);
 
-  // Fetch performa invoices
+  // Fetch all performa invoices
   useEffect(() => {
-    if (leadId) dispatch(getAllPerformaInvoices(leadId));
-  }, [dispatch, leadId]);
+    dispatch(getAllPerformaInvoices());
+  }, [dispatch]);
 
-  // Filter invoices by leadId
+  // Keep all invoices in local state
   useEffect(() => {
-    if (allPerformaInvoices && leadId) {
-      const filtered = allPerformaInvoices.filter(
-        (invoice) => invoice.leadId === leadId
-      );
-      setFilteredData(filtered);
-    }
-  }, [allPerformaInvoices, leadId]);
+    setFilteredData(allPerformaInvoices);
+  }, [allPerformaInvoices]);
 
-  // Handle PDF Download
+  // Handle PDF download from API
   const handleDownload = async (row) => {
     try {
-      const blob = await pdf(
-        <GeneratePerformaPDF formData={row} invoiceNo={row.invoiceNo} />
-      ).toBlob();
-
-      const blobUrl = URL.createObjectURL(blob);
+      const blob = await dispatch(downloadPerformaInvoicePDF(row._id));
+      const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = `${row.invoiceNo || "invoice"}.pdf`;
+      link.download = row.pdfFilename || `${row.invoiceNo || "invoice"}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(blobUrl);
+      window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
-      console.error("PDF generation failed", err);
+      console.error("PDF download failed", err);
       alert("Failed to download PDF.");
     }
   };
 
-  // Columns for DataTable
   const columns = [
     {
       name: "Invoice No",
@@ -55,27 +50,14 @@ const AllPerformaInvoices = ({ leadId }) => {
       sortable: true,
       wrap: true,
     },
-    {
-      name: "Name",
-      selector: (row) => row.name,
-      sortable: true,
-    },
-    {
-      name: "Mobile",
-      selector: (row) => row.mobileNumber || "-",
-    },
+    { name: "Name", selector: (row) => row.name, sortable: true },
+    { name: "Mobile", selector: (row) => row.mobileNumber || "-" },
     {
       name: "Date",
       selector: (row) => new Date(row.date).toLocaleDateString("en-GB"),
     },
-    {
-      name: "Tax Type",
-      selector: (row) => row.taxType || "-",
-    },
-    {
-      name: "GST No",
-      selector: (row) => row.gstNo || "-",
-    },
+    { name: "Tax Type", selector: (row) => row.taxType || "-" },
+    { name: "GST No", selector: (row) => row.gstNo || "-" },
     {
       name: "Download",
       cell: (row) => (

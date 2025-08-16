@@ -202,9 +202,119 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
     date,
     validUntil,
     taxType,
-    selectedServiceData = [],
+    services = [],
     paidAmount = 2000,
+    termsAndConditions,
   } = formData;
+
+  const renderFormattedDescription = (html) => {
+    if (!html) return null;
+
+    const output = [];
+    let index = 0;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const walk = (node, parentStyle = {}) => {
+      const elements = [];
+
+      if (node.nodeType === 3) {
+        const text = node.nodeValue;
+        if (text.trim()) {
+          elements.push(
+            <Text key={`text-${index++}`} style={parentStyle}>
+              {decodeEntities(text)}
+            </Text>
+          );
+        }
+      } else if (node.nodeType === 1) {
+        const tag = node.nodeName.toLowerCase();
+        let style = { ...parentStyle };
+
+        // Basic tag styles
+        if (tag === "strong" || tag === "b") style.fontWeight = "bold";
+        if (tag === "em" || tag === "i") style.fontStyle = "italic";
+        if (tag === "u") style.textDecoration = "underline";
+
+        if (tag === "br") {
+          elements.push(<Text key={`br-${index++}`}>{"\n"}</Text>);
+          return elements;
+        }
+
+        if (tag === "p" || tag === "div") {
+          const children = [];
+          node.childNodes.forEach((child) => {
+            children.push(...walk(child, style));
+          });
+          elements.push(
+            <Text key={`p-${index++}`} style={{ marginBottom: 4, ...style }}>
+              {children}
+            </Text>
+          );
+          return elements;
+        }
+
+        if (tag === "ul" || tag === "ol") {
+          const isOrdered = tag === "ol";
+          let counter = 1;
+
+          Array.from(node.children).forEach((li) => {
+            if (li.nodeName.toLowerCase() === "li") {
+              const liChildren = walk(li, style);
+              const prefix = isOrdered ? `${counter++}. ` : "• ";
+              elements.push(
+                <Text
+                  key={`li-${index++}`}
+                  style={{ marginLeft: 10, ...style }}
+                >
+                  {prefix}
+                  {liChildren}
+                </Text>
+              );
+            }
+          });
+          return elements;
+        }
+
+        if (tag === "li") {
+          const children = [];
+          node.childNodes.forEach((child) => {
+            children.push(...walk(child, style));
+          });
+          elements.push(
+            <Text key={`li-${index++}`} style={{ marginLeft: 10, ...style }}>
+              {children}
+            </Text>
+          );
+          return elements;
+        }
+
+        // Any other nested tags
+        node.childNodes.forEach((child) => {
+          elements.push(...walk(child, style));
+        });
+      }
+
+      return elements;
+    };
+
+    doc.body.childNodes.forEach((node) => {
+      output.push(...walk(node));
+    });
+
+    return output;
+  };
+
+  const decodeEntities = (html) => {
+    return html
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+  };
 
   let cgst = 0,
     sgst = 0,
@@ -213,9 +323,9 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
   const hsnWiseSummary = {};
   let totalQty = 0;
 
-  selectedServiceData.forEach((item) => {
+  services.forEach((item) => {
     const amount = item.price * item.quantity;
-    const gstPercent = Number(item.taxPercent || 0);
+    const gstPercent = Number(item.taxPercent || 18);
     const hsn = item.hsnCode || "N/A";
     totalQty += Number(item.quantity || 0);
     subTotal += amount;
@@ -310,11 +420,12 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
             <Text style={styles.blueLabel}>Bill To:</Text>
             <View style={styles.box}>
               <Text style={[styles.bold, { lineHeight: 1 }]}>{name}</Text>
-              <Text style={{ lineHeight: 1 }}>{address}</Text>
+              {/* <Text style={{ lineHeight: 1 }}>{address}</Text> */}
+              {renderFormattedDescription(address)}
               <Text style={{ lineHeight: 1 }}>
                 Contact: {mobileNumber || "-"}
               </Text>
-              <Text style={{ lineHeight: 1 }}>PoS: 33-Tamil Nadu</Text>
+              {/* <Text style={{ lineHeight: 1 }}>PoS: 33-Tamil Nadu</Text> */}
               <Text style={{ lineHeight: 1 }}>GSTIN: {gstNo || "-"}</Text>
             </View>
           </View>
@@ -332,9 +443,11 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
         </View>
 
         {/* Table Rows */}
-        {selectedServiceData.map((item, i) => {
-          const amount = item.price * item.quantity;
-          const gstPercent = Number(item.taxPercent || 0);
+        {services.map((item, i) => {
+          const price = Number(item.price) || 0; // Ensure number
+          const quantity = Number(item.quantity) || 1; // Ensure number
+          const amount = price * quantity;
+          const gstPercent = Number(item.taxPercent || 18);
           const gstRate = taxType === "intra" ? gstPercent / 2 : gstPercent;
 
           // Alternate row color
@@ -346,16 +459,16 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               style={[styles.tableRow, { backgroundColor: rowBackground }]}
             >
               <Text style={[styles.cell, { flex: 0.5 }]}>{i + 1}</Text>
-              <Text style={[styles.cell, styles.textAlign]}>{item.name}</Text>
               <Text style={[styles.cell, styles.textAlign]}>
-                {item.hsnCode}
+                {item.name || "-"}
               </Text>
               <Text style={[styles.cell, styles.textAlign]}>
-                {item.quantity}
+                {item.hsnCode || "-"}
               </Text>
+              <Text style={[styles.cell, styles.textAlign]}>{quantity}</Text>
               <Text style={[styles.cell, styles.textAlign]}>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-                {item.price.toFixed(2)}
+                {price.toFixed(2)}
               </Text>
               <Text style={[styles.cell, styles.textAlign]}>
                 {gstRate.toFixed(0)}%
@@ -521,10 +634,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
             <Text style={[styles.bold, { marginBottom: 4 }]}>
               Terms / Declaration
             </Text>
-            <Text style={styles.footerText}>
-              This is a system-generated proforma invoice{`\n`}
-              and does not require signature or seal.
-            </Text>
+            <View>{renderFormattedDescription(termsAndConditions)}</View>
           </View>
 
           {/* Right: Amount Summary */}
@@ -564,7 +674,12 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
         <View style={styles.bankRow}>
           {/* Left side - Bank details */}
           <View style={{ width: "70%" }}>
-            <Text style={[styles.bold, { marginBottom: 10, marginTop: 10 , fontSize: 12 }]}>
+            <Text
+              style={[
+                styles.bold,
+                { marginBottom: 10, marginTop: 10, fontSize: 12 },
+              ]}
+            >
               Bank Details
             </Text>
 
@@ -588,7 +703,9 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               </Text>
             </View>
 
-            <Text style={[styles.bold, { marginBottom: 10, fontSize: 12 }]}>UPI Payment</Text>
+            <Text style={[styles.bold, { marginBottom: 10, fontSize: 12 }]}>
+              UPI Payment
+            </Text>
 
             <View>
               <Text style={styles.detailText}>

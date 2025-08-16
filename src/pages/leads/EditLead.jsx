@@ -362,7 +362,7 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveEmail);
+    formData.append("salesExecutiveName", data.salesExecutiveName);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -1796,12 +1796,12 @@ const EditLead = () => {
             </div>
           </FieldsCont>
 
-          <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
+          {/* <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
             <Heading text="All Performa Invoices" className="text-white" />
           </div>
           <div className="bg-[#6b788517] p-5 rounded-lg">
             <AllPerformaInvoices leadId={leadData?._id} />
-            {/* <PDFPreviewer /> */}
+            <PDFPreviewer />
           </div>
 
           <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
@@ -1809,8 +1809,8 @@ const EditLead = () => {
           </div>
           <div className="bg-[#6b788517] p-5 rounded-lg">
             <AllTaxInvoices leadId={leadData?._id} />
-            {/* <PDFPreviewer /> */}
-          </div>
+            <PDFPreviewer />
+          </div> */}
 
           <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
             <Heading text="Chat with Lead" className="text-white" />

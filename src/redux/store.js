@@ -16,6 +16,7 @@ import bucketReducer from "./features/bucket";
 import marketingReducer from './features/marketing'
 import clientFilesReducer from './features/clientFiles/clientFilesSlice'
 import serviceReducer from './features/services'
+import performaDetails from './features/performa'
 import taxReducer from './features/tax'
 import { thunk } from "redux-thunk";
 
@@ -35,6 +36,7 @@ const rootReducer = combineReducers({
   clientFiles: clientFilesReducer,
   services: serviceReducer,
   tax: taxReducer,
+  performaDetails: performaDetails,
 });
 
 const persistConfig = {

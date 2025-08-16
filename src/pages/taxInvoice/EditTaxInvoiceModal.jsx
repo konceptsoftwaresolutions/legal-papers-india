@@ -8,45 +8,21 @@ import {
 } from "@material-tailwind/react";
 import { IoIosCloseCircle } from "react-icons/io";
 import toast from "react-hot-toast";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import InputField from "../../components/fields/InputField";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  createPerformaInvoice,
-  incrementInvoice,
-} from "../../redux/features/performa";
-import GeneratePerformaPDF from "./GeneratePerformaPDF";
+  updateTaxInvoice,
+  getOneTaxInvoice,
+  getAllTaxInvoices,
+} from "../../redux/features/tax";
 import { pdf } from "@react-pdf/renderer";
+import GenerateTaxPDF from "../leads/GenerateTaxPDF";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { quillModules, quillFormats } from "../leads/GenerateTaxModal";
 
-export const quillModules = {
-  toolbar: [
-    [{ header: [1, 2, 3, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ color: [] }, { background: [] }],
-    ["link", "image", "code-block"],
-    ["clean"],
-  ],
-};
-
-export const quillFormats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "list",
-  "bullet",
-  "color",
-  "background",
-  "link",
-  "image",
-  "code-block",
-];
-
-const GeneratePerformaModal = ({ open, onClose, leadData }) => {
+const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
   const dispatch = useDispatch();
   const services = useSelector((state) => state.services?.services || []);
 
@@ -58,48 +34,63 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
     watch,
     formState: { errors },
   } = useForm();
+
   const selectedServiceIds = watch("selectedServices") || [];
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [termsQuill, setTermsQuill] = useState("");
+  const [existingInvoice, setExistingInvoice] = useState(null);
+
   const getCurrentDate = () => new Date().toISOString().split("T")[0];
 
-  const [termsQuill, setTermsQuill] = useState("");
   useEffect(() => {
-    // Update termsQuill whenever selected services change
+    console.log("📌 useEffect triggered", { open, taxInvoiceId });
+
+    if (open && taxInvoiceId) {
+      console.log("🚀 Fetching invoice for ID:", taxInvoiceId);
+      dispatch(
+        getOneTaxInvoice(taxInvoiceId, (success, data) => {
+          console.log("✅ getOneTaxInvoice callback:", { success, data });
+
+          if (success && data?.data) {
+            const invoice = data.data; // ✅ actual invoice object
+            setExistingInvoice(invoice);
+            reset({
+              name: invoice.name || "_",
+              mobileNumber: invoice.mobileNumber || "_",
+              address: invoice.address || "",
+              gstNo: invoice.gstNo || "",
+              selectedServices: invoice.services?.map((s) => s.serviceId) || [],
+              taxType: invoice.taxType || "",
+              date: invoice.date?.split("T")[0] || getCurrentDate(),
+              validUntil: invoice.validUntil?.split("T")[0] || "",
+              invoiceNo: invoice.invoiceNo || "",
+              quantities: (invoice.services || []).reduce(
+                (acc, s) => ({ ...acc, [s.serviceId]: s.quantity || 1 }),
+                {}
+              ),
+            });
+            setTermsQuill(invoice.termsAndConditions || "");
+            setValue("termsAndConditions", invoice.termsAndConditions || "");
+          }
+        })
+      );
+    }
+  }, [open, taxInvoiceId, dispatch, reset, setValue]);
+
+  // Auto-update terms from services
+  useEffect(() => {
     const terms = selectedServiceIds
       .map((id) => services.find((s) => s._id === id)?.termsAndConditions || "")
       .filter(Boolean)
-      .join("\n\n"); // ya <br> agar HTML formatting chahiye
+      .join("\n\n");
     setTermsQuill(terms);
   }, [selectedServiceIds, services]);
 
-  useEffect(() => {
-    if (leadData) {
-      reset({
-        name: leadData?.formData?.nameOfBusinessEntity || "_",
-        mobileNumber: leadData?.formData?.mobileNumber || "_",
-        address: leadData?.formData?.principalPlaceOfBusinessEntity || "",
-        gstNo: "",
-        selectedServices: [],
-        taxType: "",
-        date: getCurrentDate(),
-        validUntil: "",
-        quantities: services.reduce((acc, s) => ({ ...acc, [s._id]: 1 }), {}),
-        prices: services.reduce(
-          (acc, s) => ({ ...acc, [s._id]: s.price || 0 }),
-          {}
-        ),
-      });
-    }
-  }, [leadData, open, reset, services]);
-
+  // Ensure default quantity
   useEffect(() => {
     selectedServiceIds.forEach((id) => {
       if (watch(`quantities.${id}`) === undefined) {
         setValue(`quantities.${id}`, 1);
-      }
-      if (watch(`prices.${id}`) === undefined) {
-        const service = services.find((s) => s._id === id);
-        setValue(`prices.${id}`, service?.price || 0);
       }
     });
   }, [selectedServiceIds, setValue, watch]);
@@ -117,29 +108,15 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
     try {
       setIsSubmitting(true);
 
-      // Step 1: Get invoice number
-      const invoiceResponse = await dispatch(incrementInvoice("Proforma"));
-      console.log("🔢 Invoice Response:", invoiceResponse);
-      const currentData = invoiceResponse?.data;
-
-      const invoiceNo = currentData
-        ? `${currentData.prefix}-${currentData.currentNumber}`
-        : "INV-ERROR";
-      console.log("✅ Formatted Invoice No:", invoiceNo);
-
-      // Prepare service details
       const selectedServiceDetails = data.selectedServices.map((id) => {
         const service = services.find((s) => s._id === id);
-        return {
-          ...service,
-          quantity: data.quantities?.[id] || 1,
-          price: data.prices?.[id] || service.price || 0, // <-- updated price
-        };
+        return { ...service, quantity: data.quantities?.[id] || 1 };
       });
 
-      // Step 2: Prepare PI payload
-      const pi = {
-        leadId: leadData?._id,
+      const invoiceNo = data.invoiceNo || existingInvoice?.invoiceNo || "";
+
+      const taxData = {
+        leadId: existingInvoice?.leadId,
         name: data.name,
         mobileNumber: data.mobileNumber,
         address: data.address,
@@ -149,44 +126,41 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
         validUntil: data.validUntil,
         services: selectedServiceDetails,
         termsAndConditions: termsQuill,
-        invoiceNo, // <-- include invoice number
+        invoiceNo,
       };
 
-      console.log("📝 PI Payload:", pi);
-
-      // Step 3: Generate PDF
+      // Generate PDF
       const blob = await pdf(
-        <GeneratePerformaPDF formData={pi} invoiceNo={invoiceNo} />
+        <GenerateTaxPDF formData={taxData} invoiceNo={invoiceNo} />
       ).toBlob();
-      const pdfFileName = `PerformaInvoice-${
-        pi.name || "Unknown"
-      }-${invoiceNo}.pdf`;
-
+      const pdfFileName = `TaxInvoice-${taxData.name}-${invoiceNo}.pdf`;
       const pdfFile = new File([blob], pdfFileName, {
         type: "application/pdf",
       });
 
-      // Step 4: Prepare FormData
+      // FormData
       const formData = new FormData();
-      formData.append("leadId", pi.leadId);
-      formData.append("name", pi.name);
-      formData.append("mobileNumber", pi.mobileNumber);
-      formData.append("address", pi.address);
-      formData.append("gstNo", pi.gstNo || "");
-      formData.append("taxType", pi.taxType);
-      formData.append("date", pi.date);
-      formData.append("validUntil", pi.validUntil || "");
+      formData.append("id", taxInvoiceId);
+      formData.append("leadId", taxData.leadId);
+      formData.append("name", taxData.name);
+      formData.append("mobileNumber", taxData.mobileNumber);
+      formData.append("address", taxData.address);
+      formData.append("gstNo", taxData.gstNo || "");
+      formData.append("taxType", taxData.taxType);
+      formData.append("date", taxData.date);
+      formData.append("validUntil", taxData.validUntil || "");
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
-      formData.append("termsAndConditions", pi.termsAndConditions || "");
+      formData.append("termsAndConditions", termsQuill);
       formData.append("pdfFile", pdfFile);
 
-      // Step 5: Dispatch create invoice
-      await dispatch(createPerformaInvoice(formData));
+      await dispatch(updateTaxInvoice(taxInvoiceId, formData));
+      dispatch(getAllTaxInvoices(existingInvoice?.leadId));
+      toast.success("Tax Invoice Updated Successfully");
       onClose();
     } catch (error) {
-      console.error("Performa invoice error:", error);
-      toast.error(error.message || "Failed to create Performa Invoice");
+      console.error("Update Tax Invoice Error:", error);
+      toast.error(error.message || "Failed to update Tax Invoice");
     } finally {
       setIsSubmitting(false);
     }
@@ -195,7 +169,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
   return (
     <Dialog open={open} handler={onClose} size="lg">
       <DialogHeader className="main-bg text-white flex justify-between items-center">
-        Generate Performa Invoice
+        Edit Tax Invoice
         <button onClick={onClose}>
           <IoIosCloseCircle className="text-2xl" />
         </button>
@@ -203,7 +177,15 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
 
       <DialogBody className="max-h-[70vh] overflow-y-auto">
         <div className="grid grid-cols-3 gap-4">
-          {/* Name, Mobile, GST */}
+          <InputField
+            name="invoiceNo"
+            label="Invoice No"
+            control={control}
+            errors={errors}
+            defaultValue={existingInvoice?.invoiceNo || ""}
+            rules={{ required: "Invoice number is required" }}
+          />
+
           <InputField
             name="name"
             label="Name"
@@ -223,7 +205,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
             errors={errors}
           />
 
-          {/* Address - full width */}
+          {/* Address */}
           <div className="col-span-3">
             <label className="block font-semibold mb-2">Address</label>
             <Controller
@@ -233,7 +215,8 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
               render={({ field }) => (
                 <ReactQuill
                   {...field}
-                  onChange={field.onChange}
+                  value={field.value || ""}
+                  onChange={(val) => field.onChange(val)}
                   theme="snow"
                   modules={quillModules}
                   formats={quillFormats}
@@ -253,7 +236,6 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
             )}
           </div>
 
-          {/* Services multi-select */}
           <div className="col-span-3">
             <InputField
               name="selectedServices"
@@ -262,14 +244,10 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
               isMulti
               control={control}
               errors={errors}
-              options={services.map((service) => ({
-                value: service._id,
-                label: service.name,
-              }))}
+              options={services.map((s) => ({ value: s._id, label: s.name }))}
             />
           </div>
 
-          {/* Quantity fields for selected services */}
           {selectedServiceIds?.length > 0 && (
             <div className="col-span-3 space-y-4">
               {selectedServiceIds.map((id) => {
@@ -279,9 +257,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
                     <span className="flex-1 font-medium">
                       {service?.name || "Service"}
                     </span>
-
-                    {/* Qty Input */}
-                    <div className="w-20">
+                    <div className="w-24">
                       <InputField
                         name={`quantities.${id}`}
                         label="Qty"
@@ -292,28 +268,12 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
                         rules={{ required: "Required" }}
                       />
                     </div>
-
-                    {/* Price Input */}
-                    <div className="w-28">
-                      <InputField
-                        name={`prices.${id}`}
-                        label="Price"
-                        type="number"
-                        control={control}
-                        errors={errors}
-                        defaultValue={
-                          watch(`prices.${String(id)}`) ?? service?.price ?? 0
-                        }
-                        rules={{ required: "Required" }}
-                      />
-                    </div>
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* Tax Type, Date, Valid Until */}
           <InputField
             name="taxType"
             label="Tax Type"
@@ -340,6 +300,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
             control={control}
             errors={errors}
           />
+
           <div className="col-span-3 mt-4">
             <label className="block font-semibold mb-2">
               Terms & Conditions
@@ -351,10 +312,10 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
               render={({ field }) => (
                 <ReactQuill
                   {...field}
-                  value={field.value || termsQuill} // field.value se form state manage
-                  onChange={(value) => {
-                    field.onChange(value); // RHF ke liye update
-                    setTermsQuill(value); // local state bhi update
+                  value={field.value || termsQuill}
+                  onChange={(val) => {
+                    field.onChange(val);
+                    setTermsQuill(val);
                   }}
                   theme="snow"
                   modules={quillModules}
@@ -378,7 +339,12 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
       </DialogBody>
 
       <DialogFooter className="gap-2">
-        <Button variant="text" color="gray" onClick={onClose}>
+        <Button
+          variant="text"
+          color="gray"
+          onClick={onClose}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
         <Button
@@ -386,11 +352,11 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
           onClick={handleSubmit(onSubmitForm)}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Generating..." : "Generate"}
+          {isSubmitting ? "Updating..." : "Update Invoice"}
         </Button>
       </DialogFooter>
     </Dialog>
   );
 };
 
-export default GeneratePerformaModal;
+export default EditTaxInvoiceModal;

@@ -112,7 +112,7 @@ const LeadFilter = ({
     },
     { value: "selfGeneratedLead", label: "Self Generated Lead" },
     { value: "fssaicopywebsite", label: "FSSAI Copy Website" },
-    { value: "ieccopywebsite", label: "IEC Copy Webiste" },
+    { value: "ieccopywebsite", label: "IEC Copy Website" },
     { value: "gstcopywebsite", label: "GST Copy Website" },
   ];
 

@@ -3,32 +3,39 @@ import DataTable from "react-data-table-component";
 import { useSelector, useDispatch } from "react-redux";
 import { MdDownload } from "react-icons/md";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
-import { getAllTaxEntries } from "../../redux/features/tax"; // Replace path if needed
-import GenerateTaxPDF from "./GenerateTaxPDF";
-import { pdf } from "@react-pdf/renderer";
+import {
+  getAllTaxInvoices,
+  downloadTaxInvoicePDF,
+} from "../../redux/features/tax";
+import toast from "react-hot-toast";
 
-const AllTaxInvoices = ({ leadId }) => {
+const AllTaxInvoices = () => {
   const dispatch = useDispatch();
-  const { allTaxEntries } = useSelector((state) => state.tax || {});
-  const [filteredData, setFilteredData] = useState([]);
+  const { allTaxInvoices, loading } = useSelector((state) => state.tax || {});
+  const [tableData, setTableData] = useState([]);
 
+  // Fetch all invoices on mount
   useEffect(() => {
-    if (leadId) dispatch(getAllTaxEntries(leadId));
-  }, [dispatch, leadId]);
+    dispatch(getAllTaxInvoices());
+  }, [dispatch]);
 
+  // Update table data when Redux changes
   useEffect(() => {
-    if (allTaxEntries && leadId) {
-      const filtered = allTaxEntries.filter((entry) => entry.leadId === leadId);
-      setFilteredData(filtered);
+    if (allTaxInvoices) {
+      setTableData(allTaxInvoices);
     }
-  }, [allTaxEntries, leadId]);
+  }, [allTaxInvoices]);
 
   const handleDownload = async (row) => {
     try {
-      const blob = await pdf(
-        <GenerateTaxPDF formData={row} invoiceNo={row.invoiceNo} />
-      ).toBlob();
+      const blob = await dispatch(downloadTaxInvoicePDF(row._id)).unwrap();
 
+      if (!blob) {
+        toast.error("No PDF data received");
+        return;
+      }
+
+      // Create blob URL & trigger download
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
@@ -38,8 +45,8 @@ const AllTaxInvoices = ({ leadId }) => {
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
-      console.error("PDF generation failed", err);
-      alert("Failed to download PDF.");
+      console.error("PDF download failed", err);
+      toast.error("Failed to download PDF");
     }
   };
 
@@ -88,12 +95,13 @@ const AllTaxInvoices = ({ leadId }) => {
     <div className="py-4">
       <DataTable
         columns={columns}
-        data={filteredData}
+        data={tableData}
         customStyles={tableCustomStyles}
         pagination
         highlightOnHover
         responsive
         persistTableHead
+        progressPending={loading}
       />
     </div>
   );

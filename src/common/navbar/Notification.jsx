@@ -67,7 +67,9 @@ const Notification = ({
     return (
       <>
         <div className="test">
-          {notificationData?.superAdminNotification && role === "superAdmin" ? (
+          {/* {notificationData?.superAdminNotification && role === "superAdmin" ? ( */}
+          {notificationData?.superAdminNotification &&
+          (role === "superAdmin" || role === "salesTl") ? (
             <>
               {notificationData?.superAdminNotification?.map(
                 (notification, index) => {
@@ -179,8 +181,10 @@ const Notification = ({
             </div>
           )}
 
+          {/* {(notificationData?.superAdminNotification).length === 0 &&
+          role === "superAdmin" ? ( */}
           {(notificationData?.superAdminNotification).length === 0 &&
-          role === "superAdmin" ? (
+          (role === "superAdmin" || role === "salesTl") ? (
             <>
               <div className="flex justify-center items-center gap-2 pb-3">
                 <IoNotificationsOffCircle size={30} />

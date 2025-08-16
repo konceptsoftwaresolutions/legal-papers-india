@@ -1,4 +1,5 @@
-import React from "react";
+// EditService.jsx
+import React, { useState, useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { updateService } from "../../redux/features/services";
@@ -8,9 +9,9 @@ import MyButton from "../../components/buttons/MyButton";
 import Heading from "../../common/Heading";
 import toast from "react-hot-toast";
 import ReactQuill from "react-quill";
+import { Spinner } from "@material-tailwind/react";
 import "react-quill/dist/quill.snow.css";
 
-// Quill config
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, false] }],
@@ -33,33 +34,55 @@ const EditService = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { items } = useSelector((s) => s.services);
-  const service = items.find((s) => s.id === id || s._id === id);
+  const { services = [] } = useSelector((s) => s.services || { services: [] });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const service = services.find((srv) => srv._id === id || srv.id === id);
 
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     defaultValues: {
-      name: service?.name || "",
-      hsnCode: service?.hsnCode || "",
-      price: service?.price || "",
-      terms: service?.terms || "",
+      name: "",
+      hsnCode: "",
+      price: "",
+      termsAndConditions: "",
     },
   });
 
-  const onSubmit = (data) => {
-    dispatch(updateService({ ...data, id }));
-    toast.success("Service updated successfully!");
-    navigate("/superAdmin/services");
-  };
+  useEffect(() => {
+    if (service) {
+      reset({
+        name: service.name || "",
+        hsnCode: service.hsnCode || "",
+        price: service.price || "",
+        termsAndConditions: service.termsAndConditions || "",
+      });
+    }
+  }, [service, reset]);
 
-  if (!service) return <p>Service not found</p>;
+  if (!service) return <p className="text-center mt-10">Service not found</p>;
+
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    try {
+      await dispatch(updateService({ id, data }));
+      navigate("/superAdmin/services");
+    } catch (error) {
+      toast.error(error?.message || "Failed to update service");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="p-6">
       <Heading text="Edit Service" showHeading />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <InputField
           control={control}
@@ -88,7 +111,7 @@ const EditService = () => {
       <div className="mt-6">
         <label className="block font-semibold mb-2">Terms & Conditions</label>
         <Controller
-          name="terms"
+          name="termsAndConditions"
           control={control}
           render={({ field }) => (
             <ReactQuill
@@ -106,14 +129,29 @@ const EditService = () => {
             />
           )}
         />
-        {errors.terms && (
-          <p className="text-red-500 text-sm mt-1">{errors.terms.message}</p>
+        {errors.termsAndConditions && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.termsAndConditions.message}
+          </p>
         )}
       </div>
 
       <div className="mt-6">
-        <MyButton className="main-bg px-4 py-2" type="submit">
-          Update
+        <MyButton
+          type="submit"
+          className="main-bg px-4 py-2 flex items-center justify-center"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <div className="flex items-center gap-2 text-white text-sm">
+              <div className="w-5 h-5">
+                <Spinner className="w-full h-full" />
+              </div>
+              Updating...
+            </div>
+          ) : (
+            "Update"
+          )}
         </MyButton>
       </div>
     </form>
