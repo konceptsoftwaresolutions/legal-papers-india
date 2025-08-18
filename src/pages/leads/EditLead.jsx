@@ -279,7 +279,7 @@ const EditLead = () => {
   };
 
   const onSubmit = (data) => {
-    console.log("FORM SUBMITTED", data);
+    console.log("FORM SUBMITTED on submit", data);
     // Create a new FormData object
 
     const formData = new FormData();
@@ -362,7 +362,8 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveName);
+    formData.append("salesExecutiveName", data.salesExecutiveEmail);
+    formData.append("salesExecutiveEmail", data.salesExecutiveEmail);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -474,6 +475,7 @@ const EditLead = () => {
     formData.append("documents", JSON.stringify(documents));
 
     formData.append("salesExecutiveName", data.salesExecutiveEmail);
+    formData.append("salesExecutiveEmail", data.salesExecutiveEmail);
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {

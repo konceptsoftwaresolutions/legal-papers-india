@@ -7,6 +7,9 @@ const axiosInstance = useAxios();
 const initialState = {
     allWhatsAppTemplates: null,
     allInhouseTemplates: null,
+    availableChannels: [],
+    channelQR: null,
+    channelDetails: null,
 };
 
 const marketingSlice = createSlice({
@@ -750,6 +753,86 @@ export const whatsAppInHouseTemplateSaveSend = (payload, setSavesendLoading, cal
             // if (error.hasOwnProperty("response")) {
 
             // }
+        }
+    };
+};
+
+// ✅ GET /whatsappInHouseTemplate/available-channels
+export const getAvailableChannels = (callback = () => { }, setLoading) => {
+    return async (dispatch) => {
+        try {
+            setLoading(true);
+            const res = await axiosInstance.get(
+                "/whatsappInHouseTemplate/available-channels"
+            );
+            if (res.status === 200) {
+                dispatch(setMarketing({ availableChannels: res.data }));
+                callback(true, res.data);
+            }
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            toast.error(error?.response?.data?.message || "Failed to fetch channels");
+            callback(false, error);
+        }
+    };
+};
+
+// ✅ GET /channels/qr/:channelId
+export const getChannelQR = (channelId, callback = () => { }, setLoading) => {
+    return async (dispatch) => {
+        try {
+            setLoading(true);
+            const res = await axiosInstance.get(`/channels/qr/${channelId}`);
+            if (res.status === 200) {
+                dispatch(setMarketing({ channelQR: res.data }));
+                callback(true, res.data);
+            }
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            toast.error(error?.response?.data?.message || "Failed to fetch channel QR");
+            callback(false, error);
+        }
+    };
+};
+
+// ✅ POST /channels/add
+export const addChannel = (payload, callback = () => { }, setLoading) => {
+    return async (dispatch) => {
+        try {
+            setLoading(true);
+            const res = await axiosInstance.post("/channels/add", payload);
+            if (res.status === 200 || res.status === 201) {
+                toast.success("Channel added successfully");
+                callback(true, res.data);
+                // refresh channel list
+                dispatch(getAvailableChannels(() => { }, () => { }));
+            }
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            toast.error(error?.response?.data?.message || "Failed to add channel");
+            callback(false, error);
+        }
+    };
+};
+
+// ✅ GET /channels/:channelId
+export const getChannelById = (channelId, callback = () => { }, setLoading) => {
+    return async (dispatch) => {
+        try {
+            setLoading(true);
+            const res = await axiosInstance.get(`/channels/${channelId}`);
+            if (res.status === 200) {
+                dispatch(setMarketing({ channelDetails: res.data }));
+                callback(true, res.data);
+            }
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            toast.error(error?.response?.data?.message || "Failed to fetch channel details");
+            callback(false, error);
         }
     };
 };

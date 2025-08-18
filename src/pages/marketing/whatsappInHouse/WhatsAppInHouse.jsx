@@ -11,6 +11,7 @@ import {
   getWAInHouseTemplateById,
   deleteWAInHouseTemplate,
   whatsAppInHouseTemplateSaveSend,
+  getAvailableChannels,
 } from "../../../redux/features/marketing";
 import DataTable from "react-data-table-component";
 import { waTemplateColumnns } from "../../user/columns";
@@ -19,6 +20,7 @@ import toast from "react-hot-toast";
 import MarketingInHouseLeadFilter from "./MarketingInHouseLeadFilter";
 import InhouseSampleMsgModal from "./InhouseSampleMsgModal";
 import { useInHouseSampleMessage } from "./useInHouseSampleMessage";
+import AddTemplateModal from "./AddTemplateModal";
 
 const WhatsappInhouse = () => {
   const navigate = useNavigate();
@@ -33,9 +35,9 @@ const WhatsappInhouse = () => {
   const [leadsLoading, setLeadsLoading] = useState(false);
   const [savesendLoading, setSavesendLoading] = useState(false);
   const [filterObject, setFilterObject] = useState();
-  const [selectedNumbers, setSelectedNumbers] = useState([]);
+  const [showAddChannelModal, setShowAddChannelModal] = useState(false);
 
-  const { allInhouseTemplates, dropdownVar } = useSelector(
+  const { allInhouseTemplates, dropdownVar, availableChannels } = useSelector(
     (state) => state.marketing
   );
   const { role } = useSelector((state) => state.auth);
@@ -46,7 +48,6 @@ const WhatsappInhouse = () => {
     control,
     watch,
     reset,
-    setValue,
   } = useForm();
 
   const watchAllFields = watch();
@@ -62,6 +63,7 @@ const WhatsappInhouse = () => {
     if (!hasFetchedDropdownData.current) {
       dispatch(getAllWhatsAppInHouseTemplates());
       dispatch(getDropDownFieldsForVariablesInHouse());
+      dispatch(getAvailableChannels(() => {}, () => {}));
       hasFetchedDropdownData.current = true;
     }
   }, [dispatch]);
@@ -149,19 +151,6 @@ const WhatsappInhouse = () => {
     }
   };
 
-
-  const numberSelection = watch("numberSelection");
-  const handleAddNumberSelection = () => {
-    if (numberSelection) {
-      setSelectedNumbers((prev) =>
-        prev.includes(numberSelection) ? prev : [...prev, numberSelection]
-      );
-      setValue("numberSelection", ""); // clear after add
-    } else {
-      toast.error("Please select a number to add");
-    }
-  };
-
   return (
     <div className="p-5">
       <Heading text="WhatsApp Inhouse" showHeading />
@@ -169,6 +158,12 @@ const WhatsappInhouse = () => {
       <div className="p-3 bg-white shadow-lg mt-3 rounded-lg border-gray-600 flex justify-between items-center flex-col md:flex-row gap-y-2 md:gap-y-0">
         <p className="text-xl font-semibold">Send WhatsApp Inhouse</p>
         <div className="flex gap-3 flex-wrap">
+          <button
+            className="bg-green-600 hover:bg-green-500 px-4 py-2 text-white rounded-md"
+            onClick={() => setShowAddChannelModal(true)}
+          >
+            Add Channel
+          </button>
           <button
             className="bg-yellow-600 hover:bg-yellow-400 px-4 py-2 text-white rounded-md"
             onClick={handleCreateTemplate}
@@ -181,19 +176,13 @@ const WhatsappInhouse = () => {
           >
             Sample Message
           </button>
-          <button
-            className="bg-blue-600 hover:bg-blue-500 px-4 py-2 text-white rounded-md"
-            type="button"
-            onClick={handleAddNumberSelection}
-          >
-            Add Number Selection
-          </button>
         </div>
       </div>
 
       <div className="mt-5 p-3">
         <form onSubmit={handleSubmit(onSubmitHandler)}>
           <div className="grid grid-cols-2 gap-3">
+            {/* Select Template */}
             <InputField
               type="selectwithdelete"
               control={control}
@@ -205,19 +194,24 @@ const WhatsappInhouse = () => {
               placeholder="Select a Template"
               onDeleteOption={handleDeleteOption}
             />
+
+            {/* 🔹 New Available Channels Dropdown */}
             <InputField
-              type="select"
+              type="option"
               control={control}
               errors={errors}
-              label="Number Selection"
-              name="numberSelection"
-              placeholder="Select Number"
+              label="Available Channels:"
+              name="channel"
+              mode="single"
               options={[
-                { label: "John (9876543210)", value: "9876543210" },
-                { label: "Alice (9876501234)", value: "9876501234" },
-                { label: "Bob (9898989898)", value: "9898989898" },
+                { label: "Select Channel", value: "" },
+                ...(availableChannels || []).map((ch) => ({
+                  label: ch.name,
+                  value: ch.id,
+                })),
               ]}
             />
+
             <InputField
               type="text"
               control={control}
@@ -387,6 +381,10 @@ const WhatsappInhouse = () => {
         setLeadsLoading={setLeadsLoading}
         setFilterObject={setFilterObject}
         type="whatsapp-inhouse"
+      />
+      <AddTemplateModal
+        open={showAddChannelModal}
+        setOpen={setShowAddChannelModal}
       />
     </div>
   );
