@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 import useAxios from "../../../hooks/useAxios";
 import handleError from "../../../constants/handleError";
+import { getServiceCategoryStatusLeadsDataThunkMiddleware } from "../bucket";
 
 const axiosInstance = useAxios();
 const initialState = {
@@ -430,23 +431,56 @@ export const getImportantLeads = () => {
   }
 }
 
+// export const handleBulkSalesAssign = (payload) => {
+//   return async (dispatch) => {
+//     try {
+//       const response = await axiosInstance.post("/leadRoutes/leadAssignBulk", payload)
+//       if (response.status === 200) {
+//         const message = response.data.message || "Assigned successfully!";
+//         toast.success(message)
+//         dispatch(getServiceCategoryStatusLeadsDataThunkMiddleware());
+//       }
+//     } catch (error) {
+//       let message = "ERROR"
+//       if (error.hasOwnProperty('response')) {
+//         message = error.response.data
+//         toast.error(message)
+//       }
+//     }
+//   }
+// }
+
+// ✅ Bulk Assign Function
 export const handleBulkSalesAssign = (payload) => {
   return async (dispatch) => {
     try {
-      const response = await axiosInstance.post("/leadRoutes/leadAssignBulk", payload)
+      const response = await axiosInstance.post("/leadRoutes/leadAssignBulk", payload);
+
       if (response.status === 200) {
         const message = response.data.message || "Assigned successfully!";
-        toast.success(message)
+        toast.success(message);
+
+        // ✅ URL se refresh filters nikaal lo
+        const searchParams = new URLSearchParams(window.location.search);
+
+        const refreshPayload = {
+          page: searchParams.get("page") || 1,
+          serviceCategory: searchParams.get("serviceCategory") || "",
+          status: searchParams.get("status") || "",
+        };
+
+        // ✅ Ab refresh API ko sahi payload ke sath call kar
+        dispatch(getServiceCategoryStatusLeadsDataThunkMiddleware(refreshPayload));
       }
     } catch (error) {
-      let message = "ERROR"
-      if (error.hasOwnProperty('response')) {
-        message = error.response.data
-        toast.error(message)
+      let message = "ERROR";
+      if (error.hasOwnProperty("response")) {
+        message = error.response.data;
       }
+      toast.error(message);
     }
-  }
-}
+  };
+};
 
 export const handleBulkSalesAssignNormalLeads = (payload) => {
   return async (dispatch) => {

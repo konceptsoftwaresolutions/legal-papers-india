@@ -21,8 +21,29 @@ function App() {
   return (
     <>
       <BrowserRouter>
-        <Toaster position="top-right" reverseOrder={false} />
-        <ToastContainer position="top-center" />
+        <Toaster
+          position="top-right"
+          reverseOrder={false}
+          containerStyle={{
+            zIndex: 9999999,
+          }}
+          toastOptions={{
+            style: {
+              zIndex: 9999999,
+            },
+          }}
+        />
+
+        <ToastContainer
+          position="top-center"
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="colored"
+          style={{ zIndex: 9999999 }}
+        />
+
         <Routes />
       </BrowserRouter>
     </>

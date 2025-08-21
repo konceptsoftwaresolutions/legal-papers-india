@@ -15,12 +15,16 @@ import { tableCustomStyles } from "../../constants/tableCustomStyle";
 import toast from "react-hot-toast";
 import { Spinner } from "@material-tailwind/react";
 import EditTaxInvoiceModal from "./EditTaxInvoiceModal";
+import TaxInvoiceFilter from "./TaxInvoiceFilter";
+import * as XLSX from "xlsx";
+import { MdFilterList } from "react-icons/md";
 
 const TaxInvoiceNo = () => {
   const dispatch = useDispatch();
 
   // Redux state
   const { allTaxInvoices, loading } = useSelector((state) => state.tax || {});
+  const { role } = useSelector((state) => state.auth);
 
   // Modal settings states
   const [showModal, setShowModal] = useState(false);
@@ -32,6 +36,8 @@ const TaxInvoiceNo = () => {
   // New state for Edit modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingInvoiceId, setEditingInvoiceId] = useState(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterActive, setIsFilterActive] = useState(false);
 
   // Table data state
   const [tableData, setTableData] = useState([]);
@@ -164,6 +170,77 @@ const TaxInvoiceNo = () => {
     },
   ];
 
+  const handleExportExcel = () => {
+    if (!tableData || tableData.length === 0) {
+      alert("No data to export!");
+      return;
+    }
+
+    // ✅ Exact 13 headers
+    const headers = [
+      "GSTIN/UIN of Recipient",
+      "Name",
+      "Invoice Number",
+      "Invoice Date",
+      "Invoice Value Amount",
+      "Place of Supply",
+      "Reverse Charge",
+      "Applicable Tax Rate",
+      "Invoice Type",
+      "E-commerce GSTIN",
+      "Rate",
+      "Taxable Value",
+      "Cess Amount",
+    ];
+
+    // ✅ Map API data to 13 columns
+    const excelData = tableData.map((inv) => ({
+      "GSTIN/UIN of Recipient": inv.gstNo || inv.gstNumber || "",
+      Name: inv.name || "",
+      "Invoice Number": inv.invoiceNo || "",
+      "Invoice Date": inv.date
+        ? new Date(inv.date).toLocaleDateString("en-GB")
+        : "",
+      "Invoice Value Amount": inv.totalAmount || 0,
+      "Place of Supply": inv.placeOfSupply || "",
+      "Reverse Charge": "N",
+      "Applicable Tax Rate": 0, // ✅ fixed
+      "Invoice Type": "Regular B2B",
+      "E-commerce GSTIN": "", // ✅ always blank
+      Rate: 18, // ✅ fixed
+      "Taxable Value": inv.taxableValue || inv.totalAmount || 0,
+      "Cess Amount": "", // ✅ always blank
+    }));
+
+    // ✅ Create worksheet & workbook
+    const ws = XLSX.utils.json_to_sheet(excelData, { header: headers });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "PerformaInvoices");
+
+    // ✅ Auto column width
+    ws["!cols"] = headers.map((header) => {
+      const maxLength = Math.max(
+        header.length,
+        ...excelData.map((row) =>
+          row[header] ? row[header].toString().length : 0
+        )
+      );
+      return { wch: maxLength + 2 };
+    });
+
+    // ✅ Export to file
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "PerformaInvoices.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       {/* Heading + Button */}
@@ -173,11 +250,29 @@ const TaxInvoiceNo = () => {
         </div>
 
         <div className="w-full flex justify-end items-start gap-2 flex-wrap">
+          {role === "superAdmin" && (
+            <>
+              <MyButton
+                className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+                onClick={() => setShowModal(true)}
+              >
+                <MdEdit /> Tax Invoice No
+              </MyButton>
+
+              <MyButton
+                className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+                onClick={handleExportExcel}
+              >
+                <MdDownload /> Export Excel
+              </MyButton>
+            </>
+          )}
+
           <MyButton
-            className="main-bg py-2 text-[15px] font-medium px-4"
-            onClick={() => setShowModal(true)}
+            className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+            onClick={() => setIsFilterOpen(true)}
           >
-            Tax Invoice No
+            <MdFilterList /> {isFilterActive ? "Filter Applied" : "Filter"}
           </MyButton>
         </div>
       </div>
@@ -224,6 +319,18 @@ const TaxInvoiceNo = () => {
           taxInvoiceId={editingInvoiceId}
         />
       )}
+
+      <TaxInvoiceFilter
+        isOpen={isFilterOpen}
+        setIsOpen={setIsFilterOpen}
+        allInvoices={
+          Array.isArray(allTaxInvoices?.data)
+            ? allTaxInvoices.data
+            : allTaxInvoices || []
+        }
+        setFilteredData={setTableData}
+        setIsFilterActive={setIsFilterActive}
+      />
     </>
   );
 };

@@ -45,6 +45,8 @@ import PDFPreviewer from "./PDFPreviewer";
 import GenerateTaxModal from "./GenerateTaxModal";
 import AllTaxInvoices from "./AllTaxInvoices";
 import LeadChats from "./LeadChats";
+import EditPiTable from "./EditPiTable";
+import TaxTable from "./TaxTable";
 
 // import Remarks from "./Remarks"; operationsTl operationsExecutive
 
@@ -174,8 +176,17 @@ const EditLead = () => {
         platform: leadData?.formData?.platform,
         validity: leadData?.formData?.validity,
         allFormDataDetails: leadData?.allFormDataDetails,
-        salesExecutiveName: leadData?.salesExecutiveName,
-        salesExecutiveEmail: leadData?.salesExecutive,
+        salesExecutiveName: allSalesExecutive?.find(
+          (item) => item.email === leadData?.salesExecutive
+        )
+          ? {
+              label: allSalesExecutive.find(
+                (item) => item.email === leadData?.salesExecutive
+              ).name,
+              value: leadData?.salesExecutive,
+            }
+          : null,
+        salesExecutiveEmail: leadData?.salesExecutive || "",
         remarksArray: leadData?.remarks || [],
         payment: leadData?.paymentArray || [],
         refundArray: leadData?.refundArray || [],
@@ -362,8 +373,11 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveEmail);
-    formData.append("salesExecutiveEmail", data.salesExecutiveEmail);
+    const selectedEmailObj = watch("salesExecutiveName") || {};
+    const emailValue = selectedEmailObj.value || ""; // string
+
+    formData.append("salesExecutiveName", emailValue); // name field me bhi email
+    formData.append("salesExecutiveEmail", emailValue); // email field me email
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -382,6 +396,9 @@ const EditLead = () => {
     //   console.log("got");
     //   return;
     // }
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
     dispatch(
       editLead(formData, (success) => {
         if (success) {
@@ -474,8 +491,11 @@ const EditLead = () => {
         : [];
     formData.append("documents", JSON.stringify(documents));
 
-    formData.append("salesExecutiveName", data.salesExecutiveEmail);
-    formData.append("salesExecutiveEmail", data.salesExecutiveEmail);
+    const selectedEmailObj = watch("salesExecutiveName") || {};
+    const emailValue = selectedEmailObj.value || ""; // string
+
+    formData.append("salesExecutiveName", emailValue); // name field me bhi email
+    formData.append("salesExecutiveEmail", emailValue); // email field me email
     if (uploadedDoc?.files && Array.isArray(uploadedDoc.files)) {
       uploadedDoc.files.forEach((fileObj, index) => {
         if (fileObj.file instanceof File) {
@@ -594,6 +614,7 @@ const EditLead = () => {
       value: item.email,
     };
   });
+  console.log("sssales", salesExectuiveOptions);
 
   const operationExecutiveOptions = allOperationsExecutive?.map(
     (operation) => ({
@@ -694,6 +715,7 @@ const EditLead = () => {
         <div className="grid lg:grid-cols-2 grid-cols-1 gap-y-3">
           <Heading text="Lead Details" showHeading />
         </div>
+        {/* <PDFPreviewer leadId={leadData?._id} /> */}
         <form onSubmit={handleSubmit(onSubmit)}>
           <FieldsCont>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3  gap-4">
@@ -1167,12 +1189,16 @@ const EditLead = () => {
                 >
                   Generate Performa Invoice
                 </Button>
-                <Button
-                  onClick={() => setOpenTaxModal(true)}
-                  className="capitalize"
-                >
-                  Generate Tax Entry
-                </Button>
+                {(role === "superAdmin" || role === "salesTl") && (
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setOpenTaxModal(true)}
+                      className="capitalize"
+                    >
+                      Generate Tax Entry
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           </FieldsCont>
@@ -1798,21 +1824,20 @@ const EditLead = () => {
             </div>
           </FieldsCont>
 
-          {/* <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
+          <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
             <Heading text="All Performa Invoices" className="text-white" />
           </div>
           <div className="bg-[#6b788517] p-5 rounded-lg">
-            <AllPerformaInvoices leadId={leadData?._id} />
-            <PDFPreviewer />
+            <EditPiTable piData={leadData?.pi || []} />
           </div>
 
           <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
             <Heading text="All Tax Invoices" className="text-white" />
           </div>
+
           <div className="bg-[#6b788517] p-5 rounded-lg">
-            <AllTaxInvoices leadId={leadData?._id} />
-            <PDFPreviewer />
-          </div> */}
+            <TaxTable taxData={leadData?.taxInvoices || []} />
+          </div>
 
           <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">
             <Heading text="Chat with Lead" className="text-white" />
@@ -1821,7 +1846,6 @@ const EditLead = () => {
           <div className="bg-[#6b788517] p-5 rounded-lg">
             <LeadChats />
           </div>
-
 
           <div className="flex gap-x-3 gap-y-1 flex-wrap justify-between sticky bottom-1 p-2 main-bg shadow-lg rounded-md mt-3">
             <Button type="submit" disabled={!isEditable}>

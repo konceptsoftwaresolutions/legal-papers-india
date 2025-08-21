@@ -158,15 +158,15 @@ export const createTaxInvoice = (payload, callback = () => { }) => {
             const res = await axiosInstance.post(`/serviceRoutes/create-tax-invoice`, payload, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
-            if (res.status === 200) {
+            if (res.status === 200 || res.status === 201) {
                 toast.success("Tax Invoice Created");
                 dispatch(setTax({ loading: false }));
 
-                const leadId = payload.get?.("leadId");
+                const leadId = payload.get("leadId");
                 if (leadId) {
                     dispatch(getAllTaxInvoices(leadId));
                 }
-                callback(true, res.data || res.data.data);
+                callback(true, res.data || res.data?.data);
             }
         } catch (err) {
             dispatch(setTax({ loading: false }));

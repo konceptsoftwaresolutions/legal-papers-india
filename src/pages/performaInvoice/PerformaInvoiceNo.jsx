@@ -11,9 +11,11 @@ import {
   getAllPerformaInvoices,
   downloadPerformaInvoicePDF,
 } from "../../redux/features/performa";
-import { MdDownload, MdEdit } from "react-icons/md";
+import { MdDownload, MdEdit, MdFilterList } from "react-icons/md";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
 import { Spinner } from "@material-tailwind/react";
+import PerformaInvoiceFilter from "./PerformaInvoiceFilter";
+import * as XLSX from "xlsx";
 
 const PerformaInvoiceNo = () => {
   const dispatch = useDispatch();
@@ -28,10 +30,13 @@ const PerformaInvoiceNo = () => {
   const [currentInvoiceNo, setCurrentInvoiceNo] = useState("");
   const [saving, setSaving] = useState(false);
   const [filteredData, setFilteredData] = useState([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterActive, setIsFilterActive] = useState(false);
 
   const { allPerformaInvoices = [], loading } = useSelector(
     (state) => state.performaDetails || {}
   );
+  const { role } = useSelector((state) => state.auth);
 
   // Fetch invoice settings
   const fetchInvoiceData = useCallback(() => {
@@ -151,6 +156,78 @@ const PerformaInvoiceNo = () => {
     },
   ];
 
+  const handleExportExcel = () => {
+    if (!filteredData || filteredData.length === 0) {
+      alert("No data to export!");
+      return;
+    }
+
+    // ✅ Fixed headers (same order me chahiye)
+    const headers = [
+      "GSTIN/UIN of Recipient",
+      "Name",
+      "Invoice Number",
+      "Invoice Date",
+      "Invoice Value Amount",
+      "Place of Supply",
+      "Reverse Charge",
+      "Applicable Tax Rate",
+      "Invoice Type",
+      "E-commerce GSTIN",
+      "Rate",
+      "Taxable Value",
+      "Cess Amount",
+    ];
+
+    // ✅ Map API data to only these headers
+    const excelData = filteredData.map((inv) => ({
+      "GSTIN/UIN of Recipient": inv.gstNo || inv.gstNumber || "",
+      Name: inv.name || "",
+      "Invoice Number": inv.invoiceNo || "",
+      "Invoice Date": inv.date
+        ? new Date(inv.date).toLocaleDateString("en-GB")
+        : "",
+      "Invoice Value Amount": inv.totalAmount || 0,
+      "Place of Supply": inv.placeOfSupply || "",
+      "Reverse Charge": "N",
+      "Applicable Tax Rate": inv.taxRate || 0,
+      "Invoice Type": "Regular B2B",
+      "E-commerce GSTIN": inv.ecommerceGstin || "",
+      Rate: inv.rate || 18,
+      "Taxable Value": inv.taxableValue || inv.totalAmount || 0,
+      "Cess Amount": inv.cessAmount || "",
+    }));
+
+    // ✅ Create sheet & workbook
+    const ws = XLSX.utils.json_to_sheet(excelData, { header: headers });
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "PerformaInvoices");
+
+    // ✅ Auto column width
+    const columnWidths = headers.map((header) => {
+      const maxLength = Math.max(
+        header.length,
+        ...excelData.map((row) =>
+          row[header] ? row[header].toString().length : 0
+        )
+      );
+      return { wch: maxLength + 2 };
+    });
+    ws["!cols"] = columnWidths;
+
+    // ✅ Export to file
+    const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "PerformaInvoices.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <div className="flex flex-col w-full px-4 gap-y-4 py-5">
@@ -159,11 +236,29 @@ const PerformaInvoiceNo = () => {
         </div>
 
         <div className="w-full flex justify-end items-start gap-2 flex-wrap">
+          {role === "superAdmin" && (
+            <>
+              <MyButton
+                className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+                onClick={() => setShowModal(true)}
+              >
+                <MdEdit /> Invoice No
+              </MyButton>
+
+              <MyButton
+                className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+                onClick={handleExportExcel}
+              >
+                <MdDownload /> Export Excel
+              </MyButton>
+            </>
+          )}
+
           <MyButton
-            className="main-bg py-2 text-[15px] font-medium px-4"
-            onClick={() => setShowModal(true)}
+            className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+            onClick={() => setIsFilterOpen(true)}
           >
-            Invoice No
+            <MdFilterList /> {isFilterActive ? "Filter Applied" : "Filter"}
           </MyButton>
         </div>
       </div>
@@ -211,6 +306,14 @@ const PerformaInvoiceNo = () => {
           invoiceId={editingInvoiceId}
         />
       )}
+
+      <PerformaInvoiceFilter
+        isOpen={isFilterOpen}
+        setIsOpen={setIsFilterOpen}
+        allInvoices={allPerformaInvoices}
+        setFilteredData={setFilteredData}
+        setIsFilterActive={setIsFilterActive}
+      />
     </>
   );
 };

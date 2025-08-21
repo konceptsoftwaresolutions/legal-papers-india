@@ -33,7 +33,8 @@ Font.register({
 // Styles
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 30,
     fontSize: 10,
     fontFamily: "Helvetica",
     color: "#000",
@@ -63,8 +64,8 @@ const styles = StyleSheet.create({
   goldenLine: {
     height: 3,
     backgroundColor: "#007bff",
-    marginTop: 6,
-    marginBottom: 10,
+    marginTop: 1,
+    marginBottom: 1,
     borderRadius: 2,
   },
   topRight: { textAlign: "right", fontSize: 9, marginTop: 2 },
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 3,
     fontSize: 9,
-    marginTop: 10,
+    marginTop: 1,
   },
   tableRow: {
     flexDirection: "row",
@@ -124,7 +125,12 @@ const styles = StyleSheet.create({
     fontSize: 9,
     padding: 4,
   },
-  taxSummaryRow: { flexDirection: "row", fontSize: 9, padding: 4 },
+  taxSummaryRow: {
+    flexDirection: "row",
+    fontSize: 9,
+    padding: 4,
+    marginBottom: 0,
+  },
   summaryRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -203,7 +209,8 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
     validUntil,
     taxType,
     services = [],
-    paidAmount = 2000,
+    // selectedServiceData: services = [],
+    paidAmount = 0,
     termsAndConditions,
   } = formData;
 
@@ -390,7 +397,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
         <View style={styles.goldenLine} />
 
         {/* Buyer/Seller Info */}
-        <View style={[styles.row, { marginTop: 16 }]}>
+        <View style={[styles.row]}>
           {/* LEFT BOX: Legal Papers India */}
           <View
             style={{
@@ -448,7 +455,8 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           const quantity = Number(item.quantity) || 1; // Ensure number
           const amount = price * quantity;
           const gstPercent = Number(item.taxPercent || 18);
-          const gstRate = taxType === "intra" ? gstPercent / 2 : gstPercent;
+          // const gstRate = taxType === "intra" ? gstPercent / 2 : gstPercent;
+          const gstRate = 18;
 
           // Alternate row color
           const rowBackground = i % 2 === 0 ? "#FFFFFF" : "#FFECB3"; // Even = white, Odd = light golden
@@ -505,7 +513,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
-            marginTop: 10,
+            marginTop: 0,
           }}
         >
           {/* HSN/SAC Tax Summary - LEFT SIDE */}
@@ -596,8 +604,8 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
-            marginTop: 10,
-            marginBottom: 10,
+            marginTop: 2,
+            marginBottom: 2,
             gap: 20,
           }}
         >
@@ -665,65 +673,71 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           </View>
         </View>
 
-        {/* QR Code above bank and signature row */}
-        <View style={{ alignItems: "flex-start", marginTop: 10 }}>
-          <Image src={qrCodeImg} style={{ width: 80, height: "auto" }} />
-        </View>
-
-        {/* Bank details row with signature in right section */}
-        <View style={styles.bankRow}>
-          {/* Left side - Bank details */}
-          <View style={{ width: "70%" }}>
-            <Text
-              style={[
-                styles.bold,
-                { marginBottom: 10, marginTop: 10, fontSize: 12 },
-              ]}
-            >
+        {/* First row: QR + Bank Details */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginTop: 10,
+          }}
+        >
+          {/* Bank Details */}
+          <View style={{ width: "50%" }}>
+            <Text style={[styles.bold, { marginBottom: 5, fontSize: 12 }]}>
               Bank Details
             </Text>
-
-            <View style={{ marginBottom: 20 }}>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>Bank Name: </Text>ICICI Bank
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>Account Holder: </Text>Legal Papers
-                India
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>Account Number: </Text>723505000377
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>IFSC Code: </Text>ICIC0007235
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>Branch: </Text>ICICI BANK LTD.,
-                BG-221, SANJAY GANDHI TRANSPORT NAGAR, DELHI - 110042
-              </Text>
-            </View>
-
-            <Text style={[styles.bold, { marginBottom: 10, fontSize: 12 }]}>
-              UPI Payment
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>Bank Name: </Text>ICICI Bank
             </Text>
-
-            <View>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>Company Name: </Text>LEGAL PAPERS
-                INDIA
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>UPI ID: </Text>Legalpapersindia@icici
-              </Text>
-              <Text style={styles.detailText}>
-                <Text style={styles.label}>Payment Link: </Text>
-                https://legalpapersindia.com/phonepay.php
-              </Text>
-            </View>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>Account Holder: </Text>Legal Papers
+              India
+            </Text>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>Account Number: </Text>723505000377
+            </Text>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>IFSC Code: </Text>ICIC0007235
+            </Text>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>Branch: </Text>ICICI BANK LTD., BG-221,
+              SANJAY GANDHI TRANSPORT NAGAR, DELHI - 110042
+            </Text>
           </View>
 
-          {/* Right side - For Legal Papers + Signature */}
-          <View style={{ alignItems: "flex-end" }}>
+          {/* QR */}
+          <View style={{ width: "50%", alignItems: "flex-end" }}>
+            <Image src={qrCodeImg} style={{ width: 80, height: "auto" }} />
+          </View>
+        </View>
+
+        {/* Second row: UPI Payment + Signature */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginTop: 10,
+          }}
+        >
+          {/* UPI Payment */}
+          <View style={{ width: "65%" }}>
+            <Text style={[styles.bold, { marginBottom: 5, fontSize: 12 }]}>
+              UPI Payment
+            </Text>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>Company Name: </Text>LEGAL PAPERS INDIA
+            </Text>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>UPI ID: </Text>Legalpapersindia@icici
+            </Text>
+            <Text style={styles.detailText}>
+              <Text style={styles.label}>Payment Link: </Text>
+              https://legalpapersindia.com/phonepay.php
+            </Text>
+          </View>
+
+          {/* Signature */}
+          <View style={{ width: "30%", alignItems: "flex-end" }}>
             <Image src={signatureImg} style={styles.signature} />
             <Text style={styles.rightText}>For, Legal Papers India</Text>
           </View>

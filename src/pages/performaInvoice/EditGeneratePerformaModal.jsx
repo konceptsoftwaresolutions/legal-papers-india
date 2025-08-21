@@ -19,6 +19,7 @@ import { pdf } from "@react-pdf/renderer";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import GeneratePerformaPDF from "../leads/GeneratePerformaPDF";
+import { gstStates } from "../../constants/gstStates";
 
 export const quillModules = {
   toolbar: [
@@ -145,6 +146,7 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
         address: data.address,
         gstNo: data.gstNo,
         taxType: data.taxType,
+        placeOfSupply: data.placeOfSupply,
         date: data.date,
         validUntil: data.validUntil,
         services: selectedServiceDetails,
@@ -173,6 +175,7 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
       formData.append("taxType", pi.taxType);
       formData.append("date", pi.date);
       formData.append("validUntil", pi.validUntil || "");
+      formData.append("placeOfSupply", pi.placeOfSupply);
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo); // append invoiceNo explicitly
       formData.append("termsAndConditions", termsQuill); // ✅ append terms
@@ -225,6 +228,19 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
             errors={errors}
             defaultValue={existingInvoice?.invoiceNo || ""}
             rules={{ required: "Invoice number is required" }}
+          />
+
+          <InputField
+            name="placeOfSupply"
+            label="Place of Supply"
+            type="select"
+            mode="single"
+            control={control}
+            errors={errors}
+            options={gstStates.map((state) => ({
+              value: `${state.code}-${state.name}`,
+              label: `${state.code}-${state.name}`,
+            }))}
           />
 
           <div className="col-span-3">

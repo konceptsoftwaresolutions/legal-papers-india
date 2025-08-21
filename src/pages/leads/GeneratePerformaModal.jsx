@@ -19,6 +19,7 @@ import GeneratePerformaPDF from "./GeneratePerformaPDF";
 import { pdf } from "@react-pdf/renderer";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { gstStates } from "../../constants/gstStates";
 
 export const quillModules = {
   toolbar: [
@@ -119,25 +120,48 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
 
       // Step 1: Get invoice number
       const invoiceResponse = await dispatch(incrementInvoice("Proforma"));
-      console.log("🔢 Invoice Response:", invoiceResponse);
       const currentData = invoiceResponse?.data;
 
       const invoiceNo = currentData
         ? `${currentData.prefix}-${currentData.currentNumber}`
         : "INV-ERROR";
-      console.log("✅ Formatted Invoice No:", invoiceNo);
 
-      // Prepare service details
+      // Step 2: Prepare service details (without individual GST)
       const selectedServiceDetails = data.selectedServices.map((id) => {
         const service = services.find((s) => s._id === id);
+        const quantity = data.quantities?.[id] || 1;
+        const price = data.prices?.[id] || service.price || 0;
+        const baseAmount = quantity * price;
         return {
           ...service,
-          quantity: data.quantities?.[id] || 1,
-          price: data.prices?.[id] || service.price || 0, // <-- updated price
+          quantity,
+          price,
+          baseAmount,
         };
       });
 
-      // Step 2: Prepare PI payload
+      // 👉 Step 3: Calculate TOTAL TAX
+      let taxableValue = 0,
+        sgst = 0,
+        cgst = 0,
+        igst = 0;
+
+      selectedServiceDetails.forEach((srv) => {
+        taxableValue += srv.baseAmount;
+        const taxRate = srv?.taxRate || 18; // default 18%
+
+        if (data.taxType === "intra") {
+          sgst += (srv.baseAmount * (taxRate / 2)) / 100;
+          cgst += (srv.baseAmount * (taxRate / 2)) / 100;
+        } else if (data.taxType === "inter") {
+          igst += (srv.baseAmount * taxRate) / 100;
+        }
+      });
+
+      const totalTax = sgst + cgst + igst;
+      const invoiceTotal = taxableValue + totalTax;
+
+      // Step 4: Prepare PI payload
       const pi = {
         leadId: leadData?._id,
         name: data.name,
@@ -145,16 +169,25 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
         address: data.address,
         gstNo: data.gstNo,
         taxType: data.taxType,
+        placeOfSupply: data.placeOfSupply,
         date: data.date,
         validUntil: data.validUntil,
         services: selectedServiceDetails,
+        totals: {
+          taxableValue,
+          sgst,
+          cgst,
+          igst,
+          totalTax,
+          invoiceTotal,
+        },
         termsAndConditions: termsQuill,
-        invoiceNo, // <-- include invoice number
+        invoiceNo,
       };
 
       console.log("📝 PI Payload:", pi);
 
-      // Step 3: Generate PDF
+      // Step 5: Generate PDF
       const blob = await pdf(
         <GeneratePerformaPDF formData={pi} invoiceNo={invoiceNo} />
       ).toBlob();
@@ -166,7 +199,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
         type: "application/pdf",
       });
 
-      // Step 4: Prepare FormData
+      // Step 6: Prepare FormData
       const formData = new FormData();
       formData.append("leadId", pi.leadId);
       formData.append("name", pi.name);
@@ -176,14 +209,21 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
       formData.append("taxType", pi.taxType);
       formData.append("date", pi.date);
       formData.append("validUntil", pi.validUntil || "");
+      formData.append("placeOfSupply", pi.placeOfSupply);
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
       formData.append("termsAndConditions", pi.termsAndConditions || "");
+      formData.append("totals", JSON.stringify(pi.totals)); // ✅ only totals added
       formData.append("pdfFile", pdfFile);
 
-      // Step 5: Dispatch create invoice
-      await dispatch(createPerformaInvoice(formData));
-      onClose();
+      // Step 7: Dispatch create invoice
+      await dispatch(
+        createPerformaInvoice(formData, (success) => {
+          if (success) {
+            onClose();
+          }
+        })
+      );
     } catch (error) {
       console.error("Performa invoice error:", error);
       toast.error(error.message || "Failed to create Performa Invoice");
@@ -221,6 +261,19 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
             label="GST No"
             control={control}
             errors={errors}
+          />
+
+          <InputField
+            name="placeOfSupply"
+            label="Place of Supply"
+            type="select"
+            mode="single"
+            control={control}
+            errors={errors}
+            options={gstStates.map((state) => ({
+              value: `${state.code}-${state.name}`,
+              label: `${state.code}-${state.name}`,
+            }))}
           />
 
           {/* Address - full width */}
@@ -347,7 +400,6 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
             <Controller
               name="termsAndConditions"
               control={control}
-              rules={{ required: "Terms & Conditions are required" }}
               render={({ field }) => (
                 <ReactQuill
                   {...field}

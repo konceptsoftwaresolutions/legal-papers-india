@@ -20,6 +20,7 @@ import { pdf } from "@react-pdf/renderer";
 import GenerateTaxPDF from "./GenerateTaxPDF";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { gstStates } from "../../constants/gstStates";
 
 export const quillModules = {
   toolbar: [
@@ -143,17 +144,49 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         ? `${currentData.prefix}-${currentData.currentNumber}`
         : "INV-ERROR";
 
-      // 2️⃣ Map services with quantities
+      // 2️⃣ Prepare services with tax calculations
       const selectedServiceDetails = data.selectedServices.map((id) => {
         const service = services.find((s) => s._id === id);
+        const quantity = data.quantities?.[id] || 1;
+        const price = data.prices?.[id] || service.price || 0;
+        const baseAmount = quantity * price;
+
+        let sgst = 0,
+          cgst = 0,
+          igst = 0;
+        const taxRate = service?.taxRate || 18; // default 18% if not provided
+
+        if (data.taxType === "intra") {
+          sgst = (baseAmount * (taxRate / 2)) / 100;
+          cgst = (baseAmount * (taxRate / 2)) / 100;
+        } else if (data.taxType === "inter") {
+          igst = (baseAmount * taxRate) / 100;
+        }
+
         return {
           ...service,
-          quantity: data.quantities?.[id] || 1,
-          price: data.prices?.[id] || service.price || 0,
+          quantity,
+          price,
+          baseAmount,
+          sgst,
+          cgst,
+          igst,
+          total: baseAmount + sgst + cgst + igst,
         };
       });
 
-      // 3️⃣ Prepare full payload
+      // 3️⃣ Calculate totals
+      const taxableValue = selectedServiceDetails.reduce(
+        (sum, s) => sum + s.baseAmount,
+        0
+      );
+      const sgst = selectedServiceDetails.reduce((sum, s) => sum + s.sgst, 0);
+      const cgst = selectedServiceDetails.reduce((sum, s) => sum + s.cgst, 0);
+      const igst = selectedServiceDetails.reduce((sum, s) => sum + s.igst, 0);
+      const totalTax = sgst + cgst + igst;
+      const invoiceTotal = taxableValue + totalTax;
+
+      // 4️⃣ Prepare full payload
       const taxInvoiceData = {
         leadId: leadData?._id,
         name: data.name,
@@ -161,14 +194,26 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         address: data.address,
         gstNo: data.gstNo,
         taxType: data.taxType,
+        placeOfSupply: data.placeOfSupply,
         date: data.date,
         validUntil: data.validUntil,
         services: selectedServiceDetails,
         termsAndConditions: termsQuill,
         invoiceNo,
+        amountPaid: data.amountPaid || 0,
+        totals: {
+          taxableValue,
+          sgst,
+          cgst,
+          igst,
+          totalTax,
+          invoiceTotal,
+        },
       };
 
-      // 4️⃣ Generate PDF Blob
+      console.log("🧾 Tax Invoice Payload:", taxInvoiceData);
+
+      // 5️⃣ Generate PDF Blob
       const blob = await pdf(
         <GenerateTaxPDF formData={taxInvoiceData} invoiceNo={invoiceNo} />
       ).toBlob();
@@ -179,7 +224,7 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         type: "application/pdf",
       });
 
-      // 5️⃣ Prepare FormData for API
+      // 6️⃣ Prepare FormData for API
       const formData = new FormData();
       formData.append("leadId", taxInvoiceData.leadId);
       formData.append("name", taxInvoiceData.name);
@@ -187,22 +232,28 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
       formData.append("address", taxInvoiceData.address);
       formData.append("gstNo", taxInvoiceData.gstNo || "");
       formData.append("taxType", taxInvoiceData.taxType);
+      formData.append("placeOfSupply", taxInvoiceData.placeOfSupply);
       formData.append("date", taxInvoiceData.date);
       formData.append("validUntil", taxInvoiceData.validUntil || "");
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
+      formData.append("amountPaid", taxInvoiceData.amountPaid);
       formData.append(
         "termsAndConditions",
         taxInvoiceData.termsAndConditions || ""
       );
+      formData.append("totals", JSON.stringify(taxInvoiceData.totals));
       formData.append("pdfFile", pdfFile);
 
-      // 6️⃣ Dispatch API call
-      await dispatch(createTaxInvoice(formData));
+      // 7️⃣ Dispatch API call
+      await dispatch(
+        createTaxInvoice(formData, (success) => {
+          if (success) {
+            onClose();
+          }
+        })
+      );
       dispatch(getAllTaxInvoices(leadData?._id));
-
-      toast.success("Tax Invoice Generated Successfully");
-      onClose();
     } catch (error) {
       console.error("Tax invoice error:", error);
       toast.error(error.message || "Failed to create Tax Invoice");
@@ -240,6 +291,28 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
             label="GST No"
             control={control}
             errors={errors}
+          />
+
+          <InputField
+            name="placeOfSupply"
+            label="Place of Supply"
+            type="select"
+            mode="single"
+            control={control}
+            errors={errors}
+            options={gstStates.map((state) => ({
+              value: `${state.code}-${state.name}`,
+              label: `${state.code}-${state.name}`,
+            }))}
+          />
+
+          <InputField
+            name="amountPaid"
+            label="Amount Paid"
+            type="number"
+            control={control}
+            errors={errors}
+            rules={{ required: "Amount Paid is required" }}
           />
 
           {/* Address */}
@@ -365,7 +438,6 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
             <Controller
               name="termsAndConditions"
               control={control}
-              rules={{ required: "Terms & Conditions are required" }}
               render={({ field }) => (
                 <ReactQuill
                   {...field}

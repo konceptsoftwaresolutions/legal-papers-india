@@ -236,7 +236,7 @@ const RevenueTop = () => {
           />
 
           <NumberCard
-            title="NC Data transfer"
+            title="NC Data"
             showSign={false}
             number={tilesData?.bucketTransferredByTL || "0"} // ✅ bucketTransferredByTL
           />

@@ -21,6 +21,7 @@ import GenerateTaxPDF from "../leads/GenerateTaxPDF";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { quillModules, quillFormats } from "../leads/GenerateTaxModal";
+import { gstStates } from "../../constants/gstStates";
 
 const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
   const dispatch = useDispatch();
@@ -122,6 +123,7 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
         address: data.address,
         gstNo: data.gstNo,
         taxType: data.taxType,
+        placeOfSupply: data.placeOfSupply,
         date: data.date,
         validUntil: data.validUntil,
         services: selectedServiceDetails,
@@ -147,6 +149,7 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
       formData.append("address", taxData.address);
       formData.append("gstNo", taxData.gstNo || "");
       formData.append("taxType", taxData.taxType);
+      formData.append("placeOfSupply", taxData.placeOfSupply);
       formData.append("date", taxData.date);
       formData.append("validUntil", taxData.validUntil || "");
       formData.append("services", JSON.stringify(selectedServiceDetails));
@@ -203,6 +206,19 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
             label="GST No"
             control={control}
             errors={errors}
+          />
+
+          <InputField
+            name="placeOfSupply"
+            label="Place of Supply"
+            type="select"
+            mode="single"
+            control={control}
+            errors={errors}
+            options={gstStates.map((state) => ({
+              value: `${state.code}-${state.name}`,
+              label: `${state.code}-${state.name}`,
+            }))}
           />
 
           {/* Address */}
