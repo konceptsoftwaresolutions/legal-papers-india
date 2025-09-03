@@ -8,6 +8,8 @@ const axiosInstance = useAxios();
 const initialState = {
   allSalesExecutive: null,
   addLeadLoader: false,
+  chatMessages: [],
+  chatLoader: false,
 };
 
 const leadsSlice = createSlice({
@@ -20,11 +22,17 @@ const leadsSlice = createSlice({
         state[key] = action.payload[key];
       });
     },
+    setChatMessages: (state, action) => {
+      state.chatMessages = action.payload;
+    },
+    setChatLoader: (state, action) => {
+      state.chatLoader = action.payload;
+    },
   },
 });
 
 // Export setLeads now since we changed it in the reducer
-export const { setLeads } = leadsSlice.actions;
+export const { setLeads, setChatMessages, setChatLoader } = leadsSlice.actions;
 export default leadsSlice.reducer;
 
 export const getAllLeads = (currentPage, filter = false, filterObject = {}, callback = () => { }) => {
@@ -648,7 +656,7 @@ export const adminBucketNCLeadShare = (payload) => {
   }
 }
 
-export const bulkUploadLeads = (excelData, callback = () => {}) => {
+export const bulkUploadLeads = (excelData, callback = () => { }) => {
   return async (dispatch) => {
     try {
       dispatch(setLeads({ leadLoader: true }));
@@ -666,6 +674,68 @@ export const bulkUploadLeads = (excelData, callback = () => {}) => {
       dispatch(setLeads({ leadLoader: false }));
       toast.error("Failed to upload leads");
       console.error("Bulk upload error:", error);
+    }
+  };
+};
+
+export const fetchChatsByPhone = (phoneNumber, callback = () => { }) => {
+  return async (dispatch) => {
+    try {
+      dispatch(setChatLoader(true));
+
+      const response = await axiosInstance.post(
+        "/api/legalpapers/search-chat-all-channels",
+        { phoneNumber }
+      );
+
+      if (response.status === 200) {
+        const data = response.data || {};
+
+        // Save entire response object in Redux
+        dispatch(setChatMessages(data)); // <-- store full object
+        dispatch(setChatLoader(false));
+        callback(true, data);
+      } else {
+        dispatch(setChatLoader(false));
+        callback(false, {});
+        toast.error("Failed to fetch chats");
+      }
+    } catch (error) {
+      dispatch(setChatLoader(false));
+      callback(false, {});
+      console.error("Error fetching chats:", error);
+      toast.error("Something went wrong while fetching chats");
+    }
+  };
+};
+// Redux async action to send message
+export const sendMessageToChat = (phoneNumber, message, callback = () => {}) => {
+  return async (dispatch) => {
+    try {
+      dispatch(setChatLoader(true));
+
+      const response = await axiosInstance.post(
+        "/api/legalpapers/send-message-to-chat",
+        { phoneNumber, message }
+      );
+
+      if (response.status === 200) {
+        const data = response.data || {};
+
+        // Optionally, update chatMessages if API returns updated chat
+        dispatch(setChatMessages(data)); 
+        dispatch(setChatLoader(false));
+        callback(true, data);
+      } else {
+        dispatch(setChatLoader(false));
+        callback(false, {});
+        toast.error("Failed to send message");
+      }
+    } catch (error) {
+      dispatch(setChatLoader(false));
+      callback(false, {});
+      console.error("Error sending message:", error);
+      toast.error("Something went wrong while sending message");
     }
   };
 };

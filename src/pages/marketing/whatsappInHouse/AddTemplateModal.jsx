@@ -12,7 +12,9 @@ import {
   addChannel,
   getChannelQR,
   getChannelById,
+  resetChannelInfo,
 } from "../../../redux/features/marketing";
+import { toast } from "react-toastify";
 
 const AddTemplateModal = ({ open, setOpen }) => {
   const [channelId, setChannelId] = useState("");
@@ -21,56 +23,66 @@ const AddTemplateModal = ({ open, setOpen }) => {
   const intervalRef = useRef(null);
 
   const dispatch = useDispatch();
+  const { channelQR, channelDetails } = useSelector((state) => state.marketing);
 
-  // Redux state se data
-  const { channelQR, channelDetails } = useSelector(
-    (state) => state.marketing
-  );
-
-  // Cleanup jab modal band ho
+  // Cleanup and reset whenever modal closes
   useEffect(() => {
     if (!open) {
       setChannelId("");
       setIsReady(false);
+      setLoading(false);
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+      dispatch(resetChannelInfo());
     }
-  }, [open]);
+  }, [open, dispatch]);
+
+  const startPolling = (channelId) => {
+    intervalRef.current = setInterval(() => {
+      // Fetch QR code
+      dispatch(getChannelQR(channelId, () => {}, setLoading));
+
+      // Fetch channel details
+      dispatch(
+        getChannelById(
+          channelId,
+          (success, data) => {
+            if (success && data?.isReady) {
+              setIsReady(true);
+              clearInterval(intervalRef.current);
+              intervalRef.current = null;
+              toast.success("Channel is ready!");
+            }
+          },
+          setLoading
+        )
+      );
+    }, 5000);
+  };
 
   const handleSave = () => {
     if (!channelId.trim()) return;
 
-    // 1. Add channel
+    setLoading(true);
+
     dispatch(
       addChannel(
         { channelId },
         (success) => {
+          setLoading(false);
           if (success) {
-            // 2. Polling har 5 sec me
-            intervalRef.current = setInterval(() => {
-              // a) Fetch QR
-              dispatch(getChannelQR(channelId, () => {}, setLoading));
-
-              // b) Fetch channel status
-              dispatch(
-                getChannelById(
-                  channelId,
-                  (success, data) => {
-                    if (success && data?.isReady) {
-                      setIsReady(true);
-                      clearInterval(intervalRef.current);
-                    }
-                  },
-                  setLoading
-                )
-              );
-            }, 5000);
+            startPolling(channelId);
           }
         },
         setLoading
       )
     );
+  };
+
+  const handleClose = () => {
+    setOpen(false);
   };
 
   return (
@@ -87,7 +99,7 @@ const AddTemplateModal = ({ open, setOpen }) => {
         </h2>
         <IoIosCloseCircle
           className="text-2xl cursor-pointer text-red-500 hover:text-red-600 transition"
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
         />
       </DialogHeader>
 
@@ -143,7 +155,7 @@ const AddTemplateModal = ({ open, setOpen }) => {
       {/* Footer */}
       <DialogFooter className="flex justify-end gap-2 border-t pt-2">
         <Button
-          onClick={() => setOpen(false)}
+          onClick={handleClose}
           className="main-bg flex text-[14px] justify-center py-1 items-center gap-x-2 text-white"
         >
           Cancel

@@ -116,12 +116,18 @@ const MarketingInHouseLeadFilter = ({
 
   const onReset = () => {
     reset();
-    setIsOpen(false);
     setImportantState(false);
     setRefundState(false);
+    setMannualLeadState(false);
+    setIECLeadState(false);
+    setExcludeLeadState(false);
+    setFilteredLeads([]); // Clear parent data
+    setFilterObject({}); // Clear filter object in parent
+    setIsOpen(false);
   };
 
   const onSubmit = (formData) => {
+    // console.log("data submitted", formData);
     const data = {
       ...formData,
       important: importantState,
@@ -137,12 +143,13 @@ const MarketingInHouseLeadFilter = ({
     );
     setFilterObject(filterObject);
     sessionStorage.setItem("whatsappFilters", JSON.stringify(filterObject));
-    if (type === "whatsapp") {
+    if (type === "whatsapp-inhouse") {
       dispatch(
         getAllFilteredLeadIDs(
           filterObject,
           (success, data) => {
             if (success) {
+              // console.log(data);
               setFilteredLeads(data);
               setIsOpen(false);
             }
@@ -156,6 +163,7 @@ const MarketingInHouseLeadFilter = ({
           filterObject,
           (success, data) => {
             if (success) {
+              // console.log(data);
               setFilteredLeads(data);
               setIsOpen(false);
             }
@@ -178,23 +186,18 @@ const MarketingInHouseLeadFilter = ({
     >
       <form
         ref={formRef}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            const activeDropdown = document.querySelector(".ant-select-open");
-            if (!activeDropdown) {
-              handleSubmit(onSubmit)();
-            }
-          }
-        }}
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-y-4"
       >
+        {/* Important Lead toggle */}
         <p
           onClick={() => setImportantState(!importantState)}
           className="main-bg text-white p-2 rounded-md text-md text-center cursor-pointer"
         >
           {importantState ? "Unmark Important Lead" : "Important Lead"}
         </p>
+
+        {/* Standard inputs */}
         <InputField
           control={control}
           errors={errors}
@@ -229,15 +232,6 @@ const MarketingInHouseLeadFilter = ({
         <InputField
           control={control}
           errors={errors}
-          label="Sales Status 2"
-          type="select"
-          mode="multiple"
-          name="status2"
-          options={salesStatusOptions}
-        />
-        <InputField
-          control={control}
-          errors={errors}
           label="Operation Status"
           name="operationStatus"
           type="select"
@@ -259,87 +253,8 @@ const MarketingInHouseLeadFilter = ({
           type="select"
           options={serviceCategoryOption}
         />
-        <InputField
-          control={control}
-          errors={errors}
-          label="Fresh/Follow Up Data"
-          name="freshOrFollow"
-          type="option"
-          options={freshOrFollowStatusOptions}
-        />
-        <InputField
-          control={control}
-          errors={errors}
-          label="Client Email"
-          type="email"
-          name="emailId"
-        />
-        <InputField
-          control={control}
-          errors={errors}
-          label="Application Type"
-          name="applicationType"
-          type="select"
-          options={applicationTypeOptions}
-        />
-        <InputField
-          control={control}
-          errors={errors}
-          label="Payment Date"
-          name="paymentDate"
-          placeholder="Select Option"
-          type="option"
-          options={filterOptions}
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <InputField
-            control={control}
-            errors={errors}
-            label="From"
-            name="paymentFromDate"
-            type="date"
-          />
-          <InputField
-            control={control}
-            errors={errors}
-            label="To"
-            name="paymentToDate"
-            type="date"
-          />
-        </div>
-        <InputField
-          control={control}
-          errors={errors}
-          label="Payment Mode"
-          type="select"
-          name="paymentMode"
-          options={paymentModeOptions}
-        />
-        <InputField
-          control={control}
-          errors={errors}
-          label="Lead Date"
-          name="date"
-          type="option"
-          options={filterOptions}
-        />
-        <div className="grid grid-cols-2 gap-4">
-          <InputField
-            control={control}
-            errors={errors}
-            label="From"
-            name="fromDate"
-            type="date"
-          />
-          <InputField
-            control={control}
-            errors={errors}
-            label="To"
-            name="toDate"
-            type="date"
-          />
-        </div>
 
+        {/* Other toggles */}
         <p
           onClick={() => setRefundState(!refundState)}
           className="main-bg text-white p-2 rounded-md text-md text-center cursor-pointer"
@@ -369,10 +284,12 @@ const MarketingInHouseLeadFilter = ({
             : "Exclude IEC Renewal Lead"}
         </p>
 
+        {/* Buttons */}
         <div className="w-full flex justify-end items-center py-3 gap-x-2 sticky bottom-0 border-t-4 bg-white">
           <MyButton
+            type="button"
             className="bg-green-700 py-2 px-4 text-[14px]"
-            onClick={() => onReset()}
+            onClick={onReset}
           >
             Reset
           </MyButton>

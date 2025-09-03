@@ -12,6 +12,7 @@ import {
   deleteWAInHouseTemplate,
   whatsAppInHouseTemplateSaveSend,
   getAvailableChannels,
+  deleteChannel,
 } from "../../../redux/features/marketing";
 import DataTable from "react-data-table-component";
 import { waTemplateColumnns } from "../../user/columns";
@@ -21,6 +22,8 @@ import MarketingInHouseLeadFilter from "./MarketingInHouseLeadFilter";
 import InhouseSampleMsgModal from "./InhouseSampleMsgModal";
 import { useInHouseSampleMessage } from "./useInHouseSampleMessage";
 import AddTemplateModal from "./AddTemplateModal";
+import { Controller } from "react-hook-form";
+import { Select, Option } from "@material-tailwind/react";
 
 const WhatsappInhouse = () => {
   const navigate = useNavigate();
@@ -36,11 +39,26 @@ const WhatsappInhouse = () => {
   const [savesendLoading, setSavesendLoading] = useState(false);
   const [filterObject, setFilterObject] = useState();
   const [showAddChannelModal, setShowAddChannelModal] = useState(false);
+  const [apiValues, setApiValues] = useState({});
 
-  const { allInhouseTemplates, dropdownVar, availableChannels } = useSelector(
-    (state) => state.marketing
-  );
+  const { allInhouseTemplates, dropdownVar, availableChannels, record } =
+    useSelector((state) => state.marketing);
   const { role } = useSelector((state) => state.auth);
+
+  const defaultValues = {
+    template: "",
+    channel: "",
+    attachment: null,
+    starting: "",
+    ending: "",
+    // variables ke liye bhi default
+    // jaise agar max 10 variables ho sakte hain to:
+    ...Array.from({ length: 10 }).reduce((acc, _, i) => {
+      acc[`variableDropdown_${i}`] = "";
+      acc[`variableValue_${i}`] = "";
+      return acc;
+    }, {}),
+  };
 
   const {
     handleSubmit,
@@ -48,13 +66,15 @@ const WhatsappInhouse = () => {
     control,
     watch,
     reset,
-  } = useForm();
+    setValue,
+  } = useForm({ defaultValues });
 
   const watchAllFields = watch();
   const sampleMessage = useInHouseSampleMessage(
     selectedTemplateData,
     watch,
-    dispatch
+    apiValues,
+    record
   );
 
   const hasFetchedDropdownData = useRef(false);
@@ -63,7 +83,12 @@ const WhatsappInhouse = () => {
     if (!hasFetchedDropdownData.current) {
       dispatch(getAllWhatsAppInHouseTemplates());
       dispatch(getDropDownFieldsForVariablesInHouse());
-      dispatch(getAvailableChannels(() => {}, () => {}));
+      dispatch(
+        getAvailableChannels(
+          () => {},
+          () => {}
+        )
+      );
       hasFetchedDropdownData.current = true;
     }
   }, [dispatch]);
@@ -73,6 +98,7 @@ const WhatsappInhouse = () => {
     if (selectedTemplateOption) {
       dispatch(
         getWAInHouseTemplateById(selectedTemplateOption, (success, data) => {
+          console.log("API success:", success, "data:", data);
           if (success) setSelectedTemplateData(data);
         })
       );
@@ -99,17 +125,41 @@ const WhatsappInhouse = () => {
   };
 
   const extractLeadIds = (data) => data.map((item) => item.leadId);
+  const resetForm = () => {
+    reset(defaultValues); // reset all form fields
+    setValue("attachment", []); // reset file input
+    setFilteredLeads([]);
+    setShowFilterSection(false); // hide leads table section
+    setSelectedTemplateData(null);
+    setApiValues({});
+    setIsFilterOpen(false);
+    setFilterObject({});
+  };
 
   const onSubmitHandler = (data) => {
+    console.log("📝 Raw form data from react-hook-form:", data);
+    console.log("📦 Selected template data:", selectedTemplateData);
+    console.log("🌐 Available channels:", availableChannels);
+    console.log("📊 Filtered leads:", filteredLeads);
+    console.log("🔹 API values for variables:", apiValues);
+
+    if (!selectedTemplateData) {
+      toast.error("Please select a template first.");
+      return;
+    }
+
+    // ✅ Prepare variables object: use dropdown or manual input
     const variableData = {};
+    selectedTemplateData?.template?.variables?.forEach((_, index) => {
+      const dropdownValue =
+        apiValues[index]?.dropdown || apiValues[index]?.apiValue;
+      const manualValue = data[`variableValue_${index}`];
+      const finalValue = dropdownValue || manualValue;
 
-    selectedTemplateData?.variables?.forEach((_, index) => {
-      const val1 = data[`variableDropdownA_${index}`];
-      const val2 = data[`variableDropdownB_${index}`];
-      const val3 = data[`variableValue_${index}`];
-
-      const finalValue = val1 || val2 || val3;
-      if (finalValue) variableData[index + 1] = finalValue;
+      if (finalValue) {
+        variableData[`{{${index + 1}}}`] = finalValue;
+        console.log(`Variable {{${index + 1}}} ->`, finalValue);
+      }
     });
 
     if (submitAction === "send") {
@@ -117,25 +167,56 @@ const WhatsappInhouse = () => {
         toast.error("Please specify the range");
         return;
       }
+
+      // ✅ Map filteredLeads to only leadId
+      const records = filteredLeads.map((lead) => ({ leadId: lead.leadId }));
+      console.log("Records to send:", records);
+
+      // ✅ Get actual channelId
+      const selectedChannel = availableChannels?.available?.find(
+        (ch) => ch._id === data.channel
+      );
+      const channelIdToSend = selectedChannel?.channelId || "";
+      console.log("Selected channelId to send:", channelIdToSend);
+
+      // ✅ Generate campaign name dynamically if not set
+      const campaignNameToSend =
+        selectedTemplateData?.campaignName ||
+        `${selectedTemplateData?.template?.name || "Inhouse"}_${Date.now()}`;
+      console.log("Campaign name to send:", campaignNameToSend);
+
+      // ✅ Template id & name from template object
+      const templateIdToSend = selectedTemplateData?.template?._id
+        ? [selectedTemplateData.template._id]
+        : [];
+      const templateNameToSend = selectedTemplateData?.template?.name
+        ? [selectedTemplateData.template.name]
+        : ["InhouseTemplate"];
+
+      // ✅ Final payload
       const payload = {
-        campaignName: selectedTemplateData?.campaignName,
+        campaignName: campaignNameToSend,
+        channelId: channelIdToSend,
+        message: selectedTemplateData?.template?.message || "",
+        type: "normal",
+        templateId: templateIdToSend,
+        templateName: templateNameToSend,
         variables: variableData,
-        leadIds: extractLeadIds(filteredLeads),
-        filterObject,
-        starting: data.starting,
-        ending: data.ending,
+        records,
       };
+      if (data.attachment && data.attachment[0]) {
+        payload.file = data.attachment[0];
+      }
+
+      console.log("🚀 Final payload to backend:", payload);
+
       dispatch(
         whatsAppInHouseTemplateSaveSend(
           payload,
           setSavesendLoading,
           (success) => {
             if (success) {
-              reset();
-              reset({ leadId: "" });
-              setFilteredLeads([]);
-              setShowFilterSection(false);
-              setSelectedTemplateData(null);
+              resetForm();
             }
           }
         )
@@ -144,10 +225,41 @@ const WhatsappInhouse = () => {
   };
 
   const handleSampleMessageClick = () => {
-    if (!watch("leadId")) {
-      toast.error("Enter the lead id first");
-    } else {
-      setShowSampleModal(true);
+    setShowSampleModal(true);
+  };
+
+  const leadProperties = [
+    { label: "Lead ID", value: "leadId" },
+    { label: "Status", value: "status" },
+    { label: "Operation Status", value: "operationStatus" },
+    { label: "Service Category", value: "formData.serviceCategory" },
+    { label: "Email ID", value: "formData.emailId" },
+    { label: "Mobile Number", value: "formData.mobileNumber" },
+    { label: "Applicant Name", value: "formData.nameOfApplicant" },
+    { label: "Business Entity Name", value: "formData.nameOfBusinessEntity" },
+    { label: "Application Type", value: "formData.applicationType" },
+    { label: "Sales Executive", value: "salesExecutive" },
+    { label: "Sales Executive Name", value: "salesExecutiveName" },
+    { label: "Operation Executive", value: "operationExecutive" },
+    { label: "Operation Executive Name", value: "operationExecutiveName" },
+    { label: "Sales TL", value: "salesTL" },
+    { label: "Operation TL", value: "operationTL" },
+    { label: "Date", value: "date" },
+    { label: "Completed Date", value: "completedDate" },
+    { label: "Total Payments", value: "totalPayments" },
+    { label: "Duplicate", value: "duplicate" },
+    { label: "Important", value: "important" },
+    { label: "No Claim Bucket", value: "noClaimBucket" },
+  ];
+
+  const renderSafeMessage = (msg) => {
+    if (!msg) return "N/A"; // null or undefined
+    if (typeof msg === "string") return msg; // normal string
+    if (typeof msg?.message === "string") return msg.message; // { message: "text" }
+    try {
+      return JSON.stringify(msg, null, 2); // fallback for any object
+    } catch {
+      return "N/A"; // fallback if circular or invalid object
     }
   };
 
@@ -197,28 +309,28 @@ const WhatsappInhouse = () => {
 
             {/* 🔹 New Available Channels Dropdown */}
             <InputField
-              type="option"
+              type="selectwithdelete"
               control={control}
               errors={errors}
               label="Available Channels:"
               name="channel"
               mode="single"
-              options={[
-                { label: "Select Channel", value: "" },
-                ...(availableChannels || []).map((ch) => ({
-                  label: ch.name,
-                  value: ch.id,
-                })),
-              ]}
-            />
-
-            <InputField
-              type="text"
-              control={control}
-              errors={errors}
-              label="Lead ID:"
-              name="leadId"
-              placeholder="Enter Lead ID"
+              options={
+                Array.isArray(availableChannels?.available)
+                  ? availableChannels.available.map((ch) => ({
+                      label: `${ch.channelId} (${ch.phone})`,
+                      value: ch._id,
+                    }))
+                  : []
+              }
+              placeholder="Select a Channel"
+              onDeleteOption={(id) =>
+                dispatch(
+                  deleteChannel({ id }, (success) => {
+                    if (success) toast.success("Channel deleted successfully");
+                  })
+                )
+              }
             />
           </div>
 
@@ -226,72 +338,158 @@ const WhatsappInhouse = () => {
             <div>
               <label className="font-medium text-gray-700">Message:</label>
               <p className="border border-gray-300 p-2 mt-1 rounded bg-gray-50 whitespace-pre-wrap min-h-[180px]">
-                {selectedTemplateData?.message}
+                {renderSafeMessage(selectedTemplateData?.template?.message)}
               </p>
             </div>
+
             <div>
               <label className="font-medium text-gray-700">
                 Sample Message:
               </label>
               <p className="border border-gray-300 p-2 mt-1 rounded bg-gray-50 whitespace-pre-wrap min-h-[180px]">
-                {selectedTemplateData?.message ? sampleMessage : null}
+                {renderSafeMessage(
+                  sampleMessage || selectedTemplateData?.template?.message
+                )}
               </p>
             </div>
+
+            {/* 🔹 Uploaded File Preview */}
+            {watch("attachment") && watch("attachment")[0] && (
+              <div className="mt-3">
+                <p className="text-sm font-medium text-gray-600">
+                  Attached File:
+                </p>
+                {watch("attachment")[0].type.startsWith("image/") ? (
+                  <img
+                    src={URL.createObjectURL(watch("attachment")[0])}
+                    alt="preview"
+                    className="mt-2 max-h-40 rounded border"
+                  />
+                ) : (
+                  <a
+                    href={URL.createObjectURL(watch("attachment")[0])}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline mt-2 block"
+                  >
+                    {watch("attachment")[0].name}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
-          {selectedTemplateData?.variables?.length > 0 && (
-            <div className="mt-5">
-              <p className="text-lg font-semibold mb-3">Fill Variables:</p>
-              {selectedTemplateData.variables.map((variable, index) => {
-                const a = watch(`variableDropdownA_${index}`);
-                const b = watch(`variableDropdownB_${index}`);
-                const val = watch(`variableValue_${index}`);
+          <div className="mt-5">
+            <InputField
+              type="file"
+              control={control}
+              errors={errors}
+              label="Upload File / Image:"
+              name="attachment"
+              accept="image/*,.pdf,.doc,.docx"
+            />
+          </div>
 
-                return (
-                  <div key={index} className="flex gap-3 mb-3 items-center">
-                    <div className="font-medium min-w-[150px]">
-                      {variable.name}
-                    </div>
-                    <InputField
-                      type="option"
-                      control={control}
-                      errors={errors}
-                      name={`variableDropdownA_${index}`}
-                      options={[
-                        { label: "Select A", value: "" },
-                        ...dropdownVar,
-                      ]}
-                      disabled={b || val}
-                    />
-                    <AiOutlineSwap size={24} />
-                    <InputField
-                      type="option"
-                      control={control}
-                      errors={errors}
-                      name={`variableDropdownB_${index}`}
-                      options={[
-                        { label: "Select B", value: "" },
-                        ...dropdownVar,
-                      ]}
-                      disabled={a || val}
-                    />
-                    <InputField
+          {selectedTemplateData?.template?.variables.map((variable, index) => {
+            const manualValue = watch(`variableValue_${index}`);
+            const dropdownValue = watch(`variableDropdown_${index}`);
+
+            return (
+              <div key={index} className="flex gap-3 mb-3 items-center mt-10">
+                <div className="font-medium min-w-[150px]">{variable.name}</div>
+
+                {/* 🔹 Dropdown using native HTML select */}
+                <Controller
+                  name={`variableDropdown_${index}`}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      className="border p-2 border-black flex-1"
+                      disabled={!!manualValue}
+                      onChange={async (e) => {
+                        const value = e.target.value;
+                        field.onChange(value);
+
+                        if (!value) {
+                          setApiValues((prev) => ({ ...prev, [index]: {} }));
+                          return;
+                        }
+
+                        try {
+                          const res = await dispatch(
+                            getDropDownFieldsForVariablesInHouse({
+                              field: value,
+                            })
+                          );
+                          const record = res?.record || {};
+                          const valueFromApi = value.includes(".")
+                            ? value
+                                .split(".")
+                                .reduce((acc, key) => acc?.[key] ?? "", record)
+                            : record[value] ?? "";
+
+                          setApiValues((prev) => ({
+                            ...prev,
+                            [index]: {
+                              dropdown: value,
+                              apiValue: valueFromApi,
+                              text: "",
+                            },
+                          }));
+                        } catch (err) {
+                          setApiValues((prev) => ({
+                            ...prev,
+                            [index]: {
+                              dropdown: value,
+                              apiValue: "",
+                              text: "",
+                            },
+                          }));
+                        }
+                      }}
+                    >
+                      <option value="">Select Property</option>
+                      {leadProperties.map((prop) => (
+                        <option key={prop.value} value={prop.value}>
+                          {prop.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+
+                {/* 🔹 Manual Input */}
+                <Controller
+                  name={`variableValue_${index}`}
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      {...field}
                       type="text"
-                      control={control}
-                      errors={errors}
-                      name={`variableValue_${index}`}
-                      placeholder="Text Value"
-                      disabled={a || b}
+                      placeholder="Enter custom value"
+                      className="border p-2 border-black flex-1"
+                      disabled={!!dropdownValue}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        field.onChange(val);
+
+                        setApiValues((prev) => ({
+                          ...prev,
+                          [index]: { dropdown: "", apiValue: "", text: val },
+                        }));
+                      }}
                     />
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                  )}
+                />
+              </div>
+            );
+          })}
 
           {showFilterSection && (
             <>
-              <div className="mt-5 flex justify-between items-center border-t pt-5">
+              <div className="mt-5 flex justify-between items-center border-t py-5">
                 <p className="text-md font-semibold">Filter the leads first</p>
                 <button
                   type="button"
@@ -369,8 +567,19 @@ const WhatsappInhouse = () => {
       <InhouseSampleMsgModal
         open={showSampleModal}
         setOpen={setShowSampleModal}
+        selectedTemplate={selectedTemplateData}
+        selectedChannel={
+          availableChannels?.available?.find(
+            (ch) => ch._id === watch("channel")
+          ) || null
+        }
+        sampleMessage={sampleMessage}
         currentFormData={watchAllFields}
-        selectedTemplateData={selectedTemplateData}
+        attachment={
+          watch("attachment") && watch("attachment")[0]
+            ? watch("attachment")[0]
+            : null
+        }
       />
 
       <MarketingInHouseLeadFilter

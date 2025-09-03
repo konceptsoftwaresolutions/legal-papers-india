@@ -1844,7 +1844,11 @@ const EditLead = () => {
           </div>
 
           <div className="bg-[#6b788517] p-5 rounded-lg">
-            <LeadChats />
+            {leadData?.formData?.mobileNumber ? (
+              <LeadChats phoneNumber={leadData.formData.mobileNumber} />
+            ) : (
+              <div className="text-gray-500">Phone number not available</div>
+            )}
           </div>
 
           <div className="flex gap-x-3 gap-y-1 flex-wrap justify-between sticky bottom-1 p-2 main-bg shadow-lg rounded-md mt-3">

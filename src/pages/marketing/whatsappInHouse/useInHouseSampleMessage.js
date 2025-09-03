@@ -1,74 +1,60 @@
-import { useEffect, useState } from "react";
-import { getInHouseDropdownVariableValue } from "../../../redux/features/marketing";
-import { toast } from "react-toastify";
+import { useEffect, useMemo, useState } from "react";
 
-export const useInHouseSampleMessage = (selectedTemplateData, watch, dispatch) => {
+// Nested property safe extraction
+const getNestedValue = (obj, path) => {
+    if (!obj || !path) return "";
+    return path.split(".").reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : ""), obj);
+};
+
+export const useInHouseSampleMessage = (
+    selectedTemplateData,
+    watch,
+    apiValues = {},      // { [index]: { dropdown, apiValue, text } }
+    fallbackRecord = {}  // Redux record
+) => {
     const [sampleMessage, setSampleMessage] = useState("");
 
-    const fetchDropdownValues = async () => {
-        const result = [];
-
-        for (let index = 0; index < selectedTemplateData.variables.length; index++) {
-            const dropdownKey = watch(`variableDropdown_${index}`);
-            const enteredLeadId = watch("leadId");
-
-            let dropdownValue = dropdownKey;
-            if (dropdownKey && enteredLeadId) {
-                const payload = {
-                    leadId: enteredLeadId,
-                    fieldName: dropdownKey,
-                };
-
-                try {
-                    const value = await new Promise((resolve, reject) => {
-                        dispatch(
-                            getInHouseDropdownVariableValue(payload, (success, data) => {
-                                if (success) resolve(data);
-                                else reject("Failed to fetch dropdown value");
-                            })
-                        );
-                    });
-                    dropdownValue = value;
-                } catch (error) {
-                    toast.error("Failed to fetch dropdown value");
-                }
-            }
-
-            result.push(dropdownValue);
+    // Watch all variable values to trigger updates
+    const deps = useMemo(() => {
+        const vars = selectedTemplateData?.template?.variables || [];
+        const out = [];
+        for (let i = 0; i < vars.length; i++) {
+            out.push(watch(`variableDropdown_${i}`));
+            out.push(watch(`variableValue_${i}`));
+            out.push(apiValues[i]?.apiValue || "");
+            out.push(apiValues[i]?.text || "");
         }
-
-        return result;
-    };
-
-    const buildProcessedMessage = (dropdownValues) => {
-        if (!selectedTemplateData?.message) return "";
-
-        let processedMessage = selectedTemplateData.message;
-
-        selectedTemplateData.variables.forEach((variable, index) => {
-            const textValue = watch(`variableValue_${index}`);
-            const valueToUse = textValue || dropdownValues[index];
-
-            if (valueToUse) {
-                const regex = new RegExp(`\\{\\{${index + 1}\\}\\}`, "g");
-                processedMessage = processedMessage.replace(regex, valueToUse);
-            }
-        });
-
-        return processedMessage;
-    };
+        return out;
+    }, [selectedTemplateData, watch, apiValues]);
 
     useEffect(() => {
-        if (!selectedTemplateData) return;
+        if (!selectedTemplateData?.template?.message) {
+            setSampleMessage("");
+            return;
+        }
 
-        const generateMessage = async () => {
-            const dropdownValues = await fetchDropdownValues();
-            const finalMessage = buildProcessedMessage(dropdownValues);
-            setSampleMessage(finalMessage);
-        };
+        let updated = selectedTemplateData.template.message;
+        const variables = selectedTemplateData.template.variables || [];
 
-        generateMessage();
-    }, [selectedTemplateData, watch()]); // React Hook Form's `watch()` is reactive
+        for (let i = 0; i < variables.length; i++) {
+            const manual = watch(`variableValue_${i}`) || "";
+            const apiVal = apiValues[i]?.apiValue || "";
+            const textVal = apiValues[i]?.text || "";
+            const selectedField = watch(`variableDropdown_${i}`) || "";
+
+            // Priority: manual > API > text > fallback
+            let value = manual || apiVal || textVal;
+            if (!value && selectedField) {
+                value = getNestedValue(fallbackRecord, selectedField);
+            }
+
+            // Only replace if we have a value, otherwise leave {{i+1}} as-is
+            const regex = new RegExp(`\\{\\{\\s*${i + 1}\\s*\\}\\}`, "g");
+            updated = value ? updated.replace(regex, value) : updated;
+        }
+
+        setSampleMessage(updated);
+    }, [selectedTemplateData, fallbackRecord, ...deps, watch]);
 
     return sampleMessage;
 };

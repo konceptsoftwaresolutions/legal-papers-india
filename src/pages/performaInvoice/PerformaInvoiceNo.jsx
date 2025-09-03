@@ -122,6 +122,7 @@ const PerformaInvoiceNo = () => {
     },
     { name: "Name", selector: (row) => row.name, sortable: true, width: "25%" },
     { name: "Mobile", selector: (row) => row.mobileNumber || "-" },
+    { name: "GST No", selector: (row) => row.gstNo || "-" },
     {
       name: "Date",
       selector: (row) => new Date(row.date).toLocaleDateString("en-GB"),

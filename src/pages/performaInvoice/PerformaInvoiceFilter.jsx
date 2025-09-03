@@ -1,8 +1,12 @@
 import React from "react";
 import Filters from "../../components/sliders/Filters";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import InputField from "../../components/fields/InputField";
 import MyButton from "../../components/buttons/MyButton";
+import { DatePicker, Select } from "antd"; // antd import
+import dayjs from "dayjs";
+
+const { Option } = Select;
 
 const PerformaInvoiceFilter = ({
   isOpen = false,
@@ -11,12 +15,17 @@ const PerformaInvoiceFilter = ({
   setFilteredData,
   setIsFilterActive,
 }) => {
-  const { control, handleSubmit, reset, formState: { errors } } = useForm();
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   const onReset = () => {
     reset({
       name: "",
-      gstNumber: "",
+      gstNo: "",
       fromDate: "",
       toDate: "",
       month: "",
@@ -36,9 +45,9 @@ const PerformaInvoiceFilter = ({
       );
     }
 
-    if (data.gstNumber) {
+    if (data.gstNo) {
       filtered = filtered.filter((inv) =>
-        inv.gstNumber?.toLowerCase().includes(data.gstNumber.toLowerCase())
+        inv.gstNo?.toLowerCase().includes(data.gstNo.toLowerCase())
       );
     }
 
@@ -80,38 +89,85 @@ const PerformaInvoiceFilter = ({
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 font-extrabold"
     >
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-2">
-        <InputField control={control} errors={errors} label="Name" name="name" type="text" />
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-y-4">
+        <InputField
+          control={control}
+          errors={errors}
+          label="Name"
+          name="name"
+          type="text"
+        />
+
         <InputField
           control={control}
           errors={errors}
           label="GST Number"
-          name="gstNumber"
+          name="gstNo"
           type="text"
         />
-        <InputField
-          control={control}
-          errors={errors}
-          label="From Date"
-          name="fromDate"
-          type="date"
-        />
-        <InputField
-          control={control}
-          errors={errors}
-          label="To Date"
-          name="toDate"
-          type="date"
-        />
-        <InputField
-          control={control}
-          errors={errors}
-          label="Month (1-12)"
-          name="month"
-          type="number"
-        />
-        <InputField control={control} errors={errors} label="Year" name="year" type="number" />
 
+        {/* From - To Date in one row */}
+        <div className="grid grid-cols-2 gap-4">
+          <InputField
+            control={control}
+            errors={errors}
+            label="From Date"
+            name="fromDate"
+            type="date"
+          />
+          <InputField
+            control={control}
+            errors={errors}
+            label="To Date"
+            name="toDate"
+            type="date"
+          />
+        </div>
+
+        <InputField
+          name="month"
+          label="Select Month"
+          type="select"
+          mode="single"
+          control={control}
+          errors={errors}
+          options={[
+            { label: "January", value: "01" },
+            { label: "February", value: "02" },
+            { label: "March", value: "03" },
+            { label: "April", value: "04" },
+            { label: "May", value: "05" },
+            { label: "June", value: "06" },
+            { label: "July", value: "07" },
+            { label: "August", value: "08" },
+            { label: "September", value: "09" },
+            { label: "October", value: "10" },
+            { label: "November", value: "11" },
+            { label: "December", value: "12" },
+          ]}
+        />
+
+        {/* Year Picker */}
+        <div>
+          <label className="block font-medium text-black mb-1">
+            Year (YYYY)
+          </label>
+          <Controller
+            name="year"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                picker="year"
+                className="w-full border border-gray-600 rounded-none"
+                format="YYYY"
+                value={field.value ? dayjs(field.value, "YYYY") : null}
+                onChange={(date, dateString) => field.onChange(dateString)}
+              />
+            )}
+          />
+        </div>
+
+        {/* Buttons */}
         <div className="w-full flex justify-end items-center py-3 gap-x-2 sticky bottom-0 border-t-4 bg-white">
           <MyButton
             type="button"
