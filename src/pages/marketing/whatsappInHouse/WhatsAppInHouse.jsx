@@ -24,6 +24,7 @@ import { useInHouseSampleMessage } from "./useInHouseSampleMessage";
 import AddTemplateModal from "./AddTemplateModal";
 import { Controller } from "react-hook-form";
 import { Select, Option } from "@material-tailwind/react";
+import ExcelUploadModal from "./ExcelUploadModal";
 
 const WhatsappInhouse = () => {
   const navigate = useNavigate();
@@ -40,6 +41,9 @@ const WhatsappInhouse = () => {
   const [filterObject, setFilterObject] = useState();
   const [showAddChannelModal, setShowAddChannelModal] = useState(false);
   const [apiValues, setApiValues] = useState({});
+  const [showExcelModal, setShowExcelModal] = useState(false);
+  const [sendType, setSendType] = useState("normal");
+  const [showTypeSelect, setShowTypeSelect] = useState(false);
 
   const { allInhouseTemplates, dropdownVar, availableChannels, record } =
     useSelector((state) => state.marketing);
@@ -137,11 +141,6 @@ const WhatsappInhouse = () => {
   };
 
   const onSubmitHandler = (data) => {
-    console.log("📝 Raw form data from react-hook-form:", data);
-    console.log("📦 Selected template data:", selectedTemplateData);
-    console.log("🌐 Available channels:", availableChannels);
-    console.log("📊 Filtered leads:", filteredLeads);
-    console.log("🔹 API values for variables:", apiValues);
 
     if (!selectedTemplateData) {
       toast.error("Please select a template first.");
@@ -267,23 +266,23 @@ const WhatsappInhouse = () => {
     <div className="p-5">
       <Heading text="WhatsApp Inhouse" showHeading />
 
-      <div className="p-3 bg-white shadow-lg mt-3 rounded-lg border-gray-600 flex justify-between items-center flex-col md:flex-row gap-y-2 md:gap-y-0">
+      <div className="p-3 bg-white shadow-lg mt-3 rounded-lg border-gray-900 flex justify-between items-center flex-col md:flex-row gap-y-2 md:gap-y-0">
         <p className="text-xl font-semibold">Send WhatsApp Inhouse</p>
         <div className="flex gap-3 flex-wrap">
           <button
-            className="bg-green-600 hover:bg-green-500 px-4 py-2 text-white rounded-md"
+            className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
             onClick={() => setShowAddChannelModal(true)}
           >
             Add Channel
           </button>
           <button
-            className="bg-yellow-600 hover:bg-yellow-400 px-4 py-2 text-white rounded-md"
+            className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
             onClick={handleCreateTemplate}
           >
             Create Template
           </button>
           <button
-            className="bg-gray-500 hover:bg-gray-400 px-4 py-2 text-white rounded-md"
+            className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
             onClick={handleSampleMessageClick}
           >
             Sample Message
@@ -319,14 +318,14 @@ const WhatsappInhouse = () => {
                 Array.isArray(availableChannels?.available)
                   ? availableChannels.available.map((ch) => ({
                       label: `${ch.channelId} (${ch.phone})`,
-                      value: ch._id,
+                      value: ch.channelId,
                     }))
                   : []
               }
               placeholder="Select a Channel"
-              onDeleteOption={(id) =>
+              onDeleteOption={(channelId) =>
                 dispatch(
-                  deleteChannel({ id }, (success) => {
+                  deleteChannel({ channelId }, (success) => {
                     if (success) toast.success("Channel deleted successfully");
                   })
                 )
@@ -536,24 +535,44 @@ const WhatsappInhouse = () => {
 
           <div className="flex gap-3 mt-5">
             <button
-              className="bg-slate-600 hover:bg-slate-400 px-4 py-2 text-white rounded-md"
+              className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
               type="submit"
               onClick={() => setSubmitAction("save")}
             >
               Save
             </button>
             {!showFilterSection && (
-              <button
-                className="bg-slate-600 hover:bg-slate-400 px-4 py-2 text-white rounded-md"
-                type="submit"
-                onClick={() => setShowFilterSection(true)}
-              >
-                Save & Send
-              </button>
+              <div className="flex gap-3">
+                {/* Excel Save & Send */}
+                <button
+                  className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
+                  type="button"
+                  onClick={() => {
+                    setSendType("excel"); // type set
+                    setShowExcelModal(true); // open Excel modal
+                  }}
+                >
+                  Save & Send (Excel)
+                </button>
+
+                {/* Normal Save & Send */}
+                <button
+                  className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
+                  type="submit"
+                  onClick={() => {
+                    setSendType("normal"); // type set
+                    setSubmitAction("send"); // normal send
+                    setShowFilterSection(true); // show filter section
+                  }}
+                >
+                  Save & Send (Normal)
+                </button>
+              </div>
             )}
+
             {showFilterSection && (
               <button
-                className="bg-slate-600 hover:bg-slate-400 px-4 py-2 text-white rounded-md"
+                className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
                 type="submit"
                 onClick={() => setSubmitAction("send")}
               >
@@ -594,6 +613,25 @@ const WhatsappInhouse = () => {
       <AddTemplateModal
         open={showAddChannelModal}
         setOpen={setShowAddChannelModal}
+      />
+
+      <ExcelUploadModal
+        open={showExcelModal}
+        setOpen={setShowExcelModal}
+        campaignName={selectedTemplateData?.campaignName || ""}
+        templateId={selectedTemplateData?.template?._id || ""}
+        templateName={selectedTemplateData?.template?.name || ""}
+        variables={selectedTemplateData?.template?.variables || []}
+        selectedImage={watch("attachment") ? watch("attachment")[0] : null}
+        channelId={
+          availableChannels?.available?.find(
+            (ch) => ch._id === watch("channel")
+          )?.channelId || ""
+        }
+        compiledMessage={
+          sampleMessage || selectedTemplateData?.template?.message
+        }
+        message={selectedTemplateData?.template?.message}
       />
     </div>
   );

@@ -75,6 +75,9 @@ const UserDetails = () => {
         teamLeadName: userData?.teamLeadName,
         userStatus: userData?.userStatus === true ? "true" : "false",
         userAssignment: userData?.userAssignment,
+        dob: userData?.dob
+        ? new Date(userData.dob).toISOString().split("T")[0] // 👈 yyyy-mm-dd format
+        : "",
       });
     }
   }, [userData]);

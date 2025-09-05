@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogHeader,
@@ -16,38 +16,54 @@ import { IoIosCloseCircle } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { addLead } from "../../redux/features/leads";
 import toast from "react-hot-toast";
+import useAxios from "../../hooks/useAxios";
 
 const PasswordModal = ({ passModal, setPassModal, onSave }) => {
   const dispatch = useDispatch();
-
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const axiosInstance = useAxios();
   const {
     handleSubmit,
     control,
-    getValues,
     formState: { errors },
-    reset,
-    watch,
   } = useForm();
 
   const handleCloseModal = () => {
     setPassModal(false);
+    setOtpSent(false);
+    setOtp("");
   };
 
-  const onSubmit = (data) => {
-    if (data?.password) {
+  const onSubmit = async (data) => {
+    if (!otpSent) {
+      // Step 1: Password check
       if (data?.password !== "SharmaSarthak@666") {
         toast.error("Incorrect Password: Please try again.");
         handleCloseModal();
-
-        return null;
+        return;
       }
 
-      onSave(data?.password);
-      reset();
-      handleCloseModal();
+      // Step 2: Generate OTP API call
+      try {
+        await axiosInstance.post("/api/generate-export-otp");
+        toast.success("OTP sent to your registered email/phone");
+        setOtpSent(true);
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Failed to generate OTP");
+      }
     } else {
-      toast.error("Please enter your password to continue.");
-      handleCloseModal();
+      // Step 3: Verify OTP API call
+      try {
+        const res = await axiosInstance.post("/api/verify-export-otp", { otp });
+        toast.success("OTP verified successfully");
+        handleCloseModal();
+
+        // Step 4: Trigger export if verified
+        onSave(data?.password);
+      } catch (error) {
+        toast.error(error?.response?.data?.message || "Invalid OTP, try again");
+      }
     }
   };
 
@@ -60,7 +76,7 @@ const PasswordModal = ({ passModal, setPassModal, onSave }) => {
     >
       <DialogHeader className="text-xl primary-gradient text-white poppins-font main-bg">
         <div className="flex justify-between w-full items-center">
-          Password
+          {otpSent ? "Enter OTP" : "Password"}
           <button onClick={handleCloseModal} className="text-2xl">
             <IoIosCloseCircle />
           </button>
@@ -71,16 +87,26 @@ const PasswordModal = ({ passModal, setPassModal, onSave }) => {
         style={{ maxHeight: "calc(90vh - 64px)" }}
       >
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1    gap-4">
-            <InputField
-              control={control}
-              name="password"
-              errors={errors}
-              label="Password"
-              type="password"
-            />
+          <div className="grid grid-cols-1 gap-4">
+            {!otpSent ? (
+              <InputField
+                control={control}
+                name="password"
+                errors={errors}
+                label="Password"
+                type="password"
+              />
+            ) : (
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Enter OTP"
+                className="border rounded-lg p-2 w-full"
+              />
+            )}
             <Button type="submit" className="main-bg mt-3">
-              Save
+              {otpSent ? "Verify OTP" : "Save"}
             </Button>
           </div>
         </form>

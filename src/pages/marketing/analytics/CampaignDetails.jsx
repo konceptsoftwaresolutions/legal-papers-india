@@ -95,12 +95,16 @@ const CampaignDetails = ({ campaign }) => {
   return (
     <div className="bg-white p-4 rounded shadow-sm">
       <h2 className="text-lg font-semibold mb-3 text-indigo-700">
-        Campaign Name - {campaign?.campaignName}
+        {campaign?.campaignName && (
+          <div className="flex gap-2 items-center">
+            <span className="font-semibold">Campaign Name - {campaign.campaignName}</span>
+          </div>
+        )}
       </h2>
       <div className="w-full flex justify-between font-poppins font-medium not-italic leading-normal items-center  mb-3">
         <div className="flex justify-center  items-center">
           <h2 className="text-[18px] font-semibold">
-            Sent At: {formatDate(campaign?.sentAt)}
+            Sent At: {formatDate(campaign?.sentAt || campaign?.createdAt)}
           </h2>
         </div>
       </div>
@@ -118,16 +122,24 @@ const CampaignDetails = ({ campaign }) => {
         paginationPerPage={8}
         onRowClicked={handleTemplateNavigation}
       />
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 mt-3">
         <ReportCard
           // key={index}
           number={campaign?.skippedCount}
           color={campaign?.color}
           title={"Skipped Count"}
         />
+        {campaign?.totalRecords && (
         <ReportCard
           // key={index}
-          number={campaign?.successCount}
+          number={campaign?.totalRecords}
+          color={campaign?.color}
+          title={"Total Records"}
+        />
+        )}
+        <ReportCard
+          // key={index}
+          number={campaign?.successCount || campaign?.sentCount}
           color={campaign?.color}
           title={"Success Count"}
         />

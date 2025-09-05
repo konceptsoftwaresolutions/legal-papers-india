@@ -32,10 +32,10 @@ const marketingSlice = createSlice({
             state.channelDetails = null;
         },
         removeChannelFromState: (state, action) => {
-      state.availableChannels = state.availableChannels.filter(
-        (ch) => ch.id !== action.payload
-      );
-    },
+            state.availableChannels = state.availableChannels.filter(
+                (ch) => ch.id !== action.payload
+            );
+        },
     },
 });
 
@@ -530,6 +530,23 @@ export const getEmailTemplateLogs = (callback = () => { }) => {
     };
 };
 
+export const getWhatsAppInHouseTemplateLogs = (callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            const response = await axiosInstance.post("/api/legalpapers/get-all-whatsapp-campaigns");
+            if (response.status === 200) {
+                console.log(response.data);
+                callback(true, response.data.campaigns); // assuming the response has a 'campaigns' field
+            }
+        } catch (error) {
+            console.log(error);
+            let message = error?.response?.data?.message || "Something went wrong";
+            toast.error(message);
+            callback(false, message);
+        }
+    };
+};
+
 export const getSingleWhatsAppCampaignLogs = (payload, callback = () => { }) => {
     return async (dispatch) => {
         try {
@@ -617,50 +634,50 @@ export const deleteWAInHouseTemplate = (payload, callback = () => { }) => {
     };
 };
 
-export const sendWAInHouseSampleMessage = (payload, setIsLoading, callback = () => {}) => {
-  return async (dispatch) => {
-    try {
-      setIsLoading(true);
+export const sendWAInHouseSampleMessage = (payload, setIsLoading, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            setIsLoading(true);
 
-      const config = {};
+            const config = {};
 
-      // Agar payload FormData hai, axios automatically 'multipart/form-data' set karega
-      if (payload instanceof FormData) {
-        config.headers = { "Content-Type": "multipart/form-data" };
-      }
+            // Agar payload FormData hai, axios automatically 'multipart/form-data' set karega
+            if (payload instanceof FormData) {
+                config.headers = { "Content-Type": "multipart/form-data" };
+            }
 
-      const response = await axiosInstance.post(
-        "/api/legalpapers/send-single-whatsapp",
-        payload,
-        config
-      );
+            const response = await axiosInstance.post(
+                "/api/legalpapers/send-single-whatsapp",
+                payload,
+                config
+            );
 
-      if (response.status === 200) {
-        setIsLoading(false);
-        toast.success("WhatsApp message queued");
-        callback(true);
-      }
-    } catch (error) {
-      setIsLoading(false);
+            if (response.status === 200) {
+                setIsLoading(false);
+                toast.success("WhatsApp message queued");
+                callback(true);
+            }
+        } catch (error) {
+            setIsLoading(false);
 
-      let message = "Error";
+            let message = "Error";
 
-      if (error.response) {
-        if (typeof error.response.data === "string") {
-          message = error.response.data;
-        } else if (error.response.data?.message) {
-          message = error.response.data.message;
-        } else {
-          message = JSON.stringify(error.response.data, null, 2);
+            if (error.response) {
+                if (typeof error.response.data === "string") {
+                    message = error.response.data;
+                } else if (error.response.data?.message) {
+                    message = error.response.data.message;
+                } else {
+                    message = JSON.stringify(error.response.data, null, 2);
+                }
+            } else if (error.message) {
+                message = error.message;
+            }
+
+            toast.error(message);
+            callback(false);
         }
-      } else if (error.message) {
-        message = error.message;
-      }
-
-      toast.error(message);
-      callback(false);
-    }
-  };
+    };
 };
 
 export const getWAInHouseTemplateById = (payload, callback = () => { }) => {
@@ -852,7 +869,6 @@ export const whatsAppInHouseTemplateSaveSend = (
     };
 };
 
-
 // ✅ GET /whatsappInHouseTemplate/available-channels
 export const getAvailableChannels = (callback = () => { }, setLoading) => {
     return async (dispatch) => {
@@ -913,7 +929,6 @@ export const addChannel = (payload, callback = () => { }, setLoading) => {
     };
 };
 
-
 // ✅ GET /channels/:channelId
 export const getChannelById = (channelId, callback = () => { }, setLoading) => {
     return async (dispatch) => {
@@ -934,31 +949,21 @@ export const getChannelById = (channelId, callback = () => { }, setLoading) => {
 };
 
 export const deleteChannel = (payload, callback) => {
-  return async (dispatch) => {
-    dispatch(setLoading(true));
-    try {
-      const res = await axios.post("/delete-channel", payload);
-      if (res.status === 200) {
-        toast.success(res.data.message || "Channel deleted");
-
-        // Remove from local state
-        dispatch(removeChannelFromState(payload.id));
-
-        // Optional: dispatch to refresh channels if needed
-        // dispatch(getChannels());
-
-        // Call the callback if provided
-        if (callback && typeof callback === "function") {
-          callback(res.data);
+    return async (dispatch) => {
+        try {
+            const res = await axiosInstance.post("/api/legalpapers/delete-channel", payload);
+            if (res.status === 200) {
+                toast.success(res.data.message || "Channel deleted");
+                dispatch(removeChannelFromState(payload.id));
+                dispatch(getChannels());
+                if (callback && typeof callback === "function") {
+                    callback(res.data);
+                }
+            }
+            return res.data;
+        } catch (error) {
+            toast.error(error?.message || "Something went wrong");
+            throw error;
         }
-      }
-      dispatch(setLoading(false));
-      return res.data;
-    } catch (error) {
-      dispatch(setError(error));
-      toast.error(error?.message || "Something went wrong");
-      dispatch(setLoading(false));
-      throw error;
-    }
-  };
+    };
 };

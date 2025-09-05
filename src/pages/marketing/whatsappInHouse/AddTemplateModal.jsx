@@ -93,12 +93,12 @@ const AddTemplateModal = ({ open, setOpen }) => {
       className="rounded-xl"
     >
       {/* Header */}
-      <DialogHeader className="flex justify-between items-center border-b pb-2">
-        <h2 className="text-lg font-semibold text-gray-800">
+      <DialogHeader className="flex justify-between items-center border-b pb-3 main-bg rounded-t-lg text-white">
+        <h2 className="text-lg font-semibold text-white">
           Add WhatsApp Channel
         </h2>
         <IoIosCloseCircle
-          className="text-2xl cursor-pointer text-red-500 hover:text-red-600 transition"
+          className="text-2xl cursor-pointer text-white hover:text-red-800 transition"
           onClick={handleClose}
         />
       </DialogHeader>

@@ -60,12 +60,15 @@ const SelectFieldWithDelete = ({
             options={options.map((opt) => ({
               value: opt.value,
               label: (
-                <div className="flex justify-between items-center">
-                  <span>{opt.label}</span>
+                <div className="flex items-center justify-between w-full">
+                  {/* Label text */}
+                  <span className="truncate max-w-[80%]">{opt.label}</span>
+
+                  {/* Delete button */}
                   {label !== "Select A Template" && (
                     <button
                       type="button"
-                      className="text-red-500 text-xs hover:underline ml-2"
+                      className="text-red-500 text-xs hover:underline ml-auto flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("Deleting option:", opt.value);

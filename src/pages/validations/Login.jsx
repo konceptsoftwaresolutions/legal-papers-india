@@ -15,6 +15,7 @@ import { setAuth } from "../../redux/features/auth";
 import { setUser } from "../../redux/features/user";
 import { useDispatch } from "react-redux";
 import useAxios from "../../hooks/useAxios";
+import OTPModal from "./OTPModal";
 
 const useCelebration = (ref) => {
   const trigger = useCallback(() => {
@@ -233,6 +234,8 @@ const Login = () => {
 
   const [notificationType, setNotificationType] = useState("");
   const [enteredEmail, setEnteredEmail] = useState("");
+  const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [pendingUserId, setPendingUserId] = useState(null);
 
   if (notificationType) {
     console.log(notificationType);
@@ -325,7 +328,12 @@ const Login = () => {
       // Send the login request with the location included
       const response = await axiosInstance.post("/api/login", loginData);
       console.log("res", response);
-
+      if (response.data.requiresOTP) {
+        setPendingUserId(response.data.userId);
+        setOtpModalOpen(true);
+        toast.success(response.data.message);
+        return;
+      }
       const token = response.data.token;
 
       if (token) {
@@ -366,7 +374,10 @@ const Login = () => {
           toast.error(error.response.data || "Something went wrong");
         }
       } else {
-        toast.error("An unexpected error occurred");
+        // 👇 Ye generic error sirf tabhi chale jab modal open nahi hua
+        if (!otpModalOpen) {
+          toast.error("An unexpected error occurred");
+        }
       }
     } finally {
       setIsLoading(false);
@@ -441,6 +452,33 @@ const Login = () => {
           </MyButton>
         </form>
       </div>
+      <OTPModal
+        open={otpModalOpen}
+        onClose={() => setOtpModalOpen(false)}
+        userId={pendingUserId}
+        onSuccess={(token, userData) => {
+          const user = jwtDecode(token);
+          const role = user.foundUser.profile;
+          const abilityUser = user.foundUser;
+          const ability = {
+            departments: abilityUser?.userDepartment,
+            profile: abilityUser?.profile,
+          };
+
+          dispatch(
+            setAuth({
+              token,
+              isAuthenticated: true,
+              role,
+              ability,
+              user: user.foundUser,
+            })
+          );
+          dispatch(setUser({ userData: user.foundUser }));
+          toast.success("Logged in successfully");
+          setOtpModalOpen(false);
+        }}
+      />
     </div>
   );
 };

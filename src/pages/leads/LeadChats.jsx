@@ -38,7 +38,6 @@ const ChatMessage = ({ message }) => {
 // LeadChats component
 const LeadChats = ({ phoneNumber }) => {
   const dispatch = useDispatch();
-  const chatEndRef = useRef(null);
 
   const messagesFromRedux = useSelector(
     (state) => state.leads.chatMessages.messages || []
@@ -64,12 +63,6 @@ const LeadChats = ({ phoneNumber }) => {
   useEffect(() => {
     refreshChats();
   }, []);
-
-  useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messagesFromRedux]);
 
   const handleSend = async () => {
     if (!newMsg.trim()) return;
@@ -128,7 +121,7 @@ const LeadChats = ({ phoneNumber }) => {
               <ChatMessage key={msg.id || Math.random()} message={msg} />
             ))
         )}
-        <div ref={chatEndRef} />
+        <div />
       </div>
 
       {/* Input */}
