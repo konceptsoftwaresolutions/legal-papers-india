@@ -10,6 +10,7 @@ import Heading from "../../common/Heading";
 import { createService } from "../../redux/features/services";
 import "react-quill/dist/quill.snow.css";
 import { Spinner } from "@material-tailwind/react";
+import { serviceCategoryOption } from "../../constants/options";
 
 // Quill config
 const quillModules = {
@@ -75,6 +76,9 @@ const AddService = () => {
         <InputField
           name="name"
           label="Name"
+          type="select"
+          mode="single"
+          options={serviceCategoryOption}
           control={control}
           errors={errors}
           rules={{ required: "Required" }}

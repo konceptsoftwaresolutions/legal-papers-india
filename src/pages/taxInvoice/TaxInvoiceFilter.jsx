@@ -62,6 +62,23 @@ const TaxInvoiceFilter = ({
         (inv) => new Date(inv.date) <= new Date(data.toDate)
       );
     }
+    
+    if (data.salesExecutive) {
+      filtered = filtered.filter(
+        (inv) =>
+          inv.salesExecutive &&
+          inv.salesExecutive.toLowerCase() === data.salesExecutive.toLowerCase()
+      );
+    }
+
+    if (data.service) {
+      filtered = filtered.filter((inv) =>
+        inv.services?.some(
+          (srv) =>
+            srv.name && srv.name.toLowerCase() === data.service.toLowerCase()
+        )
+      );
+    }
 
     if (data.year) {
       filtered = filtered.filter(
@@ -123,6 +140,44 @@ const TaxInvoiceFilter = ({
             type="date"
           />
         </div>
+
+        {/* Sales Executive Dropdown */}
+        <InputField
+          name="salesExecutive"
+          label="Sales Executive"
+          type="select"
+          mode="single"
+          control={control}
+          errors={errors}
+          options={[
+            { label: "All", value: "" },
+            ...Array.from(
+              new Set(
+                allInvoices.map((inv) => inv.salesExecutive).filter(Boolean)
+              )
+            ).map((exec) => ({ label: exec, value: exec })),
+          ]}
+        />
+
+        {/* Services Dropdown */}
+        <InputField
+          name="service"
+          label="Service"
+          type="select"
+          mode="single"
+          control={control}
+          errors={errors}
+          options={[
+            { label: "All", value: "" },
+            ...Array.from(
+              new Set(
+                allInvoices
+                  .flatMap((inv) => inv.services?.map((s) => s.name))
+                  .filter(Boolean)
+              )
+            ).map((srv) => ({ label: srv, value: srv })),
+          ]}
+        />
 
         {/* Month Dropdown */}
         <InputField

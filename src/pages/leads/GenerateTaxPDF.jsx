@@ -212,6 +212,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
     // selectedServiceData: services = [],
     paidAmount = 0,
     termsAndConditions,
+    discount,
   } = formData;
 
   const renderFormattedDescription = (html) => {
@@ -351,8 +352,9 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
     hsnWiseSummary[hsn].amount += amount;
   });
 
-  const total = subTotal + cgst + sgst + igst;
-  const balanceAmount = total - paidAmount;
+  const netAmount = subTotal - Number(discount || 0);
+  const grandTotal = netAmount + cgst + sgst + igst;
+  // const balanceAmount = total - paidAmount;
 
   const convertToWords = (num) => {
     return toWords(num).replace(/\b\w/g, (c) => c.toUpperCase());
@@ -386,7 +388,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           <Image src={logo} style={{ width: 140, height: "auto" }} />
 
           <View style={{ flex: 1, alignItems: "flex-end" }}>
-            <Text style={styles.heading}>INVOICE GST - {invoiceNo}</Text>
+            <Text style={styles.heading}>TAX INVOICE - {invoiceNo}</Text>
             <Text style={styles.topRight}>
               <Text style={styles.bold}>Date:</Text> {formatDate(date)}
             </Text>
@@ -503,7 +505,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
             <Text>Total Amount:</Text>
             <Text>
               <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-              {total.toFixed(2)}
+              {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -581,6 +583,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
 
           {/* TOTAL BOX - RIGHT SIDE */}
           <View style={{ width: "40%", paddingLeft: 10 }}>
+            {/* Sub Total */}
             <View style={styles.summaryRow}>
               <Text>Sub Total</Text>
               <Text>
@@ -588,11 +591,54 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
                 {subTotal.toFixed(2)}
               </Text>
             </View>
+
+            {/* Discount & Net Amount - show only if discount exists */}
+            {Number(discount || 0) > 0 && (
+              <>
+                {/* Discount */}
+                <View style={styles.summaryRow}>
+                  <Text>Discount (-)</Text>
+                  <Text>
+                    <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
+                      ₹
+                    </Text>
+                    {Number(discount).toFixed(2)}
+                  </Text>
+                </View>
+
+                {/* Net Amount */}
+                <View style={styles.summaryRow}>
+                  <Text>Net Amount</Text>
+                  <Text>
+                    <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
+                      ₹
+                    </Text>
+                    {(subTotal - Number(discount)).toFixed(2)}
+                  </Text>
+                </View>
+              </>
+            )}
+
+            {/* Tax Amount */}
             <View style={styles.summaryRow}>
               <Text>Tax Amount (+)</Text>
               <Text>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
                 {(cgst + sgst + igst).toFixed(2)}
+              </Text>
+            </View>
+
+            {/* GRAND TOTAL */}
+            <View
+              style={[
+                styles.summaryRow,
+                { borderTop: "1px solid #000", marginTop: 4, paddingTop: 2 },
+              ]}
+            >
+              <Text style={{ fontWeight: "bold" }}>Grand Total</Text>
+              <Text style={{ fontWeight: "bold" }}>
+                <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
+                {grandTotal.toFixed(2)}
               </Text>
             </View>
           </View>
@@ -606,23 +652,24 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
             alignItems: "center",
             marginTop: 2,
             marginBottom: 2,
-            gap: 20,
           }}
         >
           {/* Left side - Amount in words */}
-          <View style={{ width: "50%", paddingLeft: 5 }}>
+          <View style={{ flex: 1, paddingRight: 20 }}>
             <Text style={styles.footerText}>
-              Amount (in words): {convertToCurrencyWords(total)}
+              Amount (in words): {convertToCurrencyWords(grandTotal)}
             </Text>
           </View>
 
           {/* Right side - Total Amount Box */}
-          <View style={[styles.totalAmountBox, { width: "38%" }]}>
-            <Text style={styles.totalAmountLabel}>TOTAL AMOUNT</Text>
-            <Text style={styles.totalAmountValue}>
-              <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-              {total.toFixed(2)}
-            </Text>
+          <View style={{ width: "38%" }}>
+            <View style={styles.totalAmountBox}>
+              <Text style={styles.totalAmountLabel}>GRAND TOTAL AMOUNT</Text>
+              <Text style={styles.totalAmountValue}>
+                <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
+                {grandTotal.toFixed(2)}
+              </Text>
+            </View>
           </View>
         </View>
 
@@ -653,11 +700,12 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               <Text style={styles.bold}>Amount Paid:</Text>
               <Text>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-                {paidAmount.toFixed(2)}
+                {grandTotal.toFixed(2)}
+                {/* {paidAmount.toFixed(2)} */}
               </Text>
             </View>
 
-            <View
+            {/* <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
@@ -669,7 +717,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
                 {balanceAmount.toFixed(2)}
               </Text>
-            </View>
+            </View> */}
           </View>
         </View>
 

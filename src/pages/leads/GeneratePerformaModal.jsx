@@ -63,6 +63,20 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const getCurrentDate = () => new Date().toISOString().split("T")[0];
 
+  const placeOfSupply = watch("placeOfSupply");
+
+  useEffect(() => {
+    if (!placeOfSupply) return;
+
+    const [stateCode] = placeOfSupply.split("-"); // e.g., "07-Delhi" => ["07", "Delhi"]
+
+    if (stateCode === "07") {
+      setValue("taxType", "intra"); // auto-select intra-state
+    } else {
+      setValue("taxType", "inter"); // auto-select inter-state for other states
+    }
+  }, [placeOfSupply, setValue]);
+
   const [termsQuill, setTermsQuill] = useState("");
   useEffect(() => {
     // Update termsQuill whenever selected services change
@@ -159,7 +173,8 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
       });
 
       const totalTax = sgst + cgst + igst;
-      const invoiceTotal = taxableValue + totalTax;
+      const discount = parseFloat(data.discount) || 0;
+      const invoiceTotal = taxableValue + totalTax - discount;
 
       // Step 4: Prepare PI payload
       const pi = {
@@ -183,6 +198,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
         },
         termsAndConditions: termsQuill,
         invoiceNo,
+        discount,
       };
 
       console.log("📝 PI Payload:", pi);
@@ -213,7 +229,8 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
       formData.append("termsAndConditions", pi.termsAndConditions || "");
-      formData.append("totals", JSON.stringify(pi.totals)); // ✅ only totals added
+      formData.append("totals", JSON.stringify(pi.totals));
+      formData.append("discount", discount);
       formData.append("pdfFile", pdfFile);
 
       // Step 7: Dispatch create invoice
@@ -390,6 +407,13 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
             name="validUntil"
             label="Valid Until"
             type="date"
+            control={control}
+            errors={errors}
+          />
+          <InputField
+            name="discount"
+            label="Discount"
+            type="number"
             control={control}
             errors={errors}
           />

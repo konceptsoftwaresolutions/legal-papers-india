@@ -67,6 +67,20 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
 
   const getCurrentDate = () => new Date().toISOString().split("T")[0];
 
+  const placeOfSupply = watch("placeOfSupply");
+
+  useEffect(() => {
+    if (!placeOfSupply) return;
+
+    const [stateCode] = placeOfSupply.split("-"); // e.g., "07-Delhi" => ["07", "Delhi"]
+
+    if (stateCode === "07") {
+      setValue("taxType", "intra"); // auto-select intra-state
+    } else {
+      setValue("taxType", "inter"); // auto-select inter-state for other states
+    }
+  }, [placeOfSupply, setValue]);
+
   // Auto-update Terms & Conditions based on selected services
   useEffect(() => {
     setTermsQuill(
@@ -184,7 +198,8 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
       const cgst = selectedServiceDetails.reduce((sum, s) => sum + s.cgst, 0);
       const igst = selectedServiceDetails.reduce((sum, s) => sum + s.igst, 0);
       const totalTax = sgst + cgst + igst;
-      const invoiceTotal = taxableValue + totalTax;
+      const discount = parseFloat(data.discount) || 0;
+      const invoiceTotal = taxableValue + totalTax - discount;
 
       // 4️⃣ Prepare full payload
       const taxInvoiceData = {
@@ -200,7 +215,8 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         services: selectedServiceDetails,
         termsAndConditions: termsQuill,
         invoiceNo,
-        amountPaid: data.amountPaid || 0,
+        discount,
+        // amountPaid: data.amountPaid || 0,
         totals: {
           taxableValue,
           sgst,
@@ -237,7 +253,8 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
       formData.append("validUntil", taxInvoiceData.validUntil || "");
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
-      formData.append("amountPaid", taxInvoiceData.amountPaid);
+      formData.append("discount", discount);
+      // formData.append("amountPaid", taxInvoiceData.amountPaid);
       formData.append(
         "termsAndConditions",
         taxInvoiceData.termsAndConditions || ""
@@ -306,14 +323,14 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
             }))}
           />
 
-          <InputField
+          {/* <InputField
             name="amountPaid"
             label="Amount Paid"
             type="number"
             control={control}
             errors={errors}
             rules={{ required: "Amount Paid is required" }}
-          />
+          /> */}
 
           {/* Address */}
           <div className="col-span-3">
@@ -426,6 +443,13 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
             name="validUntil"
             label="Valid Until"
             type="date"
+            control={control}
+            errors={errors}
+          />
+          <InputField
+            name="discount"
+            label="Discount"
+            type="number"
             control={control}
             errors={errors}
           />

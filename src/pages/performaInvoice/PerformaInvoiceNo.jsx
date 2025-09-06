@@ -180,14 +180,19 @@ const PerformaInvoiceNo = () => {
       "Cess Amount",
     ];
 
+    const formatDateForExcel = (dateString) => {
+      if (!dateString) return "";
+      const date = new Date(dateString);
+      const options = { day: "2-digit", month: "short", year: "numeric" };
+      return date.toLocaleDateString("en-GB", options).replace(/ /g, "-");
+    };
+
     // ✅ Map API data to only these headers
     const excelData = filteredData.map((inv) => ({
       "GSTIN/UIN of Recipient": inv.gstNo || inv.gstNumber || "",
       Name: inv.name || "",
       "Invoice Number": inv.invoiceNo || "",
-      "Invoice Date": inv.date
-        ? new Date(inv.date).toLocaleDateString("en-GB")
-        : "",
+      "Invoice Date": formatDateForExcel(inv.date),
       "Invoice Value Amount": inv.totalAmount || 0,
       "Place of Supply": inv.placeOfSupply || "",
       "Reverse Charge": "N",

@@ -51,7 +51,7 @@ const WhatsappInhouse = () => {
 
   const defaultValues = {
     template: "",
-    channel: "",
+    channelId: "",
     attachment: null,
     starting: "",
     ending: "",
@@ -141,7 +141,6 @@ const WhatsappInhouse = () => {
   };
 
   const onSubmitHandler = (data) => {
-
     if (!selectedTemplateData) {
       toast.error("Please select a template first.");
       return;
@@ -173,7 +172,7 @@ const WhatsappInhouse = () => {
 
       // ✅ Get actual channelId
       const selectedChannel = availableChannels?.available?.find(
-        (ch) => ch._id === data.channel
+        (ch) => ch.channelId === data.channelId
       );
       const channelIdToSend = selectedChannel?.channelId || "";
       console.log("Selected channelId to send:", channelIdToSend);
@@ -312,13 +311,13 @@ const WhatsappInhouse = () => {
               control={control}
               errors={errors}
               label="Available Channels:"
-              name="channel"
+              name="channelId"
               mode="single"
               options={
                 Array.isArray(availableChannels?.available)
                   ? availableChannels.available.map((ch) => ({
                       label: `${ch.channelId} (${ch.phone})`,
-                      value: ch.channelId,
+                      value: ch.channelId, // ✅ yeh bhejna hai, _id nahi
                     }))
                   : []
               }
@@ -589,7 +588,7 @@ const WhatsappInhouse = () => {
         selectedTemplate={selectedTemplateData}
         selectedChannel={
           availableChannels?.available?.find(
-            (ch) => ch._id === watch("channel")
+            (ch) => ch.channelId === watch("channelId")
           ) || null
         }
         sampleMessage={sampleMessage}
@@ -625,7 +624,7 @@ const WhatsappInhouse = () => {
         selectedImage={watch("attachment") ? watch("attachment")[0] : null}
         channelId={
           availableChannels?.available?.find(
-            (ch) => ch._id === watch("channel")
+            (ch) => ch.channelId === watch("channelId")
           )?.channelId || ""
         }
         compiledMessage={

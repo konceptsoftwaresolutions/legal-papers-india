@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import ReactQuill from "react-quill";
 import { Spinner } from "@material-tailwind/react";
 import "react-quill/dist/quill.snow.css";
+import { serviceCategoryOption } from "../../constants/options";
 
 const quillModules = {
   toolbar: [
@@ -70,8 +71,13 @@ const EditService = () => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      await dispatch(updateService({ id, data }));
-      navigate("/superAdmin/services");
+      await dispatch(
+        updateService(id, data, (success) => {
+          if (success) {
+            navigate("/superAdmin/services");
+          }
+        })
+      );
     } catch (error) {
       toast.error(error?.message || "Failed to update service");
     } finally {
@@ -89,6 +95,9 @@ const EditService = () => {
           errors={errors}
           name="name"
           label="Name"
+          type="select"
+          mode="single"
+          options={serviceCategoryOption}
           rules={{ required: "Required" }}
         />
         <InputField

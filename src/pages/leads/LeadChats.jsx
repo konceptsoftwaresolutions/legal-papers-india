@@ -48,6 +48,14 @@ const LeadChats = ({ phoneNumber }) => {
   const [refreshing, setRefreshing] = useState(false);
 
   const phoneNumberRef = useRef(phoneNumber);
+  const messagesContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }
+  }, [messagesFromRedux]);
 
   const refreshChats = async () => {
     if (!phoneNumberRef.current) return;
@@ -68,7 +76,7 @@ const LeadChats = ({ phoneNumber }) => {
     if (!newMsg.trim()) return;
 
     const messageToSend = newMsg.trim();
-    setNewMsg(""); // clear input immediately for UX
+    setNewMsg("");
 
     await dispatch(
       sendMessageToChat(
@@ -107,7 +115,10 @@ const LeadChats = ({ phoneNumber }) => {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 px-4 py-2 overflow-y-auto flex flex-col">
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 px-4 py-2 overflow-y-auto flex flex-col"
+      >
         {chatLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="w-6 h-6 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
@@ -121,7 +132,6 @@ const LeadChats = ({ phoneNumber }) => {
               <ChatMessage key={msg.id || Math.random()} message={msg} />
             ))
         )}
-        <div />
       </div>
 
       {/* Input */}

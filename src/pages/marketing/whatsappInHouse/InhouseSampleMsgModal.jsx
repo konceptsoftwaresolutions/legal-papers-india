@@ -10,6 +10,7 @@ import { IoIosCloseCircle } from "react-icons/io";
 import { useDispatch } from "react-redux";
 import InputField from "../../../components/fields/InputField";
 import { sendWAInHouseSampleMessage } from "../../../redux/features/marketing";
+import { toast } from "react-toastify";
 
 const InhouseSampleMsgModal = ({
   open,
@@ -65,11 +66,11 @@ const InhouseSampleMsgModal = ({
 
   const onSubmit = (data) => {
     if (!data.sampleMobileNumber) {
-      alert("Please enter a number!");
+      toast.error("Please enter a number!");
       return;
     }
     if (!selectedChannel?.channelId) {
-      alert("Please select a valid channel!");
+      toast.error("Please select a valid channel!");
       return;
     }
 
