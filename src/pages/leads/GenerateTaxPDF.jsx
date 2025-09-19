@@ -324,6 +324,8 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
       .replace(/&#39;/g, "'");
   };
 
+  // ✅ Updated GST calculation section in GenerateTaxPDF.jsx
+
   let cgst = 0,
     sgst = 0,
     igst = 0,
@@ -331,20 +333,14 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
   const hsnWiseSummary = {};
   let totalQty = 0;
 
+  // ✅ First, calculate subtotal and build HSN summary
   services.forEach((item) => {
     const amount = item.price * item.quantity;
-    const gstPercent = Number(item.taxPercent || 18);
-    const hsn = item.hsnCode || "N/A";
     totalQty += Number(item.quantity || 0);
     subTotal += amount;
 
-    if (taxType === "intra") {
-      const half = (amount * gstPercent) / 200;
-      cgst += half;
-      sgst += half;
-    } else {
-      igst += (amount * gstPercent) / 100;
-    }
+    const hsn = item.hsnCode || "N/A";
+    const gstPercent = Number(item.taxPercent || 18);
 
     if (!hsnWiseSummary[hsn]) {
       hsnWiseSummary[hsn] = { amount: 0, gstPercent };
@@ -352,9 +348,41 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
     hsnWiseSummary[hsn].amount += amount;
   });
 
-  const netAmount = subTotal - Number(discount || 0);
-  const grandTotal = netAmount + cgst + sgst + igst;
-  // const balanceAmount = total - paidAmount;
+  // ✅ Apply discount to get net amount
+  const discountAmount = Number(discount || 0);
+  const netAmount = subTotal - discountAmount;
+
+  // ✅ Calculate GST on NET AMOUNT (after discount)
+  Object.entries(hsnWiseSummary).forEach(([hsn, data]) => {
+    // Calculate proportional net amount for this HSN after discount
+    const hsnDiscountAmount = (data.amount / subTotal) * discountAmount;
+    const hsnNetAmount = data.amount - hsnDiscountAmount;
+    const gstPercent = data.gstPercent;
+
+    if (taxType === "intra") {
+      const halfRate = gstPercent / 2;
+      cgst += (hsnNetAmount * halfRate) / 100;
+      sgst += (hsnNetAmount * halfRate) / 100;
+    } else {
+      igst += (hsnNetAmount * gstPercent) / 100;
+    }
+  });
+
+  const totalTax = cgst + sgst + igst;
+  const grandTotal = netAmount + totalTax;
+
+  // ✅ Updated HSN summary for display
+  const updatedHsnSummary = {};
+  Object.entries(hsnWiseSummary).forEach(([hsn, data]) => {
+    const hsnDiscountAmount = (data.amount / subTotal) * discountAmount;
+    const hsnNetAmount = data.amount - hsnDiscountAmount;
+
+    updatedHsnSummary[hsn] = {
+      originalAmount: data.amount,
+      netAmount: hsnNetAmount,
+      gstPercent: data.gstPercent,
+    };
+  });
 
   const convertToWords = (num) => {
     return toWords(num).replace(/\b\w/g, (c) => c.toUpperCase());
@@ -523,7 +551,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
             <View style={styles.taxSummaryHeader}>
               <Text style={[styles.cell, { flex: 1 }]}>HSN/SAC</Text>
               <Text style={[styles.cell, { flex: 1 }]}>GST%</Text>
-              <Text style={[styles.cell, { flex: 1 }]}>Amount</Text>
+              <Text style={[styles.cell, { flex: 1 }]}>Net Amount</Text>
               {taxType === "intra" ? (
                 <>
                   <Text style={[styles.cell, { flex: 1 }]}>CGST</Text>
@@ -534,9 +562,9 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               )}
             </View>
 
-            {Object.entries(hsnWiseSummary).map(([hsn, data], i) => {
+            {Object.entries(updatedHsnSummary).map(([hsn, data], i) => {
               const gst = data.gstPercent;
-              const half = taxType === "intra" ? (data.amount * gst) / 200 : 0;
+              const netAmount = data.netAmount;
               const displayRate = taxType === "intra" ? gst / 2 : gst;
 
               return (
@@ -551,7 +579,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
                     <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
                       ₹
                     </Text>
-                    {data.amount.toFixed(2)}
+                    {netAmount.toFixed(2)}
                   </Text>
                   {taxType === "intra" ? (
                     <>
@@ -559,13 +587,13 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
                         <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
                           ₹
                         </Text>
-                        {half.toFixed(2)}
+                        {((netAmount * gst) / 200).toFixed(2)}
                       </Text>
                       <Text style={[styles.cell, { flex: 1 }]}>
                         <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
                           ₹
                         </Text>
-                        {half.toFixed(2)}
+                        {((netAmount * gst) / 200).toFixed(2)}
                       </Text>
                     </>
                   ) : (
@@ -573,7 +601,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
                       <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
                         ₹
                       </Text>
-                      {((data.amount * gst) / 100).toFixed(2)}
+                      {((netAmount * gst) / 100).toFixed(2)}
                     </Text>
                   )}
                 </View>

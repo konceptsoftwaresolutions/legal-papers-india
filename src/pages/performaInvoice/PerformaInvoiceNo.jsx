@@ -193,14 +193,14 @@ const PerformaInvoiceNo = () => {
       Name: inv.name || "",
       "Invoice Number": inv.invoiceNo || "",
       "Invoice Date": formatDateForExcel(inv.date),
-      "Invoice Value Amount": inv.totalAmount || 0,
+      "Invoice Value Amount": inv.totals?.invoiceTotal || 0,
       "Place of Supply": inv.placeOfSupply || "",
       "Reverse Charge": "N",
       "Applicable Tax Rate": inv.taxRate || 0,
       "Invoice Type": "Regular B2B",
       "E-commerce GSTIN": inv.ecommerceGstin || "",
       Rate: inv.rate || 18,
-      "Taxable Value": inv.taxableValue || inv.totalAmount || 0,
+      "Taxable Value": inv.totals?.taxableValue || 0,
       "Cess Amount": inv.cessAmount || "",
     }));
 

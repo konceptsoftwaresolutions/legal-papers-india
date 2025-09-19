@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux"; // Add Redux imports
 import Filters from "../../components/sliders/Filters";
 import { useForm, Controller } from "react-hook-form";
 import InputField from "../../components/fields/InputField";
 import MyButton from "../../components/buttons/MyButton";
 import { DatePicker } from "antd"; // antd YearPicker
 import dayjs from "dayjs";
+import { getAllSalesExecutive } from "../../redux/features/leads"; // Update with correct path
 
 const TaxInvoiceFilter = ({
   isOpen = false,
@@ -13,6 +15,13 @@ const TaxInvoiceFilter = ({
   setFilteredData,
   setIsFilterActive,
 }) => {
+  const dispatch = useDispatch();
+
+  // Get sales executive data from Redux store
+  const allSalesExecutive = useSelector(
+    (state) => state.leads.allSalesExecutive
+  );
+
   const {
     control,
     handleSubmit,
@@ -28,6 +37,11 @@ const TaxInvoiceFilter = ({
       year: "",
     },
   });
+
+  // Fetch sales executive data when component mounts
+  useEffect(() => {
+    dispatch(getAllSalesExecutive());
+  }, [dispatch]);
 
   const onReset = () => {
     reset();
@@ -62,12 +76,14 @@ const TaxInvoiceFilter = ({
         (inv) => new Date(inv.date) <= new Date(data.toDate)
       );
     }
-    
+
+    // Updated filter logic to use salesExecutiveName instead of salesExecutive
     if (data.salesExecutive) {
       filtered = filtered.filter(
         (inv) =>
-          inv.salesExecutive &&
-          inv.salesExecutive.toLowerCase() === data.salesExecutive.toLowerCase()
+          inv.salesExecutiveName &&
+          inv.salesExecutiveName.toLowerCase() ===
+            data.salesExecutive.toLowerCase()
       );
     }
 
@@ -141,7 +157,7 @@ const TaxInvoiceFilter = ({
           />
         </div>
 
-        {/* Sales Executive Dropdown */}
+        {/* Sales Executive Dropdown - Shows API data, filters by salesExecutiveName */}
         <InputField
           name="salesExecutive"
           label="Sales Executive"
@@ -151,11 +167,13 @@ const TaxInvoiceFilter = ({
           errors={errors}
           options={[
             { label: "All", value: "" },
-            ...Array.from(
-              new Set(
-                allInvoices.map((inv) => inv.salesExecutive).filter(Boolean)
-              )
-            ).map((exec) => ({ label: exec, value: exec })),
+            // Map through Redux data to create dropdown options
+            ...(allSalesExecutive && Array.isArray(allSalesExecutive)
+              ? allSalesExecutive.map((executive) => ({
+                  label: executive.name, // Show name from API in dropdown
+                  value: executive.name, // Use name as value for filtering
+                }))
+              : []),
           ]}
         />
 

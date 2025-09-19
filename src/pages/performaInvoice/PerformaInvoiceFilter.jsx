@@ -1,12 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux"; // Add Redux imports
 import Filters from "../../components/sliders/Filters";
 import { useForm, Controller } from "react-hook-form";
 import InputField from "../../components/fields/InputField";
 import MyButton from "../../components/buttons/MyButton";
-import { DatePicker, Select } from "antd"; // antd import
+import { DatePicker, Select } from "antd";
 import dayjs from "dayjs";
-
-const { Option } = Select;
+import { getAllSalesExecutive } from "../../redux/features/leads";
 
 const PerformaInvoiceFilter = ({
   isOpen = false,
@@ -15,12 +15,24 @@ const PerformaInvoiceFilter = ({
   setFilteredData,
   setIsFilterActive,
 }) => {
+  const dispatch = useDispatch();
+
+  // Get sales executive data from Redux store
+  const allSalesExecutive = useSelector(
+    (state) => state.leads.allSalesExecutive
+  );
+
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm();
+
+  // Fetch sales executive data when component mounts
+  useEffect(() => {
+    dispatch(getAllSalesExecutive());
+  }, [dispatch]);
 
   const onReset = () => {
     reset({
@@ -38,36 +50,34 @@ const PerformaInvoiceFilter = ({
 
   const onSubmit = (data) => {
     let filtered = [...allInvoices];
-
     if (data.name) {
       filtered = filtered.filter((inv) =>
         inv.name?.toLowerCase().includes(data.name.toLowerCase())
       );
     }
-
     if (data.gstNo) {
       filtered = filtered.filter((inv) =>
         inv.gstNo?.toLowerCase().includes(data.gstNo.toLowerCase())
       );
     }
-
     if (data.fromDate) {
       filtered = filtered.filter(
         (inv) => new Date(inv.date) >= new Date(data.fromDate)
       );
     }
-
     if (data.toDate) {
       filtered = filtered.filter(
         (inv) => new Date(inv.date) <= new Date(data.toDate)
       );
     }
 
+    // Updated filter logic to use salesExecutiveName instead of salesExecutive
     if (data.salesExecutive) {
       filtered = filtered.filter(
         (inv) =>
-          inv.salesExecutive &&
-          inv.salesExecutive.toLowerCase() === data.salesExecutive.toLowerCase()
+          inv.salesExecutiveName &&
+          inv.salesExecutiveName.toLowerCase() ===
+            data.salesExecutive.toLowerCase()
       );
     }
 
@@ -79,19 +89,16 @@ const PerformaInvoiceFilter = ({
         )
       );
     }
-
     if (data.year) {
       filtered = filtered.filter(
         (inv) => new Date(inv.date).getFullYear() === parseInt(data.year)
       );
     }
-
     if (data.month) {
       filtered = filtered.filter(
         (inv) => new Date(inv.date).getMonth() + 1 === parseInt(data.month)
       );
     }
-
     setFilteredData(filtered);
     setIsFilterActive(true);
     setIsOpen(false);
@@ -114,7 +121,6 @@ const PerformaInvoiceFilter = ({
           name="name"
           type="text"
         />
-
         <InputField
           control={control}
           errors={errors}
@@ -122,7 +128,6 @@ const PerformaInvoiceFilter = ({
           name="gstNo"
           type="text"
         />
-
         {/* From - To Date in one row */}
         <div className="grid grid-cols-2 gap-4">
           <InputField
@@ -141,7 +146,7 @@ const PerformaInvoiceFilter = ({
           />
         </div>
 
-        {/* Sales Executive Dropdown */}
+        {/* Sales Executive Dropdown - Shows API data, filters by salesExecutiveName */}
         <InputField
           name="salesExecutive"
           label="Sales Executive"
@@ -151,11 +156,13 @@ const PerformaInvoiceFilter = ({
           errors={errors}
           options={[
             { label: "All", value: "" },
-            ...Array.from(
-              new Set(
-                allInvoices.map((inv) => inv.salesExecutive).filter(Boolean)
-              )
-            ).map((exec) => ({ label: exec, value: exec })),
+            // Map through Redux data to create dropdown options
+            ...(allSalesExecutive && Array.isArray(allSalesExecutive)
+              ? allSalesExecutive.map((executive) => ({
+                  label: executive.name, // Show name from API in dropdown
+                  value: executive.name, // Use name as value for filtering
+                }))
+              : []),
           ]}
         />
 
@@ -178,7 +185,6 @@ const PerformaInvoiceFilter = ({
             ).map((srv) => ({ label: srv, value: srv })),
           ]}
         />
-
         <InputField
           name="month"
           label="Select Month"
@@ -201,7 +207,6 @@ const PerformaInvoiceFilter = ({
             { label: "December", value: "12" },
           ]}
         />
-
         {/* Year Picker */}
         <div>
           <label className="block font-medium text-black mb-1">
@@ -221,7 +226,6 @@ const PerformaInvoiceFilter = ({
             )}
           />
         </div>
-
         {/* Buttons */}
         <div className="w-full flex justify-end items-center py-3 gap-x-2 sticky bottom-0 border-t-4 bg-white">
           <MyButton

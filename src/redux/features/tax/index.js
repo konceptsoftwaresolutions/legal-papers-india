@@ -144,7 +144,7 @@ export const downloadTaxInvoicePDF = (id, callback = () => { }) => {
                 return res.data; // blob
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to download PDF");
+            toast.error(err.response?.message || "Failed to download PDF");
             callback(false);
         }
     };

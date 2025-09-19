@@ -154,29 +154,35 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
         };
       });
 
-      // 👉 Step 3: Calculate TOTAL TAX
-      let taxableValue = 0,
-        sgst = 0,
-        cgst = 0,
-        igst = 0;
+      // ✅ Step 3: Calculate TOTALS WITH SIMPLIFIED DISCOUNT LOGIC
+      const originalAmount = selectedServiceDetails.reduce(
+        (sum, srv) => sum + srv.baseAmount,
+        0
+      );
+
+      // ✅ Apply discount BEFORE GST calculation
+      const discount = parseFloat(data.discount) || 0;
+      const taxableValue = originalAmount - discount; // ✅ Net amount after discount
+
+      // ✅ Calculate total tax on discounted amount
+      let totalTax = 0;
 
       selectedServiceDetails.forEach((srv) => {
-        taxableValue += srv.baseAmount;
+        // Calculate proportional discount for each service
+        const serviceDiscount = (srv.baseAmount / originalAmount) * discount;
+        const serviceNetAmount = srv.baseAmount - serviceDiscount;
         const taxRate = srv?.taxRate || 18; // default 18%
 
         if (data.taxType === "intra") {
-          sgst += (srv.baseAmount * (taxRate / 2)) / 100;
-          cgst += (srv.baseAmount * (taxRate / 2)) / 100;
+          totalTax += (serviceNetAmount * taxRate) / 100; // CGST + SGST combined
         } else if (data.taxType === "inter") {
-          igst += (srv.baseAmount * taxRate) / 100;
+          totalTax += (serviceNetAmount * taxRate) / 100; // IGST
         }
       });
 
-      const totalTax = sgst + cgst + igst;
-      const discount = parseFloat(data.discount) || 0;
-      const invoiceTotal = taxableValue + totalTax - discount;
+      const invoiceTotal = taxableValue + totalTax;
 
-      // Step 4: Prepare PI payload
+      // Step 4: Prepare PI payload with minimal totals structure ✅
       const pi = {
         leadId: leadData?._id,
         name: data.name,
@@ -189,12 +195,9 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
         validUntil: data.validUntil,
         services: selectedServiceDetails,
         totals: {
-          taxableValue,
-          sgst,
-          cgst,
-          igst,
-          totalTax,
-          invoiceTotal,
+          taxableValue, // ✅ Net amount after discount: 600 (name as requested)
+          totalTax, // ✅ Total GST: 108
+          invoiceTotal, // ✅ Final total: 708
         },
         termsAndConditions: termsQuill,
         invoiceNo,
@@ -229,7 +232,7 @@ const GeneratePerformaModal = ({ open, onClose, leadData }) => {
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
       formData.append("termsAndConditions", pi.termsAndConditions || "");
-      formData.append("totals", JSON.stringify(pi.totals));
+      formData.append("totals", JSON.stringify(pi.totals)); // ✅ Minimal totals
       formData.append("discount", discount);
       formData.append("pdfFile", pdfFile);
 

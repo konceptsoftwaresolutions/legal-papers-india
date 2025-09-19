@@ -115,7 +115,6 @@ const TaxInvoiceNo = () => {
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error("PDF download failed", err);
-      toast.error("Failed to download PDF");
     } finally {
       setDownloadingId(null); // Stop spinner
     }
@@ -200,21 +199,21 @@ const TaxInvoiceNo = () => {
       const options = { day: "2-digit", month: "short", year: "numeric" };
       return date.toLocaleDateString("en-GB", options).replace(/ /g, "-");
     };
-
+    console.log(tableData);
     // ✅ Map API data to 13 columns
     const excelData = tableData.map((inv) => ({
       "GSTIN/UIN of Recipient": inv.gstNo || inv.gstNumber || "",
       Name: inv.name || "",
       "Invoice Number": inv.invoiceNo || "",
       "Invoice Date": formatDateForExcel(inv.date),
-      "Invoice Value Amount": inv.totalAmount || 0,
+      "Invoice Value Amount": inv.totals?.invoiceTotal || 0,
       "Place of Supply": inv.placeOfSupply || "",
       "Reverse Charge": "N",
       "Applicable Tax Rate": 0, // ✅ fixed
       "Invoice Type": "Regular B2B",
       "E-commerce GSTIN": "", // ✅ always blank
       Rate: 18, // ✅ fixed
-      "Taxable Value": inv.taxableValue || inv.totalAmount || 0,
+      "Taxable Value": inv.totals?.taxableValue || 0,
       "Cess Amount": "", // ✅ always blank
     }));
 

@@ -125,26 +125,38 @@ const Sidebar = ({ collapse = false, onCollapse = () => {} }) => {
           },
         ]
       : []),
-    ...(!(
-      role === "salesExecutive" ||
-      role === "operationsExecutive" ||
-      role === "operationsTl"
-    )
-      ? [
-          {
-            text: "Proforma Invoice No",
-            path: "proformainvoice",
-            icon: <MdDescription size={"18px"} />,
-            active: path.endPoint === "proformainvoice",
-          },
-          {
-            text: "Tax Invoice No",
-            path: "taxinvoice",
-            icon: <MdReceiptLong size={"18px"} />,
-            active: path.endPoint === "taxinvoice",
-          },
-        ]
-      : []),
+    {
+      text: "Proforma Invoice No",
+      path: "proformainvoice",
+      icon: <MdDescription size={"18px"} />,
+      active: path.endPoint === "proformainvoice",
+    },
+    {
+      text: "Tax Invoice No",
+      path: "taxinvoice",
+      icon: <MdReceiptLong size={"18px"} />,
+      active: path.endPoint === "taxinvoice",
+    },
+    // ...(!(
+    //   role === "salesExecutive" ||
+    //   role === "operationsExecutive" ||
+    //   role === "operationsTl"
+    // )
+    //   ? [
+    //       {
+    //         text: "Proforma Invoice No",
+    //         path: "proformainvoice",
+    //         icon: <MdDescription size={"18px"} />,
+    //         active: path.endPoint === "proformainvoice",
+    //       },
+    //       {
+    //         text: "Tax Invoice No",
+    //         path: "taxinvoice",
+    //         icon: <MdReceiptLong size={"18px"} />,
+    //         active: path.endPoint === "taxinvoice",
+    //       },
+    //     ]
+    //   : []),
   ];
 
   return (

@@ -158,50 +158,50 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         ? `${currentData.prefix}-${currentData.currentNumber}`
         : "INV-ERROR";
 
-      // 2️⃣ Prepare services with tax calculations
+      // 2️⃣ Prepare services with base calculations only
       const selectedServiceDetails = data.selectedServices.map((id) => {
         const service = services.find((s) => s._id === id);
         const quantity = data.quantities?.[id] || 1;
         const price = data.prices?.[id] || service.price || 0;
         const baseAmount = quantity * price;
 
-        let sgst = 0,
-          cgst = 0,
-          igst = 0;
-        const taxRate = service?.taxRate || 18; // default 18% if not provided
-
-        if (data.taxType === "intra") {
-          sgst = (baseAmount * (taxRate / 2)) / 100;
-          cgst = (baseAmount * (taxRate / 2)) / 100;
-        } else if (data.taxType === "inter") {
-          igst = (baseAmount * taxRate) / 100;
-        }
-
         return {
           ...service,
           quantity,
           price,
           baseAmount,
-          sgst,
-          cgst,
-          igst,
-          total: baseAmount + sgst + cgst + igst,
         };
       });
 
-      // 3️⃣ Calculate totals
-      const taxableValue = selectedServiceDetails.reduce(
+      // 3️⃣ Calculate totals WITH PROPER DISCOUNT LOGIC ✅
+      const taxableValues = selectedServiceDetails.reduce(
         (sum, s) => sum + s.baseAmount,
         0
       );
-      const sgst = selectedServiceDetails.reduce((sum, s) => sum + s.sgst, 0);
-      const cgst = selectedServiceDetails.reduce((sum, s) => sum + s.cgst, 0);
-      const igst = selectedServiceDetails.reduce((sum, s) => sum + s.igst, 0);
-      const totalTax = sgst + cgst + igst;
-      const discount = parseFloat(data.discount) || 0;
-      const invoiceTotal = taxableValue + totalTax - discount;
 
-      // 4️⃣ Prepare full payload
+      // ✅ Apply discount BEFORE GST calculation
+      const discount = parseFloat(data.discount) || 0;
+      const taxableValue = taxableValues - discount;
+
+      // ✅ Calculate GST on discounted amount
+      let totalTax = 0;
+
+      selectedServiceDetails.forEach((service) => {
+        // Calculate proportional discount for each service
+        const serviceDiscount = (service.baseAmount / taxableValues) * discount;
+        const serviceNetAmount = service.baseAmount - serviceDiscount;
+        const taxRate = service?.taxRate || 18;
+
+        if (data.taxType === "intra") {
+          totalTax += (serviceNetAmount * taxRate) / 100; // CGST + SGST combined
+        } else if (data.taxType === "inter") {
+          totalTax += (serviceNetAmount * taxRate) / 100; // IGST
+        }
+      });
+
+      const invoiceTotal = taxableValue + totalTax;
+
+      // 4️⃣ Prepare payload with minimal totals structure ✅
       const taxInvoiceData = {
         leadId: leadData?._id,
         name: data.name,
@@ -216,20 +216,16 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         termsAndConditions: termsQuill,
         invoiceNo,
         discount,
-        // amountPaid: data.amountPaid || 0,
         totals: {
-          taxableValue,
-          sgst,
-          cgst,
-          igst,
-          totalTax,
-          invoiceTotal,
+          taxableValue, // ✅ Amount after discount: 600
+          totalTax, // ✅ Total GST: 108
+          invoiceTotal, // ✅ Final total: 708
         },
       };
 
       console.log("🧾 Tax Invoice Payload:", taxInvoiceData);
 
-      // 5️⃣ Generate PDF Blob
+      // Rest of the code remains same...
       const blob = await pdf(
         <GenerateTaxPDF formData={taxInvoiceData} invoiceNo={invoiceNo} />
       ).toBlob();
@@ -240,7 +236,6 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         type: "application/pdf",
       });
 
-      // 6️⃣ Prepare FormData for API
       const formData = new FormData();
       formData.append("leadId", taxInvoiceData.leadId);
       formData.append("name", taxInvoiceData.name);
@@ -254,15 +249,13 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
       formData.append("services", JSON.stringify(selectedServiceDetails));
       formData.append("invoiceNo", invoiceNo);
       formData.append("discount", discount);
-      // formData.append("amountPaid", taxInvoiceData.amountPaid);
       formData.append(
         "termsAndConditions",
         taxInvoiceData.termsAndConditions || ""
       );
-      formData.append("totals", JSON.stringify(taxInvoiceData.totals));
+      formData.append("totals", JSON.stringify(taxInvoiceData.totals)); // ✅ Minimal totals
       formData.append("pdfFile", pdfFile);
 
-      // 7️⃣ Dispatch API call
       await dispatch(
         createTaxInvoice(formData, (success) => {
           if (success) {

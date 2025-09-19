@@ -15,6 +15,7 @@ import {
   handleBulkSalesAssignNormalLeads,
   handleImpLeadForward,
   handleLeadForward,
+  setCurrentPage,
 } from "../../redux/features/leads";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
 import { columns } from "./columns";
@@ -46,12 +47,18 @@ const Leads = () => {
   const [filterObject, setFilterObject] = useState({});
   const [showQuotation, setShowQuotation] = useState(false);
   const [passModal, setPassModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [currentPage, setCurrentPage] = useState(1);
+  const reduxPage = useSelector((state) => state.leads.currentPage);
 
+  // const page = useMemo(() => {
+  //   let pageNo = path.searchQuary?.[0]?.page;
+  //   return pageNo && pageNo !== "" ? parseInt(pageNo) : 1;
+  // }, [path.location]);
   const page = useMemo(() => {
     let pageNo = path.searchQuary?.[0]?.page;
-    return pageNo && pageNo !== "" ? parseInt(pageNo) : 1;
-  }, [path.location]);
+    return pageNo && pageNo !== "" ? parseInt(pageNo) : reduxPage || 1;
+  }, [path.location, reduxPage]);
+  console.log("page", page);
 
   const filters = useMemo(() => {
     let filter = path.searchQuary?.[0]?.filter;
@@ -102,9 +109,21 @@ const Leads = () => {
 
   const openFilter = () => setIsFilterOpen(true);
 
+  // const handlePageChange = (page) => {
+  //   // setCurrentPage(page);
+  //   // dispatch(getAllLeads(page, filter, filterObject));
+  //   if (filters) {
+  //     path.changeEndPoint(
+  //       `leads?page=${page}&filter=${JSON.stringify(filters)}`
+  //     );
+  //   } else {
+  //     path.changeEndPoint(`leads?page=${page}`);
+  //   }
+  // };
   const handlePageChange = (page) => {
-    // setCurrentPage(page);
-    // dispatch(getAllLeads(page, filter, filterObject));
+    // Redux me save
+    dispatch(setCurrentPage(page));
+
     if (filters) {
       path.changeEndPoint(
         `leads?page=${page}&filter=${JSON.stringify(filters)}`
@@ -273,7 +292,7 @@ const Leads = () => {
       />
 
       <div className="flex flex-col w-full px-4 gap-y-4 py-5">
-      {/* <AnniversaryBanner /> */}
+        {/* <AnniversaryBanner /> */}
         <div className="grid grid-cols-2">
           <Heading text="Leads" showHeading />
         </div>

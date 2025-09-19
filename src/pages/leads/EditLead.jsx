@@ -59,29 +59,11 @@ const EditLead = () => {
   const isScroll = location.state?.isScroll;
 
   const { user } = useSelector((state) => state.auth);
+  const currentPageRedux = useSelector((state) => state?.leads?.currentPage);
+  const targetPage = currentPageRedux || 1;
 
   const dispatch = useDispatch();
   const { items: allServices } = useSelector((state) => state.services);
-
-  useEffect(() => {
-    if (!allServices || allServices.length === 0) {
-      dispatch(getAllServices());
-    }
-  }, [dispatch, allServices]);
-
-  useEffect(() => {
-    if (isScroll) {
-      const interval = setInterval(() => {
-        const paymentDiv = document.querySelector(".payment");
-        if (paymentDiv) {
-          paymentDiv.scrollIntoView({ behavior: "smooth" });
-          clearInterval(interval); // Stop checking once it works
-        }
-      }, 100); // Check every 100ms
-
-      return () => clearInterval(interval); // Cleanup in case component unmounts
-    }
-  }, [isScroll]);
 
   const { allSalesExecutive, allOperationsExecutive } = useSelector(
     (state) => state.leads
@@ -101,37 +83,11 @@ const EditLead = () => {
 
   const { role } = useSelector((state) => state.auth);
   console.log(role);
-
   useEffect(() => {
-    // dispatch(getNotificationData());
-    dispatch(getAllOperationsExecutive());
-  }, [dispatch]);
-
-  const getLeadDataByLeadId = (leadId) => {
-    dispatch(getLeaByID(leadId));
-  };
-
-  useEffect(() => {
-    // dispatch(getLeaByID(leadId));
-    getLeadDataByLeadId(leadId);
-  }, [dispatch, leadId]);
-
-  useEffect(() => {
-    if (leadId) {
-      setIsLoading(true); // Set loading to true before API call
-      dispatch(getLeaByID(leadId))
-        .then((data) => {
-          setLeadData(data); // Store API response in state
-          setIsLoading(false); // Set loading to false after data is loaded
-        })
-        .catch((err) => {
-          console.log(err.message);
-          setIsLoading(false); // Ensure loading is false even on error
-        });
+    if (!allServices || allServices.length === 0) {
+      dispatch(getAllServices());
     }
-  }, [dispatch, leadId]);
-
-  // console.log("+=============", leadData);
+  }, [dispatch, allServices]);
 
   const {
     handleSubmit,
@@ -140,11 +96,88 @@ const EditLead = () => {
     watch,
     setValue,
     reset,
-  } = useForm({});
+  } = useForm({
+    defaultValues: {},
+  });
+
+  // Services fetch
+  useEffect(() => {
+    if (!allServices || allServices.length === 0) {
+      dispatch(getAllServices());
+    }
+  }, [dispatch, allServices]);
 
   useEffect(() => {
-    if (leadData) {
+    if (isScroll) {
+      const interval = setInterval(() => {
+        const paymentDiv = document.querySelector(".payment");
+        if (paymentDiv) {
+          paymentDiv.scrollIntoView({ behavior: "smooth" });
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    }
+  }, [isScroll]);
+
+  useEffect(() => {
+    dispatch(getAllOperationsExecutive());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (leadId) {
+      console.log("LeadId changed, resetting everything:", leadId);
+
+      // Form को completely reset करें
       reset({
+        remarksArray: [],
+        payment: [],
+        refundArray: [],
+        allDocuments: [],
+        leadFiles: [],
+      });
+
+      // Local states reset
+      setLeadData(null);
+      setIsEditable(false);
+      setUploadedDoc(undefined);
+      setNcModal(false);
+      setByeModal(false);
+      setDocModal(false);
+      setShowTaskModal(false);
+      setShowPerformaModal(false);
+      setOpenTaxModal(false);
+      setMoveNcBtnClicked(false);
+    }
+  }, [leadId, reset]);
+
+  // ✅ Single API call
+  useEffect(() => {
+    if (leadId) {
+      console.log("Fetching lead data for leadId:", leadId);
+      setIsLoading(true);
+
+      dispatch(getLeaByID(leadId))
+        .then((data) => {
+          console.log("API Response received for leadId:", leadId, data);
+          if (data && data.leadId === leadId) {
+            setLeadData(data);
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.log("API Error:", err.message);
+          setIsLoading(false);
+        });
+    }
+  }, [dispatch, leadId]);
+
+  // ✅ Form populate
+  useEffect(() => {
+    if (leadData && leadData.leadId === leadId && allSalesExecutive) {
+      console.log("Populating form with leadData:", leadData.leadId);
+
+      const formData = {
         leadId: leadData?.leadId,
         salesStatus: leadData?.status,
         operationsExecutiveName: leadData?.operationExecutive,
@@ -194,14 +227,18 @@ const EditLead = () => {
         foodCategory: leadData?.formData?.foodCategory || "",
         numberOfYears: leadData?.formData?.numberOfYears || "",
         status2: leadData?.status2 || "",
-      });
-    }
-  }, [leadData, reset]);
+      };
 
+      reset(formData);
+    }
+  }, [leadData, reset, leadId, allSalesExecutive]);
+
+  // ✅ 5. useFieldArray with replace functionality
   const {
     fields: remarksArray,
     remove: removeRemark,
     append: appendRemark,
+    replace: replaceRemarks,
   } = useFieldArray({
     control,
     name: "remarksArray",
@@ -211,6 +248,7 @@ const EditLead = () => {
     fields: payment,
     remove: removePayment,
     append: appendPayment,
+    replace: replacePayments,
   } = useFieldArray({
     control,
     name: "payment",
@@ -220,9 +258,30 @@ const EditLead = () => {
     fields: leadFiles,
     append: appendLeadFile,
     remove: removeLeadFile,
+    replace: replaceLeadFiles,
   } = useFieldArray({
     control,
     name: "leadFiles",
+  });
+
+  const {
+    fields: refundArray,
+    remove: removeRefundArray,
+    append: appendRefundArray,
+    replace: replaceRefunds,
+  } = useFieldArray({
+    control,
+    name: "refundArray",
+  });
+
+  const {
+    fields: allDocuments,
+    remove: removeAllDocuments,
+    append: appendDocumentName,
+    replace: replaceDocuments,
+  } = useFieldArray({
+    control,
+    name: "allDocuments",
   });
 
   // Watch all payment fields at once
@@ -261,23 +320,47 @@ const EditLead = () => {
     prevPaymentsRef.current = payments; // Store previous payments for comparison
   }, [payments, setValue]);
 
-  const {
-    fields: refundArray,
-    remove: removeRefundArray,
-    append: appendRefundArray,
-  } = useFieldArray({
-    control,
-    name: "refundArray",
-  });
+  // ✅ Component cleanup
+  useEffect(() => {
+    return () => {
+      console.log("EditLead component unmounting, cleaning up...");
+      replaceRemarks([]);
+      replacePayments([]);
+      replaceRefunds([]);
+      replaceDocuments([]);
+      replaceLeadFiles([]);
+      reset({});
+      setLeadData(null);
+      setUploadedDoc(undefined);
+    };
+  }, [
+    reset,
+    replaceRemarks,
+    replacePayments,
+    replaceRefunds,
+    replaceDocuments,
+    replaceLeadFiles,
+  ]);
 
-  const {
-    fields: allDocuments,
-    remove: removeAllDocuments,
-    append: appendDocumentName,
-  } = useFieldArray({
-    control,
-    name: "allDocuments",
-  });
+  const getLeadDataByLeadId = (leadId) => {
+    if (leadId) {
+      console.log("Manually fetching lead data for:", leadId);
+      setIsLoading(true);
+
+      dispatch(getLeaByID(leadId))
+        .then((data) => {
+          console.log("Manual API Response received for leadId:", leadId, data);
+          if (data && data.leadId === leadId) {
+            setLeadData(data);
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.log("Manual API Error:", err.message);
+          setIsLoading(false);
+        });
+    }
+  };
 
   const prepareFormData = (files) => {
     const formData = new FormData();
@@ -403,6 +486,7 @@ const EditLead = () => {
       editLead(formData, (success) => {
         if (success) {
           navigate(-1);
+          // navigate(`/${role}/leads?page=${targetPage}`);
         }
       })
     );
@@ -512,6 +596,7 @@ const EditLead = () => {
               if (success) {
                 getLeadDataByLeadId(leadId);
                 navigate(-1);
+                // navigate(`/${role}/leads?page=${targetPage}`);
               }
             })
           );
@@ -802,6 +887,30 @@ const EditLead = () => {
                   options={salesStatusOptions}
                   disabled={
                     leadData?.status === "Converted"
+                      ? role === "superAdmin"
+                        ? !isEditable // ✅ superAdmin के लिए Converted भी editable
+                        : true // ✅ बाकी सभी के लिए Converted disabled
+                      : isFieldDisabled(
+                          // ✅ Non-converted status के लिए existing logic
+                          "salesStatus",
+                          role,
+                          isEditable,
+                          leadData?.manualRenewalLead
+                        )
+                  }
+                />
+              )}
+
+              {/* {leadData?.status && (
+                <InputField
+                  type="option"
+                  control={control}
+                  errors={errors}
+                  label="Status"
+                  name="salesStatus"
+                  options={salesStatusOptions}
+                  disabled={
+                    leadData?.status === "Converted"
                       ? true
                       : isFieldDisabled(
                           "salesStatus",
@@ -811,7 +920,7 @@ const EditLead = () => {
                         )
                   }
                 />
-              )}
+              )} */}
 
               <InputField
                 type="option"
@@ -1828,7 +1937,7 @@ const EditLead = () => {
             <Heading text="All Performa Invoices" className="text-white" />
           </div>
           <div className="bg-[#6b788517] p-5 rounded-lg">
-            <EditPiTable piData={leadData?.pi || []} />
+            <EditPiTable piData={leadData?.proformaInvoices || []} />
           </div>
 
           <div className="main-black-bg p-2 rounded-md my-6 flex justify-between">

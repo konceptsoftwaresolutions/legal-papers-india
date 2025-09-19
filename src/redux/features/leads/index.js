@@ -10,6 +10,7 @@ const initialState = {
   addLeadLoader: false,
   chatMessages: [],
   chatLoader: false,
+  currentPage: 1,
 };
 
 const leadsSlice = createSlice({
@@ -22,6 +23,9 @@ const leadsSlice = createSlice({
         state[key] = action.payload[key];
       });
     },
+    setCurrentPage: (state, action) => {
+      state.currentPage = action.payload; // ✅ reducer to save page
+    },
     setChatMessages: (state, action) => {
       state.chatMessages = action.payload;
     },
@@ -32,7 +36,7 @@ const leadsSlice = createSlice({
 });
 
 // Export setLeads now since we changed it in the reducer
-export const { setLeads, setChatMessages, setChatLoader } = leadsSlice.actions;
+export const { setLeads, setChatMessages, setChatLoader, setCurrentPage } = leadsSlice.actions;
 export default leadsSlice.reducer;
 
 export const getAllLeads = (currentPage, filter = false, filterObject = {}, callback = () => { }) => {
