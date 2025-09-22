@@ -8,9 +8,10 @@ import {
   setInvoiceSettings,
   getAllTaxInvoices,
   downloadTaxInvoicePDF,
+  deleteTaxInvoice,
 } from "../../redux/features/tax";
 import DataTable from "react-data-table-component";
-import { MdDownload, MdEdit } from "react-icons/md";
+import { MdDelete, MdDownload, MdEdit } from "react-icons/md";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
 import toast from "react-hot-toast";
 import { Spinner } from "@material-tailwind/react";
@@ -157,17 +158,42 @@ const TaxInvoiceNo = () => {
         </button>
       ),
     },
-    {
-      name: "Edit",
-      cell: (row) => (
-        <button
-          onClick={() => handleEdit(row._id)}
-          className="bg-green-600 text-white px-3 py-1 rounded flex items-center gap-2 hover:bg-green-700 transition"
-        >
-          <MdEdit /> Edit
-        </button>
-      ),
-    },
+
+    // ✅ Only show if superAdmin
+    ...(role === "superAdmin"
+      ? [
+          {
+            name: "Edit",
+            cell: (row) => (
+              <button
+                onClick={() => handleEdit(row._id)}
+                className="bg-green-600 text-white px-3 py-1 rounded flex items-center gap-2 hover:bg-green-700 transition"
+              >
+                <MdEdit /> Edit
+              </button>
+            ),
+          },
+          {
+            name: "Delete",
+            cell: (row) => (
+              <button
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Are you sure you want to delete this invoice?"
+                    )
+                  ) {
+                    dispatch(deleteTaxInvoice(row._id));
+                  }
+                }}
+                className="bg-red-600 text-white px-3 py-1 rounded flex items-center gap-2 hover:bg-red-700 transition"
+              >
+                <MdDelete /> Delete
+              </button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const handleExportExcel = () => {
@@ -179,13 +205,13 @@ const TaxInvoiceNo = () => {
     // ✅ Exact 13 headers
     const headers = [
       "GSTIN/UIN of Recipient",
-      "Name",
+      "Receiver Name",
       "Invoice Number",
       "Invoice Date",
       "Invoice Value Amount",
       "Place of Supply",
       "Reverse Charge",
-      "Applicable Tax Rate",
+      "Applicable % of Tax Rate",
       "Invoice Type",
       "E-commerce GSTIN",
       "Rate",
@@ -203,13 +229,13 @@ const TaxInvoiceNo = () => {
     // ✅ Map API data to 13 columns
     const excelData = tableData.map((inv) => ({
       "GSTIN/UIN of Recipient": inv.gstNo || inv.gstNumber || "",
-      Name: inv.name || "",
+      "Receiver Name": inv.name || "",
       "Invoice Number": inv.invoiceNo || "",
       "Invoice Date": formatDateForExcel(inv.date),
       "Invoice Value Amount": inv.totals?.invoiceTotal || 0,
       "Place of Supply": inv.placeOfSupply || "",
       "Reverse Charge": "N",
-      "Applicable Tax Rate": 0, // ✅ fixed
+      "Applicable % of Tax Rate": inv.taxRate || "", // ✅ fixed
       "Invoice Type": "Regular B2B",
       "E-commerce GSTIN": "", // ✅ always blank
       Rate: 18, // ✅ fixed

@@ -78,6 +78,8 @@ import EditService from "../pages/services/EditService";
 import TaxInvoiceNo from "../pages/taxInvoice/TaxInvoiceNo";
 import WhatsAppInHouse from "../pages/marketing/whatsappInHouse/WhatsAppInHouse";
 import WhatsAppInHouseTemplate from "../pages/marketing/whatsappInHouse/WhatsAppInHouseTemplate";
+import GeneratePerformaInvoicePage from "../pages/leads/GeneratePerformaModal";
+import GenerateTaxInvoice from "../pages/leads/GenerateTaxModal";
 
 const Routes = () => {
   const { isAuthenticated, role, token } = useSelector((state) => state.auth);
@@ -676,6 +678,22 @@ const Routes = () => {
           element: (
             <ProtectedRoutes isAuthenticated={isAuthenticated}>
               <EditService />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/editLead/generate-performa-invoice",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <GeneratePerformaInvoicePage />
+            </ProtectedRoutes>
+          ),
+        },
+        {
+          path: "/:type/editLead/generate-tax-invoice",
+          element: (
+            <ProtectedRoutes isAuthenticated={isAuthenticated}>
+              <GenerateTaxInvoice />
             </ProtectedRoutes>
           ),
         },

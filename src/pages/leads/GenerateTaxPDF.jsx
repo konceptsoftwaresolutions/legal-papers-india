@@ -11,7 +11,7 @@ import {
 import logo from "../../assets/legalpapers.png";
 import signatureImg from "../../assets/LPISignature.png";
 import bgImage from "../../assets/LPIBG.png";
-import qrCodeImg from "../../assets/LegalPapersQR.png";
+import qrCodeImg from "../../assets/legalpapersindia.png";
 import { toWords } from "number-to-words";
 import Unifont from "../../assets/fonts/unifont.otf";
 
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 10,
   },
-  footerText: { fontSize: 10, marginTop: 12 },
+  footerText: { fontSize: 10 },
   bankRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -205,6 +205,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
     address,
     gstNo,
     mobileNumber,
+    addressDropdown,
     date,
     validUntil,
     taxType,
@@ -434,17 +435,24 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               width: "58%",
               padding: 6,
               marginRight: 6,
-              lineHeight: 1,
+              lineHeight: 0.7,
             }}
           >
-            <Text style={[styles.bold, { fontSize: 11 }]}>
-              Legal Papers India
-            </Text>
-            <Text>B-768, Street 8, Mukandpur, New Delhi 110042</Text>
-            <Text>Contact: 9315247392</Text>
-            <Text>Email: info@legalpapersindia.com</Text>
-            <Text>Website: www.legalpapersindia.com</Text>
-            <Text>GSTIN: 07BRPPB7333A1Z3</Text>
+            {/* <Text style={[styles.bold, { fontSize: 11 }]}>
+                        Legal Papers India
+                      </Text> */}
+
+            {/* Show addressDropdown if available, otherwise show default address */}
+            {formData.addressDropdown ? (
+              renderFormattedDescription(formData.addressDropdown)
+            ) : (
+              <Text>B-768, Street 8, Mukandpur, New Delhi 110042</Text>
+            )}
+
+            {/* <Text>Contact: 9315247392</Text>
+                      <Text>Email: info@legalpapersindia.com</Text>
+                      <Text>Website: www.legalpapersindia.com</Text>
+                      <Text>GSTIN: 07BRPPB7333A1Z3</Text> */}
           </View>
 
           {/* RIGHT BOX: Bill To */}
@@ -471,12 +479,12 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
         {/* Table Header */}
         <View style={styles.tableHeader}>
           <Text style={[styles.cell, { flex: 0.5 }]}>S.No</Text>
-          <Text style={[styles.cell, styles.textAlign]}>Particulars</Text>
-          <Text style={[styles.cell, styles.textAlign]}>HSN/SAC</Text>
-          <Text style={[styles.cell, styles.textAlign]}>Qty</Text>
-          <Text style={[styles.cell, styles.textAlign]}>Unit Price</Text>
-          <Text style={[styles.cell, styles.textAlign]}>GST%</Text>
-          <Text style={[styles.cell, styles.rightAlign]}>Amount</Text>
+          <Text style={[styles.cell]}>Particulars</Text>
+          <Text style={[styles.cell]}>HSN/SAC</Text>
+          <Text style={[styles.cell]}>Qty</Text>
+          <Text style={[styles.cell]}>Unit Price</Text>
+          <Text style={[styles.cell]}>GST%</Text>
+          <Text style={[styles.cell]}>Amount</Text>
         </View>
 
         {/* Table Rows */}
@@ -497,21 +505,15 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               style={[styles.tableRow, { backgroundColor: rowBackground }]}
             >
               <Text style={[styles.cell, { flex: 0.5 }]}>{i + 1}</Text>
-              <Text style={[styles.cell, styles.textAlign]}>
-                {item.name || "-"}
-              </Text>
-              <Text style={[styles.cell, styles.textAlign]}>
-                {item.hsnCode || "-"}
-              </Text>
-              <Text style={[styles.cell, styles.textAlign]}>{quantity}</Text>
-              <Text style={[styles.cell, styles.textAlign]}>
+              <Text style={[styles.cell]}>{item.name || "-"}</Text>
+              <Text style={[styles.cell]}>{item.hsnCode || "-"}</Text>
+              <Text style={[styles.cell]}>{quantity}</Text>
+              <Text style={[styles.cell]}>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
                 {price.toFixed(2)}
               </Text>
-              <Text style={[styles.cell, styles.textAlign]}>
-                {gstRate.toFixed(0)}%
-              </Text>
-              <Text style={[styles.cell, styles.rightAlign]}>
+              <Text style={[styles.cell]}>{gstRate.toFixed(0)}%</Text>
+              <Text style={[styles.cell]}>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
                 {amount.toFixed(2)}
               </Text>
@@ -530,10 +532,10 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               width: "38%",
             }}
           >
-            <Text>Total Amount:</Text>
+            <Text>Sub Total</Text>
             <Text>
               <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-              {grandTotal.toFixed(2)}
+              {subTotal.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -612,13 +614,13 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           {/* TOTAL BOX - RIGHT SIDE */}
           <View style={{ width: "40%", paddingLeft: 10 }}>
             {/* Sub Total */}
-            <View style={styles.summaryRow}>
+            {/* <View style={styles.summaryRow}>
               <Text>Sub Total</Text>
               <Text>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
                 {subTotal.toFixed(2)}
               </Text>
-            </View>
+            </View> */}
 
             {/* Discount & Net Amount - show only if discount exists */}
             {Number(discount || 0) > 0 && (
@@ -656,8 +658,27 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               </Text>
             </View>
 
-            {/* GRAND TOTAL */}
-            <View
+            {/* ✅ ROUND OFF - हमेशा दिखाएं */}
+            {(() => {
+              const totalBeforeRounding = netAmount + cgst + sgst + igst;
+              const roundedTotal = Math.round(totalBeforeRounding);
+              const roundOffAmount = roundedTotal - totalBeforeRounding;
+
+              return (
+                <View style={styles.summaryRow}>
+                  <Text>Round Off ({roundOffAmount >= 0 ? "+" : "-"})</Text>
+                  <Text>
+                    <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>
+                      ₹
+                    </Text>
+                    {Math.abs(roundOffAmount).toFixed(2)}
+                  </Text>
+                </View>
+              );
+            })()}
+
+            {/* GRAND TOTAL - UPDATED */}
+            {/* <View
               style={[
                 styles.summaryRow,
                 { borderTop: "1px solid #000", marginTop: 4, paddingTop: 2 },
@@ -666,9 +687,9 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               <Text style={{ fontWeight: "bold" }}>Grand Total</Text>
               <Text style={{ fontWeight: "bold" }}>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-                {grandTotal.toFixed(2)}
+                {Math.round(grandTotal).toFixed(2)}
               </Text>
-            </View>
+            </View> */}
           </View>
         </View>
 
@@ -685,7 +706,8 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           {/* Left side - Amount in words */}
           <View style={{ flex: 1, paddingRight: 20 }}>
             <Text style={styles.footerText}>
-              Amount (in words): {convertToCurrencyWords(grandTotal)}
+              Amount (in words):{" "}
+              {convertToCurrencyWords(Math.round(grandTotal))}
             </Text>
           </View>
 
@@ -695,7 +717,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               <Text style={styles.totalAmountLabel}>GRAND TOTAL AMOUNT</Text>
               <Text style={styles.totalAmountValue}>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-                {grandTotal.toFixed(2)}
+                {Math.round(grandTotal).toFixed(2)}
               </Text>
             </View>
           </View>
@@ -728,8 +750,7 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
               <Text style={styles.bold}>Amount Paid:</Text>
               <Text>
                 <Text style={{ fontFamily: "Unifont", fontSize: 10 }}>₹</Text>
-                {grandTotal.toFixed(2)}
-                {/* {paidAmount.toFixed(2)} */}
+                {Math.round(grandTotal).toFixed(2)}
               </Text>
             </View>
 
@@ -782,8 +803,39 @@ const GenerateTaxPDF = ({ formData, invoiceNo = 1 }) => {
           </View>
 
           {/* QR */}
-          <View style={{ width: "50%", alignItems: "flex-end" }}>
-            <Image src={qrCodeImg} style={{ width: 80, height: "auto" }} />
+          <View
+            style={{
+              width: "50%",
+              alignItems: "flex-end",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 14,
+                fontStyle: "italic",
+                fontWeight: "bold",
+                marginBottom: 6,
+                marginRight: 12,
+                textAlign: "center",
+                color: "#333",
+              }}
+            >
+              Pay Here
+            </Text>
+
+            <Image src={qrCodeImg} style={{ width: 90, height: 90 }} />
+
+            <Text
+              style={{
+                fontSize: 8,
+                marginTop: 8,
+                textAlign: "center",
+                fontStyle: "italic",
+              }}
+            >
+              <Text style={{ fontWeight: "bold" }}>Merchant Name: </Text>
+              Legal Papers India
+            </Text>
           </View>
         </View>
 

@@ -22,6 +22,11 @@ import { Spinner } from "@material-tailwind/react";
 import usePath from "../../hooks/usePath";
 import InputField from "../../components/fields/InputField";
 import { useForm } from "react-hook-form";
+import { BiExport } from "react-icons/bi";
+import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
+import useAxios from "../../hooks/useAxios";
+import AssignedNCBucketPasswordModal from "./AssignedNCBucketPasswordModal";
 
 const AssignedNCBucket = () => {
   const dispatch = useDispatch();
@@ -39,6 +44,10 @@ const AssignedNCBucket = () => {
   const [filterObject, setFilterObject] = useState({});
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [filteringParameters, setFilteringParameters] = useState({});
+
+  const axiosInstance = useAxios();
+  const [passModal, setPassModal] = useState(false);
+  const [allCheckbox, setAllCheckBox] = useState(false);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -143,9 +152,82 @@ const AssignedNCBucket = () => {
     dispatch(handleBulkSalesAssign(payload));
   };
 
+  // const handleChange = (row) => {
+  //   console.log(row.selectedRows);
+  //   setSelecteRows(row.selectedRows);
+  // };
+
   const handleChange = (row) => {
     console.log(row.selectedRows);
     setSelecteRows(row.selectedRows);
+
+    // Check if all rows are selected for export
+    if (assignedNCBucketLeads?.allLead?.length > 0) {
+      const allRowsSelected =
+        row?.selectedRows?.length === assignedNCBucketLeads?.allLead?.length;
+      setAllCheckBox(allRowsSelected);
+    }
+  };
+
+  // Add this export handler function
+  const handleExport = async (passw) => {
+    let formData = new FormData();
+
+    // Add data key based on checkbox
+    formData.append("data", allCheckbox ? "all" : "200");
+
+    // Convert leadFilters to FormData
+    if (filteringParameters && Object.keys(filteringParameters).length > 0) {
+      Object.entries(filteringParameters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          // Convert arrays to JSON strings
+          formData.append(key, JSON.stringify(value));
+        } else if (value !== null && value !== undefined) {
+          // Append other values directly
+          formData.append(key, value);
+        }
+      });
+    }
+
+    try {
+      // Send the formData to the API - Update endpoint for NC Bucket
+      const response = await axiosInstance.post(
+        `/leadRoutes/export-nc-bucketjgh`, // Updated endpoint for NC Bucket
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const data = response.data;
+      console.log("response fetched is ", response);
+
+      // Create a new workbook from the array of objects
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+      // Convert the workbook to a binary string and create a Blob
+      const excelFile = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelFile], { type: "application/octet-stream" });
+
+      // Create a download link for the blob
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "assigned_nc_bucket_leads.xlsx"; // Updated filename
+      link.click(); // Trigger the download
+
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
+
+      toast.success("Export completed successfully!");
+    } catch (error) {
+      console.error("Error exporting data", error);
+      toast.error("Export failed. Please try again.");
+    }
   };
 
   return (
@@ -191,6 +273,22 @@ const AssignedNCBucket = () => {
               <LuListFilter size={16} />
               <span>Filter</span>
             </MyButton>
+
+            {!(
+              role === "salesTl" ||
+              role === "operationsTl" ||
+              role === "salesExecutive" ||
+              role === "operationsExecutive"
+            ) && (
+              <MyButton
+                title="Export"
+                placement="top"
+                className="main-bg py-2.5 text-[15px] font-medium px-4"
+                onClick={() => setPassModal(!passModal)}
+              >
+                <BiExport size={18} />
+              </MyButton>
+            )}
           </div>
         </div>
         <div className="w-full py-4">
@@ -243,6 +341,11 @@ const AssignedNCBucket = () => {
           }
           currentPage={page}
           onPageChange={handlePageChange}
+        />
+        <AssignedNCBucketPasswordModal
+          passModal={passModal}
+          setPassModal={setPassModal}
+          onSave={handleExport}
         />
       </div>
     </>

@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 import ReactQuill from "react-quill";
 import { Spinner } from "@material-tailwind/react";
 import "react-quill/dist/quill.snow.css";
-import { serviceCategoryOption } from "../../constants/options";
 
 const quillModules = {
   toolbar: [
@@ -29,6 +28,55 @@ const quillFormats = [
   "underline",
   "list",
   "bullet",
+];
+
+const serviceCategoryOption = [
+  { label: "AD Code", value: "AD Code" },
+  { label: "Barcode Registration", value: "Barcode Registration" },
+  { label: "Company Base DSC", value: "Company Base DSC" },
+  { label: "Company Compliances", value: "Company Compliances" },
+  { label: "Company Incorporation", value: "Company Incorporation" },
+  { label: "Copyright", value: "Copyright" },
+  { label: "Digital Marketing", value: "Digital Marketing" },
+  { label: "DSC Class 3", value: "DSC Class 3" },
+  { label: "EPR Registration", value: "EPR Registration" },
+  { label: "FSSAI Central License", value: "FSSAI Central License" },
+  { label: "FSSAI Modification", value: "FSSAI Modification" },
+  { label: "FSSAI Registration", value: "FSSAI Registration" },
+  { label: "FSSAI Renewal", value: "FSSAI Renewal" },
+  { label: "FSSAI Returns", value: "FSSAI Returns" },
+  { label: "FSSAI State License", value: "FSSAI State License" },
+  { label: "GEM Registration", value: "GEM Registration" },
+  { label: "GST Cancel", value: "GST Cancel" },
+  { label: "GST Modification", value: "GST Modification" },
+  { label: "GST Registration", value: "GST Registration" },
+  { label: "GST Returns", value: "GST Returns" },
+  { label: "IEC Modification", value: "IEC Modification" },
+  { label: "IEC Registration", value: "IEC Registration" },
+  { label: "IEC Renewal", value: "IEC Renewal" },
+  { label: "ISO Certificate", value: "ISO Certificate" },
+  { label: "ITR Returns", value: "ITR Returns" },
+  { label: "LMPC Registration", value: "LMPC Registration" },
+  {
+    label: "Logo Design/Brand Name Suggestion",
+    value: "Logo Design/Brand Name Suggestion",
+  },
+  { label: "LUT Registration", value: "LUT Registration" },
+  { label: "MCA Services", value: "MCA Services" },
+  { label: "Others Services", value: "Others Services" },
+  { label: "PF & ESI Registration", value: "PF & ESI Registration" },
+  { label: "RCMC Certificate", value: "RCMC Certificate" },
+  { label: "Startup India Certificate", value: "Startup India Certificate" },
+  { label: "Trade License", value: "Trade License" },
+  {
+    label: "Trademark Objection/Hearing",
+    value: "Trademark Objection/Hearing",
+  },
+  { label: "Trademark Registration", value: "Trademark Registration" },
+  { label: "Udyam Modification", value: "Udyam Modification" },
+  { label: "Udyam Registration", value: "Udyam Registration" },
+  { label: "Water Test Report", value: "Water Test Report" },
+  { label: "Website", value: "Website" },
 ];
 
 const EditService = () => {

@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogHeader,
-  DialogBody,
-  DialogFooter,
-  Button,
-} from "@material-tailwind/react";
-import { IoIosCloseCircle } from "react-icons/io";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Button } from "@material-tailwind/react";
+import { IoArrowBack } from "react-icons/io5";
 import toast from "react-hot-toast";
 import { Controller, useForm } from "react-hook-form";
 import InputField from "../../components/fields/InputField";
@@ -14,13 +9,17 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   createTaxInvoice,
   getAllTaxInvoices,
-  incrementInvoice, // ✅ Add this for invoice number
+  incrementInvoice,
 } from "../../redux/features/tax";
 import { pdf } from "@react-pdf/renderer";
 import GenerateTaxPDF from "./GenerateTaxPDF";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { gstStates } from "../../constants/gstStates";
+import { getAllAddresses } from "../../redux/features/services";
+import { getLeaByID } from "../../redux/features/leads";
+import Heading from "../../common/Heading";
+import FieldsCont from "../../common/FieldsCont";
 
 export const quillModules = {
   toolbar: [
@@ -48,9 +47,22 @@ export const quillFormats = [
   "code-block",
 ];
 
-const GenerateTaxModal = ({ open, onClose, leadData }) => {
+const GenerateTaxInvoice = () => {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+  const leadId = searchParams.get("leadId");
+
   const services = useSelector((state) => state.services?.services || []);
+  const addresses = useSelector(
+    (state) =>
+      state.services?.addresses?.data?.filter(
+        (address) => address.isActive === true
+      ) || []
+  );
+
+  const [leadData, setLeadData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     control,
@@ -67,17 +79,53 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
 
   const getCurrentDate = () => new Date().toISOString().split("T")[0];
 
+  // Load lead data
+  useEffect(() => {
+    if (leadId) {
+      setIsLoading(true);
+      dispatch(getLeaByID(leadId))
+        .then((data) => {
+          if (data && data.leadId === leadId) {
+            setLeadData(data);
+          }
+        })
+        .catch((err) => {
+          console.log("Load Error:", err.message);
+          toast.error("Failed to load lead data");
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [leadId, dispatch]);
+
+  // ✅ Auto-select place of supply based on GST number
+  const gstNo = watch("gstNo");
+
+  useEffect(() => {
+    if (!gstNo || gstNo.length < 2) return;
+
+    const stateCode = gstNo.substring(0, 2);
+    const matchingState = gstStates.find((state) => state.code === stateCode);
+
+    if (matchingState) {
+      const placeOfSupplyValue = `${matchingState.code}-${matchingState.name}`;
+      setValue("placeOfSupply", placeOfSupplyValue);
+      console.log(`🔄 Auto-selected Place of Supply: ${placeOfSupplyValue}`);
+    }
+  }, [gstNo, setValue]);
+
   const placeOfSupply = watch("placeOfSupply");
 
   useEffect(() => {
     if (!placeOfSupply) return;
 
-    const [stateCode] = placeOfSupply.split("-"); // e.g., "07-Delhi" => ["07", "Delhi"]
+    const [stateCode] = placeOfSupply.split("-");
 
     if (stateCode === "07") {
-      setValue("taxType", "intra"); // auto-select intra-state
+      setValue("taxType", "intra");
     } else {
-      setValue("taxType", "inter"); // auto-select inter-state for other states
+      setValue("taxType", "inter");
     }
   }, [placeOfSupply, setValue]);
 
@@ -92,7 +140,6 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         .join("\n\n")
     );
 
-    // Update RHF state
     setValue(
       "termsAndConditions",
       selectedServiceIds
@@ -117,7 +164,7 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
     });
   }, [selectedServiceIds, setValue, watch]);
 
-  // Autofill form when modal opens
+  // Autofill form when lead data loads
   useEffect(() => {
     if (leadData) {
       reset({
@@ -128,7 +175,6 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         selectedServices: [],
         taxType: "",
         date: getCurrentDate(),
-        validUntil: "",
         quantities: services.reduce((acc, s) => ({ ...acc, [s._id]: 1 }), {}),
         prices: services.reduce(
           (acc, s) => ({ ...acc, [s._id]: s.price || 0 }),
@@ -136,7 +182,16 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         ),
       });
     }
-  }, [leadData, open, reset, services]);
+  }, [leadData, reset, services]);
+
+  useEffect(() => {
+    dispatch(getAllAddresses());
+  }, [dispatch]);
+
+  const stripHTMLTags = (str) => {
+    if (!str) return "";
+    return str.replace(/<[^>]*>/g, "");
+  };
 
   const onSubmitForm = async (data) => {
     if (!data.name || !data.address) {
@@ -179,53 +234,50 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         0
       );
 
-      // ✅ Apply discount BEFORE GST calculation
       const discount = parseFloat(data.discount) || 0;
       const taxableValue = taxableValues - discount;
 
-      // ✅ Calculate GST on discounted amount
       let totalTax = 0;
 
       selectedServiceDetails.forEach((service) => {
-        // Calculate proportional discount for each service
         const serviceDiscount = (service.baseAmount / taxableValues) * discount;
         const serviceNetAmount = service.baseAmount - serviceDiscount;
         const taxRate = service?.taxRate || 18;
 
         if (data.taxType === "intra") {
-          totalTax += (serviceNetAmount * taxRate) / 100; // CGST + SGST combined
+          totalTax += (serviceNetAmount * taxRate) / 100;
         } else if (data.taxType === "inter") {
-          totalTax += (serviceNetAmount * taxRate) / 100; // IGST
+          totalTax += (serviceNetAmount * taxRate) / 100;
         }
       });
 
       const invoiceTotal = taxableValue + totalTax;
 
-      // 4️⃣ Prepare payload with minimal totals structure ✅
+      // 4️⃣ Prepare payload
       const taxInvoiceData = {
         leadId: leadData?._id,
         name: data.name,
         mobileNumber: data.mobileNumber,
         address: data.address,
+        addressDropdown: data.addressDropdown,
         gstNo: data.gstNo,
         taxType: data.taxType,
         placeOfSupply: data.placeOfSupply,
         date: data.date,
-        validUntil: data.validUntil,
+        validUntil: "2025-12-31",
         services: selectedServiceDetails,
         termsAndConditions: termsQuill,
         invoiceNo,
         discount,
         totals: {
-          taxableValue, // ✅ Amount after discount: 600
-          totalTax, // ✅ Total GST: 108
-          invoiceTotal, // ✅ Final total: 708
+          taxableValue: Math.round(taxableValue),
+          totalTax: Math.round(totalTax),
+          invoiceTotal: Math.round(invoiceTotal),
         },
       };
 
       console.log("🧾 Tax Invoice Payload:", taxInvoiceData);
 
-      // Rest of the code remains same...
       const blob = await pdf(
         <GenerateTaxPDF formData={taxInvoiceData} invoiceNo={invoiceNo} />
       ).toBlob();
@@ -241,6 +293,7 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
       formData.append("name", taxInvoiceData.name);
       formData.append("mobileNumber", taxInvoiceData.mobileNumber);
       formData.append("address", taxInvoiceData.address);
+      formData.append("addressDropdown", data.addressDropdown || "");
       formData.append("gstNo", taxInvoiceData.gstNo || "");
       formData.append("taxType", taxInvoiceData.taxType);
       formData.append("placeOfSupply", taxInvoiceData.placeOfSupply);
@@ -253,17 +306,36 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
         "termsAndConditions",
         taxInvoiceData.termsAndConditions || ""
       );
-      formData.append("totals", JSON.stringify(taxInvoiceData.totals)); // ✅ Minimal totals
+      formData.append("totals", JSON.stringify(taxInvoiceData.totals));
       formData.append("pdfFile", pdfFile);
 
+      // Success callback में localStorage set करें
       await dispatch(
-        createTaxInvoice(formData, (success) => {
+        createTaxInvoice(formData, async (success) => {
           if (success) {
-            onClose();
+            toast.success("Tax Invoice generated successfully!");
+
+            // Set completion flag
+            localStorage.setItem(
+              "invoiceCompleted",
+              JSON.stringify({
+                type: "tax",
+                leadId: leadData?.leadId,
+                timestamp: Date.now(),
+              })
+            );
+
+            console.log("Tax Invoice generated successfully");
+
+            // Close window after delay
+            setTimeout(() => {
+              window.close();
+            }, 2000);
           }
         })
       );
-      dispatch(getAllTaxInvoices(leadData?._id));
+
+      dispatch(getAllTaxInvoices(leadData?.leadId));
     } catch (error) {
       console.error("Tax invoice error:", error);
       toast.error(error.message || "Failed to create Tax Invoice");
@@ -272,237 +344,247 @@ const GenerateTaxModal = ({ open, onClose, leadData }) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading lead data...</div>
+      </div>
+    );
+  }
+
+  if (!leadData) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-red-500">Lead not found!</div>
+      </div>
+    );
+  }
+
   return (
-    <Dialog open={open} handler={onClose} size="lg">
-      <DialogHeader className="main-bg text-white flex justify-between items-center">
-        Generate Tax Invoice
-        <button onClick={onClose}>
-          <IoIosCloseCircle className="text-2xl" />
-        </button>
-      </DialogHeader>
+    <div className="flex flex-col w-full px-4 gap-y-4 py-5">
+      <div className="grid lg:grid-cols-2 grid-cols-1 gap-y-3">
+        <Heading text="Generate Tax Invoice" showHeading />
+      </div>
 
-      <DialogBody className="max-h-[70vh] overflow-y-auto">
-        <div className="grid grid-cols-3 gap-4">
-          {/* Name, Mobile, GST */}
-          <InputField
-            name="name"
-            label="Name"
-            control={control}
-            errors={errors}
-          />
-          <InputField
-            name="mobileNumber"
-            label="Mobile No"
-            control={control}
-            errors={errors}
-          />
-          <InputField
-            name="gstNo"
-            label="GST No"
-            control={control}
-            errors={errors}
-          />
-
-          <InputField
-            name="placeOfSupply"
-            label="Place of Supply"
-            type="select"
-            mode="single"
-            control={control}
-            errors={errors}
-            options={gstStates.map((state) => ({
-              value: `${state.code}-${state.name}`,
-              label: `${state.code}-${state.name}`,
-            }))}
-          />
-
-          {/* <InputField
-            name="amountPaid"
-            label="Amount Paid"
-            type="number"
-            control={control}
-            errors={errors}
-            rules={{ required: "Amount Paid is required" }}
-          /> */}
-
-          {/* Address */}
-          <div className="col-span-3">
-            <label className="block font-semibold mb-2">Address</label>
-            <Controller
-              name="address"
-              control={control}
-              rules={{ required: "Address is required" }}
-              render={({ field }) => (
-                <ReactQuill
-                  {...field}
-                  onChange={field.onChange}
-                  theme="snow"
-                  modules={quillModules}
-                  formats={quillFormats}
-                  className="bg-white"
-                  style={{
-                    minHeight: "100px",
-                    maxHeight: "200px",
-                    overflowY: "auto",
-                  }}
-                />
-              )}
-            />
-            {errors.address && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.address.message}
-              </p>
-            )}
-          </div>
-
-          {/* Services Multi-select */}
-          <div className="col-span-3">
+      {/* Form */}
+      <div>
+        <FieldsCont>
+          <div className="grid grid-cols-3 gap-4">
             <InputField
-              name="selectedServices"
-              label="Select Services"
+              name="addressDropdown"
+              label="Select Address"
               type="select"
-              isMulti
+              mode="single"
               control={control}
               errors={errors}
-              options={services.map((service) => ({
-                value: service._id,
-                label: service.name,
+              options={addresses.map((address) => ({
+                value: address.addressLine1,
+                label: stripHTMLTags(address.addressLine1),
               }))}
             />
-          </div>
 
-          {/* Quantities */}
-          {selectedServiceIds?.length > 0 && (
-            <div className="col-span-3 space-y-4">
-              {selectedServiceIds.map((id) => {
-                const service = services.find((s) => s._id === id);
-                return (
-                  <div key={id} className="flex items-center gap-4">
-                    <span className="flex-1 font-medium">
-                      {service?.name || "Service"}
-                    </span>
-                    <div className="w-24">
-                      <InputField
-                        name={`quantities.${id}`}
-                        label="Qty"
-                        type="number"
-                        control={control}
-                        errors={errors}
-                        defaultValue={watch(`quantities.${id}`) ?? 1}
-                        rules={{ required: "Required" }}
-                      />
-                    </div>
-                    {/* Price Input */}
-                    <div className="w-28">
-                      <InputField
-                        name={`prices.${id}`}
-                        label="Price"
-                        type="number"
-                        control={control}
-                        errors={errors}
-                        defaultValue={
-                          watch(`prices.${String(id)}`) ?? service?.price ?? 0
-                        }
-                        rules={{ required: "Required" }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Tax Type, Date, Valid Until */}
-          <InputField
-            name="taxType"
-            label="Tax Type"
-            type="select"
-            control={control}
-            errors={errors}
-            options={[
-              { value: "inter", label: "Inter-state (IGST)" },
-              { value: "intra", label: "Intra-state (CGST + SGST)" },
-            ]}
-            mode="single"
-          />
-          <InputField
-            name="date"
-            label="Date"
-            type="date"
-            control={control}
-            errors={errors}
-          />
-          <InputField
-            name="validUntil"
-            label="Valid Until"
-            type="date"
-            control={control}
-            errors={errors}
-          />
-          <InputField
-            name="discount"
-            label="Discount"
-            type="number"
-            control={control}
-            errors={errors}
-          />
-
-          {/* Terms & Conditions */}
-          <div className="col-span-3 mt-4">
-            <label className="block font-semibold mb-2">
-              Terms & Conditions
-            </label>
-            <Controller
-              name="termsAndConditions"
+            <InputField
+              name="name"
+              label="Name"
               control={control}
-              render={({ field }) => (
-                <ReactQuill
-                  {...field}
-                  value={field.value}
-                  onChange={(value) => {
-                    field.onChange(value);
-                    setTermsQuill(value);
-                  }}
-                  theme="snow"
-                  modules={quillModules}
-                  formats={quillFormats}
-                  className="bg-white text-black"
-                  style={{
-                    minHeight: "120px",
-                    maxHeight: "250px",
-                    overflowY: "auto",
-                  }}
-                />
-              )}
+              errors={errors}
             />
-            {errors.termsAndConditions && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.termsAndConditions.message}
-              </p>
-            )}
-          </div>
-        </div>
-      </DialogBody>
+            <InputField
+              name="mobileNumber"
+              label="Mobile No"
+              control={control}
+              errors={errors}
+            />
+            <InputField
+              name="gstNo"
+              label="GST No"
+              control={control}
+              errors={errors}
+            />
 
-      <DialogFooter className="gap-2">
-        <Button
-          variant="text"
-          color="gray"
-          onClick={onClose}
-          disabled={isSubmitting}
-        >
-          Cancel
-        </Button>
-        <Button
-          className="main-bg text-white flex items-center justify-center gap-2"
-          onClick={handleSubmit(onSubmitForm)}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? "Generating..." : "Generate"}
-        </Button>
-      </DialogFooter>
-    </Dialog>
+            <InputField
+              name="placeOfSupply"
+              label="Place of Supply"
+              type="select"
+              mode="single"
+              control={control}
+              errors={errors}
+              options={gstStates.map((state) => ({
+                value: `${state.code}-${state.name}`,
+                label: `${state.code}-${state.name}`,
+              }))}
+            />
+
+            {/* Address */}
+            <div className="col-span-3">
+              <label className="block font-semibold mb-2">Address</label>
+              <Controller
+                name="address"
+                control={control}
+                rules={{ required: "Address is required" }}
+                render={({ field }) => (
+                  <ReactQuill
+                    {...field}
+                    onChange={field.onChange}
+                    theme="snow"
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="bg-white"
+                    style={{
+                      minHeight: "100px",
+                      maxHeight: "200px",
+                      overflowY: "auto",
+                    }}
+                  />
+                )}
+              />
+              {errors.address && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.address.message}
+                </p>
+              )}
+            </div>
+
+            {/* Services Multi-select */}
+            <div className="col-span-3">
+              <InputField
+                name="selectedServices"
+                label="Select Services"
+                type="select"
+                isMulti
+                control={control}
+                errors={errors}
+                options={services.map((service) => ({
+                  value: service._id,
+                  label: service.name,
+                }))}
+              />
+            </div>
+
+            {/* Quantities */}
+            {selectedServiceIds?.length > 0 && (
+              <div className="col-span-3 space-y-4">
+                {selectedServiceIds.map((id) => {
+                  const service = services.find((s) => s._id === id);
+                  return (
+                    <div key={id} className="flex items-center gap-4">
+                      <span className="flex-1 font-medium">
+                        {service?.name || "Service"}
+                      </span>
+                      <div className="w-24">
+                        <InputField
+                          name={`quantities.${id}`}
+                          label="Qty"
+                          type="number"
+                          control={control}
+                          errors={errors}
+                          defaultValue={watch(`quantities.${id}`) ?? 1}
+                          rules={{ required: "Required" }}
+                        />
+                      </div>
+                      <div className="w-28">
+                        <InputField
+                          name={`prices.${id}`}
+                          label="Price"
+                          type="number"
+                          control={control}
+                          errors={errors}
+                          defaultValue={
+                            watch(`prices.${String(id)}`) ?? service?.price ?? 0
+                          }
+                          rules={{ required: "Required" }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Tax Type, Date, Discount */}
+            <InputField
+              name="taxType"
+              label="Tax Type"
+              type="select"
+              control={control}
+              errors={errors}
+              options={[
+                { value: "inter", label: "Inter-state (IGST)" },
+                { value: "intra", label: "Intra-state (CGST + SGST)" },
+              ]}
+              mode="single"
+            />
+            <InputField
+              name="date"
+              label="Date"
+              type="date"
+              control={control}
+              errors={errors}
+            />
+            <InputField
+              name="discount"
+              label="Discount"
+              type="number"
+              control={control}
+              errors={errors}
+            />
+
+            {/* Terms & Conditions */}
+            <div className="col-span-3 mt-4">
+              <label className="block font-semibold mb-2">
+                Terms & Conditions
+              </label>
+              <Controller
+                name="termsAndConditions"
+                control={control}
+                render={({ field }) => (
+                  <ReactQuill
+                    {...field}
+                    value={field.value}
+                    onChange={(value) => {
+                      field.onChange(value);
+                      setTermsQuill(value);
+                    }}
+                    theme="snow"
+                    modules={quillModules}
+                    formats={quillFormats}
+                    className="bg-white text-black"
+                    style={{
+                      minHeight: "120px",
+                      maxHeight: "250px",
+                      overflowY: "auto",
+                    }}
+                  />
+                )}
+              />
+              {errors.termsAndConditions && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.termsAndConditions.message}
+                </p>
+              )}
+            </div>
+          </div>
+        </FieldsCont>
+        {/* Buttons */}
+        <div className="flex gap-x-3 gap-y-1 flex-wrap justify-between sticky bottom-1 p-2 main-bg shadow-lg rounded-md mt-3">
+          <Button
+            className="capitalize"
+            onClick={handleSubmit(onSubmitForm)}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Generating..." : "Generate Tax Invoice"}
+          </Button>
+          <Button
+            className="capitalize"
+            onClick={() => navigate(-1)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default GenerateTaxModal;
+export default GenerateTaxInvoice;

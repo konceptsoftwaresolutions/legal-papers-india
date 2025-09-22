@@ -802,9 +802,14 @@ export const whatsAppInHouseTemplateSaveSend = (
 
             const formData = new FormData();
 
+            if (payload.file) {
+                console.log("Appending main file to FormData:", payload.file);
+                formData.append("file", payload.file); // Main file for attachment
+            }
+
             // File (if uploaded)
             if (payload.file) {
-                formData.append("file", payload.file);
+                formData.append("excelFile", payload.file);
             }
 
             // Required fields
@@ -830,9 +835,28 @@ export const whatsAppInHouseTemplateSaveSend = (
                 formData.append("variables", JSON.stringify(payload.variables));
             }
 
-            // Records (array)
+            // Records (array) - Selected range ke liye
             if (payload.records) {
                 formData.append("records", JSON.stringify(payload.records));
+            }
+
+            // ✅ ADD FILTERED DATA - Complete filtered leads array
+            if (payload.filteredData && Array.isArray(payload.filteredData) && payload.filteredData.length > 0) {
+                formData.append("filteredData", JSON.stringify(payload.filteredData));
+            }
+
+            // ✅ ADD STARTING AND ENDING VALUES
+            if (payload.starting !== undefined && payload.starting !== null) {
+                formData.append("starting", payload.starting.toString());
+            }
+
+            if (payload.ending !== undefined && payload.ending !== null) {
+                formData.append("ending", payload.ending.toString());
+            }
+
+            // ✅ ADD TOTAL RECORDS COUNT
+            if (payload.totalRecords !== undefined && payload.totalRecords !== null) {
+                formData.append("totalRecords", payload.totalRecords.toString());
             }
 
             // Optional image

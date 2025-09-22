@@ -10,6 +10,7 @@ const initialState = {
   addLeadLoader: false,
   chatMessages: [],
   chatLoader: false,
+  invoiceGenerated: false,
   currentPage: 1,
 };
 
@@ -32,11 +33,14 @@ const leadsSlice = createSlice({
     setChatLoader: (state, action) => {
       state.chatLoader = action.payload;
     },
+    setInvoiceGenerated: (state, action) => {
+      state.invoiceGenerated = action.payload;
+    },
   },
 });
 
 // Export setLeads now since we changed it in the reducer
-export const { setLeads, setChatMessages, setChatLoader, setCurrentPage } = leadsSlice.actions;
+export const { setLeads, setChatMessages, setChatLoader, setCurrentPage, setInvoiceGenerated } = leadsSlice.actions;
 export default leadsSlice.reducer;
 
 export const getAllLeads = (currentPage, filter = false, filterObject = {}, callback = () => { }) => {
@@ -713,7 +717,7 @@ export const fetchChatsByPhone = (phoneNumber, callback = () => { }) => {
   };
 };
 // Redux async action to send message
-export const sendMessageToChat = (phoneNumber, message, callback = () => {}) => {
+export const sendMessageToChat = (phoneNumber, message, callback = () => { }) => {
   return async (dispatch) => {
     try {
       dispatch(setChatLoader(true));
@@ -727,7 +731,7 @@ export const sendMessageToChat = (phoneNumber, message, callback = () => {}) => 
         const data = response.data || {};
 
         // Optionally, update chatMessages if API returns updated chat
-        dispatch(setChatMessages(data)); 
+        dispatch(setChatMessages(data));
         dispatch(setChatLoader(false));
         callback(true, data);
       } else {

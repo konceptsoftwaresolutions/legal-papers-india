@@ -10,8 +10,9 @@ import {
   setInvoiceSettings,
   getAllPerformaInvoices,
   downloadPerformaInvoicePDF,
+  deletePerformaInvoice,
 } from "../../redux/features/performa";
-import { MdDownload, MdEdit, MdFilterList } from "react-icons/md";
+import { MdDelete, MdDownload, MdEdit, MdFilterList } from "react-icons/md";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
 import { Spinner } from "@material-tailwind/react";
 import PerformaInvoiceFilter from "./PerformaInvoiceFilter";
@@ -144,17 +145,42 @@ const PerformaInvoiceNo = () => {
         </button>
       ),
     },
-    {
-      name: "Edit",
-      cell: (row) => (
-        <button
-          onClick={() => handleEdit(row._id)}
-          className="bg-green-600 text-white px-3 py-1 rounded flex items-center gap-2 hover:bg-green-700 transition"
-        >
-          <MdEdit /> Edit
-        </button>
-      ),
-    },
+
+    // ✅ Only for superAdmin
+    ...(role === "superAdmin"
+      ? [
+          {
+            name: "Edit",
+            cell: (row) => (
+              <button
+                onClick={() => handleEdit(row._id)}
+                className="bg-green-600 text-white px-3 py-1 rounded flex items-center gap-2 hover:bg-green-700 transition"
+              >
+                <MdEdit /> Edit
+              </button>
+            ),
+          },
+          {
+            name: "Delete",
+            cell: (row) => (
+              <button
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Are you sure you want to delete this invoice?"
+                    )
+                  ) {
+                    dispatch(deletePerformaInvoice(row._id));
+                  }
+                }}
+                className="bg-red-600 text-white px-3 py-1 rounded flex items-center gap-2 hover:bg-red-700 transition"
+              >
+                <MdDelete /> Delete
+              </button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   const handleExportExcel = () => {
@@ -166,13 +192,13 @@ const PerformaInvoiceNo = () => {
     // ✅ Fixed headers (same order me chahiye)
     const headers = [
       "GSTIN/UIN of Recipient",
-      "Name",
+      "Receiver Name",
       "Invoice Number",
       "Invoice Date",
-      "Invoice Value Amount",
+      "Invoice Value",
       "Place of Supply",
       "Reverse Charge",
-      "Applicable Tax Rate",
+      "Applicable % of Tax Rate",
       "Invoice Type",
       "E-commerce GSTIN",
       "Rate",
@@ -190,13 +216,13 @@ const PerformaInvoiceNo = () => {
     // ✅ Map API data to only these headers
     const excelData = filteredData.map((inv) => ({
       "GSTIN/UIN of Recipient": inv.gstNo || inv.gstNumber || "",
-      Name: inv.name || "",
+      "Receiver Name": inv.name || "",
       "Invoice Number": inv.invoiceNo || "",
       "Invoice Date": formatDateForExcel(inv.date),
-      "Invoice Value Amount": inv.totals?.invoiceTotal || 0,
+      "Invoice Value": inv.totals?.invoiceTotal || 0,
       "Place of Supply": inv.placeOfSupply || "",
       "Reverse Charge": "N",
-      "Applicable Tax Rate": inv.taxRate || 0,
+      "Applicable % of Tax Rate": inv.taxRate || "",
       "Invoice Type": "Regular B2B",
       "E-commerce GSTIN": inv.ecommerceGstin || "",
       Rate: inv.rate || 18,

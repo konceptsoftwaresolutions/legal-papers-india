@@ -6,6 +6,7 @@ const axiosInstance = useAxios();
 
 const initialState = {
     services: [],
+    addresses: [],
     loading: false,
 };
 
@@ -47,23 +48,23 @@ export const createService = (payload, callback = () => { }) => {
 };
 
 // ✅ Get All Services
-export const getAllServices = (callback = () => {}) => {
-  return async (dispatch) => {
-    try {
-      dispatch(setServices({ loading: true }));
-      const res = await axiosInstance.get("/serviceRoutes/services");
+export const getAllServices = (callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            dispatch(setServices({ loading: true }));
+            const res = await axiosInstance.get("/serviceRoutes/services");
 
-      if (res.status === 200) {
-        const serviceList = res.data?.data || []; // ✅ extract array only
-        dispatch(setServices({ services: serviceList, loading: false }));
-        callback(true, serviceList);
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to fetch services");
-      dispatch(setServices({ loading: false }));
-      callback(false);
-    }
-  };
+            if (res.status === 200) {
+                const serviceList = res.data?.data || []; // ✅ extract array only
+                dispatch(setServices({ services: serviceList, loading: false }));
+                callback(true, serviceList);
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to fetch services");
+            dispatch(setServices({ loading: false }));
+            callback(false);
+        }
+    };
 };
 
 
@@ -100,6 +101,83 @@ export const deleteService = (id, callback = () => { }) => {
             }
         } catch (err) {
             toast.error(err.response?.data?.message || "Failed to delete service");
+            callback(false);
+        } finally {
+            dispatch(setServices({ loading: false }));
+        }
+    };
+};
+
+// ✅ Create Address
+export const createAddress = (payload, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            dispatch(setServices({ loading: true }));
+            const res = await axiosInstance.post("/serviceRoutes/create-address", payload);
+            if (res.status === 201 || res.status === 200) {
+                toast.success("Address created successfully");
+                callback(true, res.data);
+                dispatch(getAllAddresses()); // refresh list
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to create address");
+            callback(false);
+        } finally {
+            dispatch(setServices({ loading: false }));
+        }
+    };
+};
+
+// ✅ Get All Addresses
+export const getAllAddresses = () => {
+    return async (dispatch) => {
+        try {
+            dispatch(setServices({ loading: true }));
+            const res = await axiosInstance.get("/serviceRoutes/get-all-addresses");
+            if (res.status === 200) {
+                dispatch(setServices({ addresses: res.data }));
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to fetch addresses");
+        } finally {
+            dispatch(setServices({ loading: false }));
+        }
+    };
+};
+
+// ✅ Update Address
+export const updateAddress = (payload, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            dispatch(setServices({ loading: true }));
+            const res = await axiosInstance.post("/serviceRoutes/update-address", payload);
+            if (res.status === 200) {
+                toast.success("Address updated successfully");
+                callback(true, res.data);
+                dispatch(getAllAddresses()); // refresh list
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to update address");
+            callback(false);
+        } finally {
+            dispatch(setServices({ loading: false }));
+        }
+    };
+};
+
+// ✅ Delete Address
+export const deleteAddress = (id, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            dispatch(setServices({ loading: true }));
+            const res = await axiosInstance.post("/serviceRoutes/delete-address", { id });
+            if (res.status === 200) {
+                toast.success("Address deleted successfully");
+                callback(true, res.data);
+                dispatch(getAllAddresses()); // refresh list
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.message || "Failed to delete address");
             callback(false);
         } finally {
             dispatch(setServices({ loading: false }));

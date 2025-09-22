@@ -279,6 +279,15 @@ const Leads = () => {
     );
   };
 
+  const conditionalRowStyles = [
+    {
+      when: (row) => row.isRefund === true,
+      style: {
+        backgroundColor: "red",
+      },
+    },
+  ];
+
   return (
     <>
       <LeadFilter
@@ -431,6 +440,7 @@ const Leads = () => {
                     },
                   },
                 }}
+                conditionalRowStyles={conditionalRowStyles}
                 // onRowClicked={handleRowClick}
                 selectableRows
                 onSelectedRowsChange={handleChange}

@@ -21,6 +21,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import GeneratePerformaPDF from "../leads/GeneratePerformaPDF";
 import { gstStates } from "../../constants/gstStates";
+import { getAllAddresses } from "../../redux/features/services";
 
 export const quillModules = {
   toolbar: [
@@ -51,6 +52,12 @@ export const quillFormats = [
 const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
   const dispatch = useDispatch();
   const services = useSelector((state) => state.services?.services || []);
+  const addresses = useSelector(
+    (state) =>
+      state.services?.addresses?.data?.filter(
+        (address) => address.isActive === true
+      ) || []
+  );
 
   const {
     control,
@@ -114,6 +121,7 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
               name: data.name || "_",
               mobileNumber: data.mobileNumber || "_",
               address: data.address || "",
+              addressDropdown: data.addressDropdown || "",
               gstNo: data.gstNo || "",
               placeOfSupply: data.placeOfSupply || "", // ✅ ADDED
               selectedServices: data.services?.map((s) => s.serviceId) || [],
@@ -202,6 +210,15 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
     console.log("📝 Current termsQuill State:", termsQuill);
   }, [watch("termsAndConditions"), termsQuill]);
 
+  useEffect(() => {
+    dispatch(getAllAddresses()); // ✅ Fetch addresses data
+  }, [dispatch]);
+
+  const stripHTMLTags = (str) => {
+    if (!str) return "";
+    return str.replace(/<[^>]*>/g, "");
+  };
+
   const onSubmitForm = async (data) => {
     if (!data.name || !data.address) {
       toast.error("Name and Address are required");
@@ -263,12 +280,13 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
 
       console.log("💾 Final Terms to Save:", finalTerms);
 
-      // ✅ Prepare payload with minimal totals structure
+      // ✅ Prepare payload with minimal totals structure AND ROUNDED VALUES
       const pi = {
         leadId: existingInvoice?.leadId,
         name: data.name,
         mobileNumber: data.mobileNumber,
         address: data.address,
+        addressDropdown: data.addressDropdown,
         gstNo: data.gstNo,
         taxType: data.taxType,
         placeOfSupply: data.placeOfSupply,
@@ -276,9 +294,9 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
         validUntil: data.validUntil,
         services: selectedServiceDetails,
         totals: {
-          taxableValue, // ✅ Net amount after discount: 600 (name as requested)
-          totalTax, // ✅ Total GST: 108
-          invoiceTotal, // ✅ Final total: 708
+          taxableValue: Math.round(taxableValue), // ✅ Rounded to nearest integer
+          totalTax: Math.round(totalTax), // ✅ Rounded to nearest integer
+          invoiceTotal: Math.round(invoiceTotal), // ✅ Rounded to nearest integer
         },
         termsAndConditions: finalTerms, // ✅ USE FINAL TERMS
         invoiceNo,
@@ -305,6 +323,7 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
       formData.append("name", pi.name);
       formData.append("mobileNumber", pi.mobileNumber);
       formData.append("address", pi.address);
+      formData.append("addressDropdown", data.addressDropdown || "");
       formData.append("gstNo", pi.gstNo || "");
       formData.append("taxType", pi.taxType);
       formData.append("date", pi.date);
@@ -353,7 +372,18 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                   errors={errors}
                   rules={{ required: "Invoice number is required" }}
                 />
-
+                <InputField
+                  name="addressDropdown"
+                  label="Select Address"
+                  type="select"
+                  mode="single"
+                  control={control}
+                  errors={errors}
+                  options={addresses.map((address) => ({
+                    value: address.addressLine1, // Send original HTML in payload
+                    label: stripHTMLTags(address.addressLine1), // Display plain text in dropdown
+                  }))}
+                />
                 <InputField
                   name="name"
                   label="Name"

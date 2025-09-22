@@ -140,6 +140,87 @@ const WhatsappInhouse = () => {
     setFilterObject({});
   };
 
+  // const onSubmitHandler = (data) => {
+  //   if (!selectedTemplateData) {
+  //     toast.error("Please select a template first.");
+  //     return;
+  //   }
+
+  //   // ✅ Prepare variables object: use dropdown or manual input
+  //   const variableData = {};
+  //   selectedTemplateData?.template?.variables?.forEach((_, index) => {
+  //     const dropdownValue =
+  //       apiValues[index]?.dropdown || apiValues[index]?.apiValue;
+  //     const manualValue = data[`variableValue_${index}`];
+  //     const finalValue = dropdownValue || manualValue;
+
+  //     if (finalValue) {
+  //       variableData[`{{${index + 1}}}`] = finalValue;
+  //       console.log(`Variable {{${index + 1}}} ->`, finalValue);
+  //     }
+  //   });
+
+  //   if (submitAction === "send") {
+  //     if (!data.starting || !data.ending) {
+  //       toast.error("Please specify the range");
+  //       return;
+  //     }
+
+  //     // ✅ Map filteredLeads to only leadId
+  //     const records = filteredLeads.map((lead) => ({ leadId: lead.leadId }));
+  //     console.log("Records to send:", records);
+
+  //     // ✅ Get actual channelId
+  //     const selectedChannel = availableChannels?.available?.find(
+  //       (ch) => ch.channelId === data.channelId
+  //     );
+  //     const channelIdToSend = selectedChannel?.channelId || "";
+  //     console.log("Selected channelId to send:", channelIdToSend);
+
+  //     // ✅ Generate campaign name dynamically if not set
+  //     const campaignNameToSend =
+  //       selectedTemplateData?.campaignName ||
+  //       `${selectedTemplateData?.template?.name || "Inhouse"}_${Date.now()}`;
+  //     console.log("Campaign name to send:", campaignNameToSend);
+
+  //     // ✅ Template id & name from template object
+  //     const templateIdToSend = selectedTemplateData?.template?._id
+  //       ? [selectedTemplateData.template._id]
+  //       : [];
+  //     const templateNameToSend = selectedTemplateData?.template?.name
+  //       ? [selectedTemplateData.template.name]
+  //       : ["InhouseTemplate"];
+
+  //     // ✅ Final payload
+  //     const payload = {
+  //       campaignName: campaignNameToSend,
+  //       channelId: channelIdToSend,
+  //       message: selectedTemplateData?.template?.message || "",
+  //       type: "normal",
+  //       templateId: templateIdToSend,
+  //       templateName: templateNameToSend,
+  //       variables: variableData,
+  //       records,
+  //     };
+  //     if (data.attachment && data.attachment[0]) {
+  //       payload.file = data.attachment[0];
+  //     }
+
+  //     console.log("🚀 Final payload to backend:", payload);
+
+  //     dispatch(
+  //       whatsAppInHouseTemplateSaveSend(
+  //         payload,
+  //         setSavesendLoading,
+  //         (success) => {
+  //           if (success) {
+  //             resetForm();
+  //           }
+  //         }
+  //       )
+  //     );
+  //   }
+  // };
   const onSubmitHandler = (data) => {
     if (!selectedTemplateData) {
       toast.error("Please select a template first.");
@@ -166,9 +247,28 @@ const WhatsappInhouse = () => {
         return;
       }
 
-      // ✅ Map filteredLeads to only leadId
-      const records = filteredLeads.map((lead) => ({ leadId: lead.leadId }));
-      console.log("Records to send:", records);
+      // ✅ Validate starting and ending values
+      const startingValue = parseInt(data.starting);
+      const endingValue = parseInt(data.ending);
+
+      if (
+        startingValue < 1 ||
+        endingValue < startingValue ||
+        endingValue > filteredLeads.length
+      ) {
+        toast.error(
+          `Please specify valid range (1 to ${filteredLeads.length})`
+        );
+        return;
+      }
+
+      // ✅ Slice the filtered leads based on starting and ending values
+      const recordsToSend = filteredLeads
+        .slice(startingValue - 1, endingValue) // Convert to 0-based index
+        .map((lead) => ({ leadId: lead.leadId }));
+
+      console.log("Records to send:", recordsToSend);
+      console.log("Complete filtered leads:", filteredLeads);
 
       // ✅ Get actual channelId
       const selectedChannel = availableChannels?.available?.find(
@@ -191,22 +291,39 @@ const WhatsappInhouse = () => {
         ? [selectedTemplateData.template.name]
         : ["InhouseTemplate"];
 
-      // ✅ Final payload
+      // ✅ Final payload - NOW INCLUDING filtered data, starting and ending values
       const payload = {
         campaignName: campaignNameToSend,
         channelId: channelIdToSend,
         message: selectedTemplateData?.template?.message || "",
-        type: "normal",
+        type: sendType || "normal", // Include the sendType
         templateId: templateIdToSend,
         templateName: templateNameToSend,
         variables: variableData,
-        records,
+        records: recordsToSend, // Use sliced records instead of all filtered leads
+        filteredData: filteredLeads, // ✅ ADD COMPLETE FILTERED DATA
+        starting: startingValue, // ✅ ADD THIS
+        ending: endingValue, // ✅ ADD THIS
+        totalRecords: filteredLeads.length, // ✅ ADD THIS for reference
       };
-      if (data.attachment && data.attachment[0]) {
-        payload.file = data.attachment[0];
+
+      // ✅ PROPER FILE HANDLING - Check for attachment
+      console.log("Attachment data:", data.attachment);
+      console.log("Attachment type:", typeof data.attachment);
+      console.log("Attachment length:", data.attachment?.length);
+
+      if (data.attachment && data.attachment.length > 0 && data.attachment[0]) {
+        payload.file = data.attachment[0]; // ✅ Main attachment file
+        console.log("File to upload:", payload.file);
+        console.log("File name:", payload.file.name);
+        console.log("File size:", payload.file.size);
+        console.log("File type:", payload.file.type);
       }
 
-      console.log("🚀 Final payload to backend:", payload);
+      console.log(
+        "🚀 Final payload to backend (with filtered data, starting/ending):",
+        payload
+      );
 
       dispatch(
         whatsAppInHouseTemplateSaveSend(

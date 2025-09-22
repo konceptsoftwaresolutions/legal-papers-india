@@ -23,10 +23,17 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { quillModules, quillFormats } from "../leads/GenerateTaxModal";
 import { gstStates } from "../../constants/gstStates";
+import { getAllAddresses } from "../../redux/features/services";
 
 const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
   const dispatch = useDispatch();
   const services = useSelector((state) => state.services?.services || []);
+  const addresses = useSelector(
+    (state) =>
+      state.services?.addresses?.data?.filter(
+        (address) => address.isActive === true
+      ) || []
+  );
 
   const {
     control,
@@ -91,6 +98,7 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
               name: invoice.name || "_",
               mobileNumber: invoice.mobileNumber || "_",
               address: invoice.address || "",
+              addressDropdown: invoice.addressDropdown || "",
               gstNo: invoice.gstNo || "",
               placeOfSupply: invoice.placeOfSupply || "",
               selectedServices: invoice.services?.map((s) => s.serviceId) || [],
@@ -179,6 +187,15 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
     console.log("📝 Current termsQuill State:", termsQuill);
   }, [watch("termsAndConditions"), termsQuill]);
 
+  useEffect(() => {
+    dispatch(getAllAddresses()); // ✅ Fetch addresses data
+  }, [dispatch]);
+
+  const stripHTMLTags = (str) => {
+    if (!str) return "";
+    return str.replace(/<[^>]*>/g, "");
+  };
+
   const onSubmitForm = async (data) => {
     if (!data.name || !data.address) {
       toast.error("Name and Address are required");
@@ -238,12 +255,13 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
       const invoiceNo = data.invoiceNo || existingInvoice?.invoiceNo || "";
       const finalTerms = data.termsAndConditions || termsQuill;
 
-      // ✅ Prepare payload with minimal totals structure
+      // ✅ Prepare payload with minimal totals structure AND ROUNDED VALUES
       const taxData = {
         leadId: existingInvoice?.leadId,
         name: data.name,
         mobileNumber: data.mobileNumber,
         address: data.address,
+        addressDropdown: data.addressDropdown,
         gstNo: data.gstNo,
         taxType: data.taxType,
         placeOfSupply: data.placeOfSupply,
@@ -254,9 +272,9 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
         invoiceNo,
         discount,
         totals: {
-          taxableValue, // ✅ Amount after discount: 600
-          totalTax, // ✅ Total GST: 108
-          invoiceTotal, // ✅ Final total: 708
+          taxableValue: Math.round(taxableValue), // ✅ Rounded to nearest integer
+          totalTax: Math.round(totalTax), // ✅ Rounded to nearest integer
+          invoiceTotal: Math.round(invoiceTotal), // ✅ Rounded to nearest integer
         },
       };
 
@@ -277,6 +295,7 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
       formData.append("name", taxData.name);
       formData.append("mobileNumber", taxData.mobileNumber);
       formData.append("address", taxData.address);
+      formData.append("addressDropdown", data.addressDropdown || "");
       formData.append("gstNo", taxData.gstNo || "");
       formData.append("taxType", taxData.taxType);
       formData.append("placeOfSupply", taxData.placeOfSupply);
@@ -325,7 +344,18 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                   errors={errors}
                   rules={{ required: "Invoice number is required" }}
                 />
-
+                <InputField
+                  name="addressDropdown"
+                  label="Select Address"
+                  type="select"
+                  mode="single"
+                  control={control}
+                  errors={errors}
+                  options={addresses.map((address) => ({
+                    value: address.addressLine1, // Send original HTML in payload
+                    label: stripHTMLTags(address.addressLine1), // Display plain text in dropdown
+                  }))}
+                />
                 <InputField
                   name="name"
                   label="Name"

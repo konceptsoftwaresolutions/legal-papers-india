@@ -201,3 +201,27 @@ export const updateTaxInvoice = (id, payload, callback = () => { }) => {
         }
     };
 };
+// Delete Tax Invoice
+export const deleteTaxInvoice = (id, callback = () => {}) => {
+    return async (dispatch) => {
+        try {
+            dispatch(setTax({ loading: true }));
+
+            const res = await axiosInstance.post("/serviceRoutes/delete-tax-invoice", { id });
+
+            if (res.status === 200) {
+                toast.success(res.data?.message || "Tax Invoice deleted successfully");
+                dispatch(setTax({ loading: false }));
+
+                // Refresh list
+                dispatch(getAllTaxInvoices());
+
+                callback(true, res.data);
+            }
+        } catch (err) {
+            dispatch(setTax({ loading: false }));
+            toast.error(err.response?.data?.message || "Failed to delete tax invoice");
+            callback(false);
+        }
+    };
+};

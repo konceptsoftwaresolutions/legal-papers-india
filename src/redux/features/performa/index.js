@@ -203,3 +203,28 @@ export const editPerformaInvoice = (id, payload, callback = () => { }) => {
         }
     };
 };
+
+// Delete performa invoice
+export const deletePerformaInvoice = (id, callback = () => { }) => {
+    return async (dispatch) => {
+        try {
+            dispatch(setPerforma({ loading: true }));
+
+            const res = await axiosInstance.post("/serviceRoutes/delete-proforma-invoice", { id });
+
+            if (res.status === 200) {
+                toast.success(res.data?.message || "Invoice deleted successfully");
+                dispatch(setPerforma({ loading: false }));
+
+                // Refresh list
+                dispatch(getAllPerformaInvoices());
+
+                callback(true, res.data);
+            }
+        } catch (err) {
+            dispatch(setPerforma({ loading: false }));
+            toast.error(err.response?.data?.message || "Failed to delete invoice");
+            callback(false);
+        }
+    };
+};

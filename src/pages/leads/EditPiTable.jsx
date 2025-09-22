@@ -1,20 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DataTable from "react-data-table-component";
 import { MdDownload } from "react-icons/md";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
+import { useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { downloadPerformaInvoicePDF } from "../../redux/features/performa";
+
+const DownloadButton = ({ row, onDownload }) => {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleClick = async () => {
+    setDownloading(true);
+    await onDownload(row);
+    setDownloading(false);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-2"
+      disabled={downloading}
+    >
+      {downloading ? "Downloading..." : <MdDownload />}
+      PDF
+    </button>
+  );
+};
 
 const EditPiTable = ({ piData = [] }) => {
-  const [downloadingId, setDownloadingId] = useState(null);
+  const dispatch = useDispatch();
 
-  // Download fake PDF (demo ke liye)
   const handleDownload = async (row) => {
     try {
-      setDownloadingId(row._id);
+      const blob = await dispatch(downloadPerformaInvoicePDF(row._id));
 
-      // 👇 Yaha actual API call karega
-      const blob = new Blob([`PDF content of ${row.invoiceNo}`], {
-        type: "application/pdf",
-      });
+      if (!blob) {
+        toast.error("No PDF data received");
+        return;
+      }
 
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -26,12 +49,9 @@ const EditPiTable = ({ piData = [] }) => {
       window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error("Download failed", err);
-    } finally {
-      setDownloadingId(null);
     }
   };
 
-  // Columns
   const columns = [
     { name: "Invoice No", selector: (row) => row.invoiceNo, sortable: true },
     { name: "Name", selector: (row) => row.name, sortable: true },
@@ -42,16 +62,7 @@ const EditPiTable = ({ piData = [] }) => {
     },
     {
       name: "Download",
-      cell: (row) => (
-        <button
-          onClick={() => handleDownload(row)}
-          className="bg-blue-600 text-white px-3 py-1 rounded flex items-center gap-2"
-          disabled={downloadingId === row._id}
-        >
-          {downloadingId === row._id ? "Downloading..." : <MdDownload />}
-          PDF
-        </button>
-      ),
+      cell: (row) => <DownloadButton row={row} onDownload={handleDownload} />,
     },
   ];
 
@@ -70,4 +81,4 @@ const EditPiTable = ({ piData = [] }) => {
   );
 };
 
-export default EditPiTable;
+export default EditPiTable; // ✅ No memo

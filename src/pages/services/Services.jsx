@@ -10,6 +10,7 @@ import FilterServices from "./FilterServices";
 import { tableCustomStyles } from "../../constants/tableCustomStyle";
 import { FiTrash2 } from "react-icons/fi";
 import { Spinner } from "@material-tailwind/react";
+import Addresses from "./address/Addresses";
 
 const Services = () => {
   const { services, loading } = useSelector((s) => s.services);
@@ -76,63 +77,66 @@ const Services = () => {
   const displayData = isFilterActive ? filteredServices : services || [];
 
   return (
-    <div className="p-4 w-full">
-      <Heading text="Services" showHeading />
-      <div className="flex justify-end my-2 gap-2">
-        <MyButton
-          className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
-          onClick={() => setFilterOpen(true)}
-        >
-          <LuListFilter />
-          Filter
-        </MyButton>
-        <MyButton
-          className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
-          onClick={handleAdd}
-        >
-          <LuPlus />
-          Add Service
-        </MyButton>
-      </div>
-
-      {/* ✅ Spinner show while loading */}
-      {loading ? (
-        <div className="h-[90vh] w-full flex justify-center items-center gap-2">
-          <p className="md:text-lg flex gap-2">
-            <Spinner /> Loading ...
-          </p>
+    <>
+      <div className="p-4 w-full">
+        <Heading text="Services" showHeading />
+        <div className="flex justify-end my-2 gap-2">
+          <MyButton
+            className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+            onClick={() => setFilterOpen(true)}
+          >
+            <LuListFilter />
+            Filter
+          </MyButton>
+          <MyButton
+            className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
+            onClick={handleAdd}
+          >
+            <LuPlus />
+            Add Service
+          </MyButton>
         </div>
-      ) : (
-        <>
-          {isFilterActive && (
-            <p className="text-sm text-center text-green-600 mb-2">
-              You are viewing the filtered data...
+
+        {/* ✅ Spinner show while loading */}
+        {loading ? (
+          <div className="h-[90vh] w-full flex justify-center items-center gap-2">
+            <p className="md:text-lg flex gap-2">
+              <Spinner /> Loading ...
             </p>
-          )}
+          </div>
+        ) : (
+          <>
+            {isFilterActive && (
+              <p className="text-sm text-center text-green-600 mb-2">
+                You are viewing the filtered data...
+              </p>
+            )}
 
-          <DataTable
-            data={[...displayData].reverse()}
-            columns={cols}
-            customStyles={tableCustomStyles}
-            pagination
-            paginationPerPage={10}
-            paginationTotalRows={displayData.length}
-            paginationDefaultPage={1}
-            onRowClicked={(row) => handleEdit(row._id)}
-            noDataComponent="No services found"
-            selectableRows
-          />
-        </>
-      )}
+            <DataTable
+              data={[...displayData].reverse()}
+              columns={cols}
+              customStyles={tableCustomStyles}
+              pagination
+              paginationPerPage={10}
+              paginationTotalRows={displayData.length}
+              paginationDefaultPage={1}
+              onRowClicked={(row) => handleEdit(row._id)}
+              noDataComponent="No services found"
+              selectableRows
+            />
+          </>
+        )}
 
-      <FilterServices
-        isOpen={filterOpen}
-        setIsOpen={setFilterOpen}
-        setIsFilterActive={setIsFilterActive}
-        filterServices={filterServices}
-        resetServices={resetServices}
-      />
-    </div>
+        <FilterServices
+          isOpen={filterOpen}
+          setIsOpen={setFilterOpen}
+          setIsFilterActive={setIsFilterActive}
+          filterServices={filterServices}
+          resetServices={resetServices}
+        />
+      </div>
+      <Addresses />
+    </>
   );
 };
 

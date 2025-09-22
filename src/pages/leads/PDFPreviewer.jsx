@@ -5,56 +5,36 @@ import GeneratePerformaPDF from "./GeneratePerformaPDF";
 import GenerateTaxPDF from "./GenerateTaxPDF";
 
 const dummyFormData = {
-  name: "Test Client",
-  address: "123 Test Street, Delhi",
-  gstNo: "07ABCDE1234F1Z5",
-  mobileNumber: "9876543210",
-  date: new Date(),
-  validUntil: new Date(),
-  taxType: "intra",
-  selectedServiceData: [
+  leadId: "68b7db1e4d6202c2aab44276",
+  name: "testing-Dipesh Sharma(do not delete)",
+  mobileNumber: "9818525179",
+  address: "<p>adarsh nagar</p>",
+  addressDropdown:
+    "<h2><strong>LPI</strong></h2><p>B-768, Street 8, Mukandpur, New Delhi 110042</p><p>Contact: 9315247392</p><p>Email: info@legalpapersindia.com</p><p>Website: www.legalpapersindia.com</p><p>GSTIN: 07BRPPB7333A1Z3</p>",
+  gstNo: "test13452",
+  taxType: "intra", // intra | inter
+  placeOfSupply: "07-Delhi",
+  date: "2025-09-19",
+  validUntil: "2025-09-19",
+  invoiceNo: "LPI2025-37",
+  discount: 200, // discount total
+  services: [
     {
-      name: "Service A",
-      hsnCode: "9983",
-      price: 1000,
-      quantity: 2,
-      taxPercent: 18,
-    },
-    {
-      name: "Service B",
-      hsnCode: "9984",
-      price: 1500,
+      _id: "689d91c24f6f9f350edc531f",
+      name: "amit",
+      hsnCode: "2132",
       quantity: 1,
-      taxPercent: 18,
-    },
-    {
-      name: "Service C",
-      hsnCode: "9985",
-      price: 1500,
-      quantity: 1,
-      taxPercent: 12,
-    },
-    {
-      name: "Service D",
-      hsnCode: "9986",
-      price: 2000,
-      quantity: 3,
-      taxPercent: 18,
-    },
-    {
-      name: "Service E",
-      hsnCode: "9987",
-      price: 2500,
-      quantity: 2,
-      taxPercent: 5,
+      price: 1856.77, // ✅ Round off के लिए decimal price
+      taxPercent: 18, // ✅ Add करें अगर missing है
+      baseAmount: 1856.78,
     },
   ],
-  termsAndConditions: [
-    "Payment due within 15 days from invoice date.",
-    "Goods once sold will not be taken back.",
-    "Any disputes are subject to Delhi jurisdiction.",
-    "Goods once sold will not be taken back.",
-  ],
+  totals: {
+    taxableValue: 1656.78, // after discount
+    totalTax: 298.22, // GST
+    invoiceTotal: 1955, // rounded final
+  },
+  termsAndConditions: "<p>testings</p>",
 };
 
 const PDFPreviewer = () => {

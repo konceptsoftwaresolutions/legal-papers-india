@@ -31,6 +31,7 @@ import {
   getLeaByID,
   handleMoveNCBucket,
   removeRenewalLead,
+  setInvoiceGenerated,
 } from "../../redux/features/leads";
 import { getNotificationData } from "../../redux/features/notification";
 import MoveNCModal from "./MoveNCModal";
@@ -65,9 +66,9 @@ const EditLead = () => {
   const dispatch = useDispatch();
   const { items: allServices } = useSelector((state) => state.services);
 
-  const { allSalesExecutive, allOperationsExecutive } = useSelector(
-    (state) => state.leads
-  );
+  const { allSalesExecutive, allOperationsExecutive, invoiceGenerated } =
+    useSelector((state) => state.leads);
+
   const [isEditable, setIsEditable] = useState(false);
   const [leadData, setLeadData] = useState(null); // State to store API response
   const [isLoading, setIsLoading] = useState(true); // State for loading indicato
@@ -78,11 +79,9 @@ const EditLead = () => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showPerformaModal, setShowPerformaModal] = useState(false);
   const [openTaxModal, setOpenTaxModal] = useState(false);
-
   const [moveNcBtnClicked, setMoveNcBtnClicked] = useState(false);
 
   const { role } = useSelector((state) => state.auth);
-  console.log(role);
   useEffect(() => {
     if (!allServices || allServices.length === 0) {
       dispatch(getAllServices());
@@ -126,8 +125,6 @@ const EditLead = () => {
 
   useEffect(() => {
     if (leadId) {
-      console.log("LeadId changed, resetting everything:", leadId);
-
       // Form को completely reset करें
       reset({
         remarksArray: [],
@@ -154,12 +151,10 @@ const EditLead = () => {
   // ✅ Single API call
   useEffect(() => {
     if (leadId) {
-      console.log("Fetching lead data for leadId:", leadId);
       setIsLoading(true);
 
       dispatch(getLeaByID(leadId))
         .then((data) => {
-          console.log("API Response received for leadId:", leadId, data);
           if (data && data.leadId === leadId) {
             setLeadData(data);
           }
@@ -175,8 +170,6 @@ const EditLead = () => {
   // ✅ Form populate
   useEffect(() => {
     if (leadData && leadData.leadId === leadId && allSalesExecutive) {
-      console.log("Populating form with leadData:", leadData.leadId);
-
       const formData = {
         leadId: leadData?.leadId,
         salesStatus: leadData?.status,
@@ -323,7 +316,6 @@ const EditLead = () => {
   // ✅ Component cleanup
   useEffect(() => {
     return () => {
-      console.log("EditLead component unmounting, cleaning up...");
       replaceRemarks([]);
       replacePayments([]);
       replaceRefunds([]);
@@ -344,12 +336,10 @@ const EditLead = () => {
 
   const getLeadDataByLeadId = (leadId) => {
     if (leadId) {
-      console.log("Manually fetching lead data for:", leadId);
       setIsLoading(true);
 
       dispatch(getLeaByID(leadId))
         .then((data) => {
-          console.log("Manual API Response received for leadId:", leadId, data);
           if (data && data.leadId === leadId) {
             setLeadData(data);
           }
@@ -411,7 +401,6 @@ const EditLead = () => {
           }))
         : [];
     formData.append("payments", JSON.stringify(payments));
-    console.log(payments);
 
     const refunds =
       data.refundArray && Array.isArray(data.refundArray)
@@ -707,6 +696,77 @@ const EditLead = () => {
       label: operation.name,
     })
   );
+
+  // Navigation-based invoice generation (100% reliable)
+  useEffect(() => {
+    const checkInvoiceCompletion = () => {
+      const invoiceData = localStorage.getItem("invoiceCompleted");
+
+      if (invoiceData) {
+        const data = JSON.parse(invoiceData);
+        if (data.leadId === leadData?.leadId) {
+          console.log("Invoice generation completed, refreshing lead data...");
+          localStorage.removeItem("invoiceCompleted");
+          setIsLoading(true);
+          dispatch(getLeaByID(leadId))
+            .then((data) => {
+              if (data && data.leadId === leadId) {
+                setLeadData(data);
+              }
+              setIsLoading(false);
+            })
+            .catch((err) => {
+              console.log("Refresh Error:", err.message);
+              setIsLoading(false);
+            });
+        }
+      }
+    };
+
+    checkInvoiceCompletion();
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        checkInvoiceCompletion();
+      }
+    };
+    const handleFocus = () => {
+      checkInvoiceCompletion();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [leadData?.leadId, leadId, dispatch]);
+
+  // Performa Invoice Handler
+  const handlePerformaInvoiceClick = () => {
+    const url = `editLead/generate-performa-invoice?leadId=${leadData?.leadId}`;
+    const newWindow = window.open(url, "_blank");
+    if (newWindow && typeof newWindow.focus === "function") {
+      newWindow.focus();
+      console.log("Performa Invoice window opened successfully");
+    } else {
+      console.log("Using navigation fallback");
+      window.open(url, "_self");
+    }
+  };
+
+  // Tax Invoice Handler
+  const handleTaxInvoiceClick = () => {
+    const url = `editLead/generate-tax-invoice?leadId=${leadData?.leadId}`;
+    const newWindow = window.open(url, "_blank");
+    if (newWindow && typeof newWindow.focus === "function") {
+      newWindow.focus();
+      console.log("Tax Invoice window opened successfully");
+    } else {
+      console.log("Using navigation fallback");
+      window.open(url, "_self");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -1294,17 +1354,17 @@ const EditLead = () => {
                 </Button>
                 <Button
                   className="capitalize"
-                  onClick={() => setShowPerformaModal(true)}
+                  onClick={handlePerformaInvoiceClick}
                 >
                   Generate Performa Invoice
                 </Button>
                 {(role === "superAdmin" || role === "salesTl") && (
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => setOpenTaxModal(true)}
                       className="capitalize"
+                      onClick={handleTaxInvoiceClick}
                     >
-                      Generate Tax Entry
+                      Generate Tax Invoice
                     </Button>
                   </div>
                 )}
@@ -2052,18 +2112,26 @@ const EditLead = () => {
         leadData={leadData}
         setShowTaskModal={setShowTaskModal}
       />
-      <GeneratePerformaModal
+      {/* <GeneratePerformaModal
         open={showPerformaModal}
         onClose={() => setShowPerformaModal(false)}
         leadData={leadData}
         services={allServices}
-      />
-      <GenerateTaxModal
+        onSuccess={() => {
+          setShowPerformaModal(false);
+          refreshLeadData(); // Lead data ko fresh करे
+        }}
+      /> */}
+      {/* <GenerateTaxModal
         open={openTaxModal}
         onClose={() => setOpenTaxModal(false)}
         leadData={leadData}
         services={allServices}
-      />
+        onSuccess={() => {
+          setOpenTaxModal(false);
+          refreshLeadData(); // Lead data ko fresh करे
+        }}
+      /> */}
     </>
   );
 };
