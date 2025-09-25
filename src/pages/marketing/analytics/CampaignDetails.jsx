@@ -10,7 +10,18 @@ import LeadDetails from "./LeadDetails";
 const CampaignDetails = ({ campaign }) => {
   if (!campaign) {
     return (
-      <p className="text-gray-500 italic">Select a campaign to view details</p>
+      <div className="p-4 md:p-6 text-center">
+        <div className="py-8 md:py-12">
+          <div className="text-gray-400 mb-3">
+            <svg className="w-12 h-12 md:w-16 md:h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <p className="text-gray-500 italic text-sm md:text-base">
+            Select a campaign to view details
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -19,38 +30,6 @@ const CampaignDetails = ({ campaign }) => {
   );
 
   const formatDate = (date) => (date ? new Date(date).toLocaleString() : "N/A");
-  [
-    {
-      number: 8,
-      title: "Total",
-      color: "blue",
-    },
-    {
-      number: 9,
-      title: "Sent",
-      color: "lightgreen",
-    },
-    {
-      number: 12,
-      title: "Delivered",
-      color: "green",
-    },
-    {
-      number: 0,
-      title: "Failed",
-      color: "red",
-    },
-    {
-      number: 15,
-      title: "Read",
-      color: "blue",
-    },
-    {
-      number: 2,
-      title: "Invalid Number",
-      color: "red",
-    },
-  ];
 
   const DataArray = [
     {
@@ -93,70 +72,122 @@ const CampaignDetails = ({ campaign }) => {
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow-sm">
-      <h2 className="text-lg font-semibold mb-3 text-indigo-700">
-        {campaign?.campaignName && (
-          <div className="flex gap-2 items-center">
-            <span className="font-semibold">Campaign Name - {campaign.campaignName}</span>
-          </div>
-        )}
-      </h2>
-      <div className="w-full flex justify-between font-poppins font-medium not-italic leading-normal items-center  mb-3">
-        <div className="flex justify-center  items-center">
-          <h2 className="text-[18px] font-semibold">
+    <div className="p-4 md:p-6">
+      
+      {/* Campaign Header */}
+      <div className="mb-4 md:mb-6">
+        <h2 className="text-lg md:text-xl font-semibold mb-3 text-indigo-700">
+          {campaign?.campaignName && (
+            <div className="flex flex-col sm:flex-row sm:gap-2 sm:items-center">
+              <span className="font-semibold text-sm md:text-base">
+                Campaign Name - {campaign.campaignName}
+              </span>
+            </div>
+          )}
+        </h2>
+        
+        {/* Sent At Info */}
+        <div className="bg-gray-50 p-3 md:p-4 rounded-lg border">
+          <h3 className="text-sm md:text-base font-semibold text-gray-700">
             Sent At: {formatDate(campaign?.sentAt || campaign?.createdAt)}
-          </h2>
+          </h3>
         </div>
       </div>
 
-      <DataTable
-        columns={waTemplateColumnns}
-        data={campaign?.leadIds}
-        noDataComponent={
-          <p className="text-center text-gray-500 text-lg p-3">
-            No data to be displayed...
-          </p>
-        }
-        customStyles={tableCustomStyles}
-        pagination
-        paginationPerPage={8}
-        onRowClicked={handleTemplateNavigation}
-      />
-      <div className="grid grid-cols-3 gap-3 mt-3">
-        <ReportCard
-          // key={index}
-          number={campaign?.skippedCount}
-          color={campaign?.color}
-          title={"Skipped Count"}
-        />
-        {campaign?.totalRecords && (
-        <ReportCard
-          // key={index}
-          number={campaign?.totalRecords}
-          color={campaign?.color}
-          title={"Total Records"}
-        />
-        )}
-        <ReportCard
-          // key={index}
-          number={campaign?.successCount || campaign?.sentCount}
-          color={campaign?.color}
-          title={"Success Count"}
-        />
-        <ReportCard
-          // key={index}
-          number={campaign?.failedCount}
-          color={campaign?.color}
-          title={"Failed Count"}
+      {/* Data Table Section */}
+      <div className="mb-6 bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <DataTable
+            columns={waTemplateColumnns}
+            data={campaign?.leadIds || []}
+            noDataComponent={
+              <div className="text-center text-gray-500 py-8">
+                <p className="text-base md:text-lg">No data to be displayed...</p>
+              </div>
+            }
+            customStyles={{
+              ...tableCustomStyles,
+              table: {
+                style: {
+                  minWidth: '100%',
+                },
+              },
+              headRow: {
+                style: {
+                  backgroundColor: '#f8fafc',
+                  minHeight: '48px',
+                },
+              },
+              rows: {
+                style: {
+                  minHeight: '52px',
+                  '&:hover': {
+                    backgroundColor: '#f8fafc',
+                  },
+                },
+              },
+            }}
+            pagination
+            paginationPerPage={8}
+            paginationRowsPerPageOptions={[5, 8, 10, 15]}
+            onRowClicked={handleTemplateNavigation}
+            responsive
+            highlightOnHover
+            pointerOnHover
+          />
+        </div>
+      </div>
+
+      {/* Report Cards Section */}
+      <div className="mb-6">
+        <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 text-gray-800">
+          Campaign Statistics
+        </h3>
+        
+        {/* Mobile: Single Column, Tablet: 2 Columns, Desktop: 3 Columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          
+          <ReportCard
+            number={campaign?.skippedCount}
+            color={campaign?.color}
+            title={"Skipped Count"}
+          />
+          
+          {campaign?.totalRecords && (
+            <ReportCard
+              number={campaign?.totalRecords}
+              color={campaign?.color}
+              title={"Total Records"}
+            />
+          )}
+          
+          <ReportCard
+            number={campaign?.successCount || campaign?.sentCount}
+            color={campaign?.color}
+            title={"Success Count"}
+          />
+          
+          <ReportCard
+            number={campaign?.failedCount}
+            color={campaign?.color}
+            title={"Failed Count"}
+          />
+        </div>
+      </div>
+
+      {/* Lead Details Section */}
+      <div className="bg-gray-50 p-4 md:p-6 rounded-lg border">
+        <LeadDetails
+          leadData={campaign?.filterObject}
+          ending={campaign?.ending}
+          starting={campaign?.starting}
         />
       </div>
-      <LeadDetails
-        leadData={campaign?.filterObject}
-        ending={campaign?.ending}
-        starting={campaign?.starting}
-      />
 
-      {/* <Charts /> */}
+      {/* Charts Section - Commented */}
+      {/* <div className="mt-6">
+        <Charts />
+      </div> */}
     </div>
   );
 };

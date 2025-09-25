@@ -140,29 +140,114 @@ const EmailTemplate = () => {
         </Button>
       </form>
       <div>
-        <p className="text-2xl text-center mt-10">Instructions</p>
-        <p className="bg-gray-600 text-center text-white text-lg py-2 mt-3 rounded-md">
-          To create a Template in this section, there are some pre-set
-          requirements that need to be checked.
-        </p>
-        <div className="grid grid-cols-4 gap-6 pt-5">
-          <p className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
-            The variable name should be defined in double curly braces {"{{}}"}{" "}
-            and indexing of positive numbers from 1 to your decided number in
-            sequence - example : {"{{1}}"} {"{{2}}"}
+        {/* Instructions Header */}
+        <div className="text-center mt-8 md:mt-10">
+          <p className="text-lg md:text-2xl font-bold text-gray-800 mb-3 md:mb-4">
+            Instructions
           </p>
-          <p className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
-            The number of added variables should match the number of variables
-            created in the template, name should be given to the variables and
-            the variables shouldn't contain any special character or different
-            way other then Text , underscore , dash
+          <p className="bg-gray-600 text-center text-white text-sm md:text-lg py-2 md:py-3 px-3 md:px-4 rounded-md">
+            To create a Template in this section, there are some pre-set
+            requirements that need to be checked.
           </p>
-          <p className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
-            All the fields Should be filled and not be empty
-          </p>
-          <p className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
-            Two Values of the variables should be unique
-          </p>
+        </div>
+
+        {/* Instructions Grid - Responsive */}
+        <div className="pt-4 md:pt-5">
+          {/* Mobile: Single Column Stack */}
+          <div className="space-y-4 md:hidden">
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
+              <p className="text-sm leading-relaxed">
+                The variable name should be defined in double curly braces{" "}
+                {"{{}}"} and indexing of positive numbers from 1 to your decided
+                number in sequence - example : {"{{1}}"} {"{{2}}"}
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
+              <p className="text-sm leading-relaxed">
+                The number of added variables should match the number of
+                variables created in the template, name should be given to the
+                variables and the variables shouldn't contain any special
+                character or different way other then Text , underscore , dash
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
+              <p className="text-sm leading-relaxed">
+                All the fields Should be filled and not be empty
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3">
+              <p className="text-sm leading-relaxed">
+                Two Values of the variables should be unique
+              </p>
+            </div>
+          </div>
+
+          {/* Tablet: Two Columns */}
+          <div className="hidden md:grid md:grid-cols-2 lg:hidden gap-4 md:gap-6">
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-sm md:text-base leading-relaxed">
+                The variable name should be defined in double curly braces{" "}
+                {"{{}}"} and indexing of positive numbers from 1 to your decided
+                number in sequence - example : {"{{1}}"} {"{{2}}"}
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-sm md:text-base leading-relaxed">
+                The number of added variables should match the number of
+                variables created in the template, name should be given to the
+                variables and the variables shouldn't contain any special
+                character or different way other then Text , underscore , dash
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-sm md:text-base leading-relaxed">
+                All the fields Should be filled and not be empty
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-sm md:text-base leading-relaxed">
+                Two Values of the variables should be unique
+              </p>
+            </div>
+          </div>
+
+          {/* Desktop: Four Columns */}
+          <div className="hidden lg:grid lg:grid-cols-4 gap-6">
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-base leading-relaxed">
+                The variable name should be defined in double curly braces{" "}
+                {"{{}}"} and indexing of positive numbers from 1 to your decided
+                number in sequence - example : {"{{1}}"} {"{{2}}"}
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-base leading-relaxed">
+                The number of added variables should match the number of
+                variables created in the template, name should be given to the
+                variables and the variables shouldn't contain any special
+                character or different way other then Text , underscore , dash
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-base leading-relaxed">
+                All the fields Should be filled and not be empty
+              </p>
+            </div>
+
+            <div className="w-full text-start border-2 border-gray-400 rounded-md bg-gray-100 p-3 hover:shadow-md transition-shadow duration-200">
+              <p className="text-base leading-relaxed">
+                Two Values of the variables should be unique
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

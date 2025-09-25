@@ -178,10 +178,10 @@ const LeadChats = ({ phoneNumber }) => {
   };
 
   return (
-    <div className="bg-[#e5ddd5] rounded-lg shadow border flex flex-col h-[500px]">
-      {/* Header */}
-      <div className="flex justify-between items-center bg-green-600 text-white font-medium px-4 py-2 rounded-t-lg">
-        <span>Chats</span>
+    <div className="bg-[#e5ddd5] rounded-lg shadow border flex flex-col h-[400px] sm:h-[500px] lg:h-[600px] w-full max-w-full">
+      {/* Header - Responsive */}
+      <div className="flex justify-between items-center bg-green-600 text-white font-medium px-3 sm:px-4 py-2 rounded-t-lg flex-shrink-0">
+        <span className="text-sm sm:text-base font-medium">Chats</span>
         <button
           onClick={refreshChats}
           type="button"
@@ -190,21 +190,23 @@ const LeadChats = ({ phoneNumber }) => {
           }`}
           title="Refresh"
         >
-          <FiRefreshCcw size={18} />
+          <FiRefreshCcw size={16} className="sm:w-[18px] sm:h-[18px]" />
         </button>
       </div>
 
-      {/* Messages */}
+      {/* Messages Container - Responsive */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 px-4 py-2 overflow-y-auto flex flex-col"
+        className="flex-1 px-2 sm:px-4 py-2 overflow-y-auto flex flex-col min-h-0"
       >
         {chatLoading ? (
           <div className="flex justify-center items-center h-full">
-            <div className="w-6 h-6 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 border-4 border-green-500 border-dashed rounded-full animate-spin"></div>
           </div>
         ) : messagesFromRedux.length === 0 ? (
-          <div className="text-gray-500 text-sm">No messages found</div>
+          <div className="text-gray-500 text-xs sm:text-sm text-center py-4">
+            No messages found
+          </div>
         ) : (
           messagesFromRedux
             .filter((msg) => msg.body && msg.body.trim() !== "")
@@ -214,27 +216,33 @@ const LeadChats = ({ phoneNumber }) => {
         )}
       </div>
 
-      {/* Input */}
-      <div className="flex items-center p-2 border-t bg-white rounded-b-lg">
-        <input
-          className="flex-1 p-2 border rounded-full outline-none text-sm"
-          placeholder="Type a message"
-          value={newMsg}
-          onChange={(e) => setNewMsg(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-        />
-        <button
-          type="button"
-          onClick={handleSend}
-          className="ml-2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full"
-        >
-          <FiSend size={18} />
-        </button>
+      {/* Input Section - Fixed Overflow */}
+      <div className="flex items-center p-2 sm:p-3 border-t bg-white rounded-b-lg flex-shrink-0 gap-2">
+        <div className="flex-1 min-w-0">
+          <input
+            className="w-full p-2 sm:p-2.5 border rounded-full outline-none text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
+            placeholder="Type a message"
+            value={newMsg}
+            onChange={(e) => setNewMsg(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+          />
+        </div>
+
+        <div className="flex-shrink-0">
+          <button
+            type="button"
+            onClick={handleSend}
+            className="bg-green-500 hover:bg-green-600 text-white p-2 sm:p-2.5 rounded-full transition-colors duration-200 flex items-center justify-center min-w-[40px] min-h-[40px]"
+            disabled={!newMsg.trim()}
+          >
+            <FiSend size={16} className="sm:w-[18px] sm:h-[18px]" />
+          </button>
+        </div>
       </div>
     </div>
   );

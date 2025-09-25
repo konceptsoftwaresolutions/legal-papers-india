@@ -85,46 +85,91 @@ const Tasks = () => {
 
   return (
     <>
-      <div className="p-3 w-full">
-        <Heading text="Tasks" showHeading />
-        <div className="w-full flex justify-end items-center gap-x-3">
-          <MyButton
-            className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
-            onClick={() => {
-              setShowQuotation(!showQuotation);
-              console.log(":cll", showQuotation);
-            }}
-          >
-            <MdOutlineCreate size={16} />
-            <span>Create Task</span>
-          </MyButton>
-          {!(
-            role === "salesTl" ||
-            role === "operationsTl" ||
-            role === "salesExecutive"
-          ) && (
-            <>
-              {/* <MyButton
-                className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
-                // onClick={openFilter}
+      <div className="p-3 md:p-4 lg:p-6 w-full">
+        {/* Header Section */}
+        <div className="mb-4 md:mb-6">
+          <Heading text="Tasks" showHeading />
+        </div>
+
+        {/* Action Buttons - Responsive Layout */}
+        <div className="mb-4 md:mb-6">
+          {/* Mobile Layout */}
+          <div className="block md:hidden space-y-3">
+            {/* Primary Action Button */}
+            <div className="w-full">
+              <MyButton
+                className="main-bg py-2.5 flex justify-center items-center text-[15px] font-medium px-4 gap-x-2 w-full transition-all duration-200 hover:shadow-lg"
+                onClick={() => {
+                  setShowQuotation(!showQuotation);
+                }}
               >
-                <BiExport size={16} className="rotate-90" />
-                <span>Export</span>
-              </MyButton> */}
-              {/* <XLSXExportButton data={filteredTasks ? filteredTasks : []} filename="tasks_data" /> */}
+                <MdOutlineCreate size={16} />
+                <span>Create Task</span>
+              </MyButton>
+            </div>
+
+            {/* Secondary Actions */}
+            <div className="flex gap-2">
+              {/* Export Button - Mobile */}
+              {!(
+                role === "salesTl" ||
+                role === "operationsTl" ||
+                role === "salesExecutive"
+              ) && (
+                <div className="flex-1">
+                  <CSVExportButton
+                    data={filteredTasks ? filteredTasks : []}
+                    filename="tasks_data"
+                    className="w-full py-2.5 text-[14px] font-medium flex justify-center items-center gap-x-1 main-bg text-white rounded transition-all duration-200 hover:shadow-lg"
+                  />
+                </div>
+              )}
+
+              {/* Filter Button - Mobile */}
+              <div className="flex-1">
+                <MyButton
+                  className="main-bg py-2.5 flex justify-center items-center text-[14px] font-medium px-4 gap-x-1 w-full transition-all duration-200 hover:shadow-lg"
+                  onClick={() => setIsFilterOpen(true)}
+                >
+                  <LuListFilter size={16} />
+                  <span>Filter</span>
+                </MyButton>
+              </div>
+            </div>
+          </div>
+
+          {/* Tablet & Desktop Layout */}
+          <div className="hidden md:flex md:justify-end md:items-center gap-x-3">
+            <MyButton
+              className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1 transition-all duration-200 hover:shadow-lg"
+              onClick={() => {
+                setShowQuotation(!showQuotation);
+              }}
+            >
+              <MdOutlineCreate size={16} />
+              <span>Create Task</span>
+            </MyButton>
+
+            {!(
+              role === "salesTl" ||
+              role === "operationsTl" ||
+              role === "salesExecutive"
+            ) && (
               <CSVExportButton
                 data={filteredTasks ? filteredTasks : []}
-                filename="leads_data"
+                filename="tasks_data"
+                className="py-2 text-[15px] font-medium flex justify-center items-center gap-x-1 px-4 main-bg text-white rounded transition-all duration-200 hover:shadow-lg"
               />
-            </>
-          )}
-          <MyButton
-            className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1"
-            onClick={() => setIsFilterOpen(true)}
-          >
-            <LuListFilter size={16} />
-            <span>Filter</span>
-          </MyButton>
+            )}
+
+            <MyButton
+              className="main-bg py-2 flex justify-center items-center text-[15px] font-medium px-4 gap-x-1 transition-all duration-200 hover:shadow-lg"
+              onClick={() => setIsFilterOpen(true)}
+            >
+              <LuListFilter size={16} />
+              <span>Filter</span>
+            </MyButton>
+          </div>
         </div>
         <div className="py-3 w-full">
           {isFilterActive && (

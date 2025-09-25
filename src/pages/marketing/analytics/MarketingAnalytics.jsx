@@ -13,6 +13,7 @@ const MarketingAnalytics = () => {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [activeTab, setActiveTab] = useState("email");
   const dispatch = useDispatch();
+
   const tabs = [
     {
       label: "Email Campaigns",
@@ -47,20 +48,32 @@ const MarketingAnalytics = () => {
   }, [selectedCampaign]);
 
   return (
-    <div className="p-5 bg-gray-50 min-h-screen">
-      <Heading text="Marketing Analytics" showHeading />
-      <div className="mt-6 flex flex-row gap-8">
-        <div className="w-[40%]">
-          <CampaignTabs
-            tabs={tabs}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            selectedCampaign={selectedCampaign}
-            setSelectedCampaign={setSelectedCampaign}
-          />
+    <div className="p-3 md:p-5 bg-gray-50 min-h-screen">
+      {/* Header - Responsive padding */}
+      <div className="mb-4 md:mb-6">
+        <Heading text="Marketing Analytics" showHeading />
+      </div>
+
+      {/* Main Content Layout - Responsive flex direction */}
+      <div className="flex flex-col lg:flex-row gap-4 md:gap-6 lg:gap-8">
+        {/* Campaign Tabs Section - Responsive width */}
+        <div className="w-full lg:w-[40%] order-1 lg:order-1">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 h-fit lg:sticky lg:top-4">
+            <CampaignTabs
+              tabs={tabs}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              selectedCampaign={selectedCampaign}
+              setSelectedCampaign={setSelectedCampaign}
+            />
+          </div>
         </div>
-        <div className="w-[60%] max-h-[100vh] overflow-y-scroll">
-          <CampaignDetails campaign={selectedCampaign} />
+
+        {/* Campaign Details Section - Responsive width and height */}
+        <div className="w-full lg:w-[60%] order-2 lg:order-2">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 max-h-[70vh] lg:max-h-[100vh] overflow-y-auto">
+            <CampaignDetails campaign={selectedCampaign} />
+          </div>
         </div>
       </div>
     </div>

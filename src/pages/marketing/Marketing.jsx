@@ -9,7 +9,6 @@ import CampaignTabs from "./whatsapp/CampaignTabs";
 
 const Marketing = () => {
   const navigate = useNavigate();
-
   const { role } = useSelector((state) => state.auth);
 
   const handleEmailNavigation = () => {
@@ -30,42 +29,72 @@ const Marketing = () => {
 
   return (
     <>
-      <div className="grid grid-cols-2 p-5">
-        <Heading text="Marketings" showHeading />
-      </div>
-      <div className="grid grid-cols-3 gap-4 p-5">
-        <div
-          className="flex items-center justify-center bg-green-500 text-white p-6 py-10 rounded-lg cursor-pointer hover:bg-green-600 transition"
-          onClick={handleSmsNavigation}
-        >
-          <FaSms size={30} />
-          <span className="ml-2">SMS</span>
-        </div>
-
-        <div
-          className="flex items-center justify-center bg-blue-500 text-white p-6 py-10 rounded-lg cursor-pointer hover:bg-blue-600 transition"
-          onClick={handleEmailNavigation}
-        >
-          <MdEmail size={30} />
-          <span className="ml-2">Email</span>
-        </div>
-
-        <div
-          className="flex items-center justify-center bg-green-600 text-white p-6 py-10 rounded-lg cursor-pointer hover:bg-green-700 transition"
-          onClick={handleWhatsappNavigation}
-        >
-          <FaWhatsapp size={30} />
-          <span className="ml-2">WhatsApp</span>
-        </div>
-
-        <div
-          className="flex items-center justify-center bg-green-600 text-white p-6 py-10 rounded-lg cursor-pointer hover:bg-green-700 transition"
-          onClick={handleWhatsappInHouseNavigation}
-        >
-          <FaWhatsapp size={30} />
-          <span className="ml-2">WhatsApp In House</span>
+      {/* Header Section */}
+      <div className="p-3 md:p-5">
+        <div className="mb-4 md:mb-0">
+          <Heading text="Marketings" showHeading />
         </div>
       </div>
+
+      {/* Marketing Cards Grid */}
+      <div className="p-3 md:p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {/* SMS Card */}
+          <div
+            className="flex flex-col sm:flex-row lg:flex-col items-center justify-center bg-green-500 text-white p-4 sm:p-6 lg:p-6 py-8 sm:py-10 lg:py-10 rounded-lg cursor-pointer hover:bg-green-600 transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95"
+            onClick={handleSmsNavigation}
+          >
+            <FaSms size={30} className="mb-2 sm:mb-0 sm:mr-3 lg:mb-2 lg:mr-0" />
+            <span className="text-center sm:text-left lg:text-center font-medium">
+              SMS
+            </span>
+          </div>
+
+          {/* Email Card */}
+          <div
+            className="flex flex-col sm:flex-row lg:flex-col items-center justify-center bg-blue-500 text-white p-4 sm:p-6 lg:p-6 py-8 sm:py-10 lg:py-10 rounded-lg cursor-pointer hover:bg-blue-600 transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95"
+            onClick={handleEmailNavigation}
+          >
+            <MdEmail
+              size={30}
+              className="mb-2 sm:mb-0 sm:mr-3 lg:mb-2 lg:mr-0"
+            />
+            <span className="text-center sm:text-left lg:text-center font-medium">
+              Email
+            </span>
+          </div>
+
+          {/* WhatsApp Card */}
+          <div
+            className="flex flex-col sm:flex-row lg:flex-col items-center justify-center bg-green-600 text-white p-4 sm:p-6 lg:p-6 py-8 sm:py-10 lg:py-10 rounded-lg cursor-pointer hover:bg-green-700 transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95"
+            onClick={handleWhatsappNavigation}
+          >
+            <FaWhatsapp
+              size={30}
+              className="mb-2 sm:mb-0 sm:mr-3 lg:mb-2 lg:mr-0"
+            />
+            <span className="text-center sm:text-left lg:text-center font-medium">
+              WhatsApp
+            </span>
+          </div>
+
+          {/* WhatsApp In House Card */}
+          <div
+            className="flex flex-col sm:flex-row lg:flex-col items-center justify-center bg-green-600 text-white p-4 sm:p-6 lg:p-6 py-8 sm:py-10 lg:py-10 rounded-lg cursor-pointer hover:bg-green-700 transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95 sm:col-span-2 lg:col-span-1"
+            onClick={handleWhatsappInHouseNavigation}
+          >
+            <FaWhatsapp
+              size={30}
+              className="mb-2 sm:mb-0 sm:mr-3 lg:mb-2 lg:mr-0"
+            />
+            <span className="text-center sm:text-left lg:text-center font-medium">
+              WhatsApp In House
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Commented Campaign Tabs - Preserved */}
       {/* <div className="p-5">
         <CampaignTabs />
       </div> */}

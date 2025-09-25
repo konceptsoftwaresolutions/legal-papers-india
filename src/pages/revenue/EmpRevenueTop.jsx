@@ -135,7 +135,7 @@ const empSingRevenueTop = () => {
             {["superAdmin"].includes(role) && (
               <form
                 onSubmit={handleSubmit(handleUserSubmit)}
-                className="w-[20rem] mr-2"
+                className="w-full sm:w-[20rem] mr-2"
               >
                 <InputField
                   name="selectedUser"

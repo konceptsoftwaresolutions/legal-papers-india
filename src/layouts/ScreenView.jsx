@@ -1,22 +1,28 @@
 import React, { Suspense } from "react";
-
-// common
 import Sidebar from "../common/sidebar/Sidebar";
 import Navbar from "../common/navbar/Navbar";
 import Loader from "../components/loaders/Loader";
 
 const ScreenView = ({ children }) => {
-  // state
   const [collapse, setCollapse] = React.useState(false);
 
   return (
     <>
-      {/* screen viewer */}
-      <main className="w-full flex justify-start items-start">
+      <main className="w-full flex justify-start items-start min-h-screen">
         <Sidebar collapse={collapse} onCollapse={setCollapse} />
-        <div className={`${collapse ? "w-[95%]" : "w-[84%]"} transition-all content-div`}>
+        <div
+          className={`
+          transition-all duration-300 ease-in-out content-div
+          
+          ${collapse ? "md:w-[95%]" : "md:w-[84%]"}
+          
+          w-full
+        `}
+        >
           <Navbar />
-          <Suspense fallback={<Loader />}>{children}</Suspense>
+          <Suspense fallback={<Loader />}>
+            <div className="md:p-0">{children}</div>
+          </Suspense>
         </div>
       </main>
     </>

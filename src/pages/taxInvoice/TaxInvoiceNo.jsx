@@ -276,7 +276,7 @@ const TaxInvoiceNo = () => {
     <>
       {/* Heading + Button */}
       <div className="flex flex-col w-full px-4 gap-y-4 py-5">
-        <div className="grid grid-cols-2">
+        <div className="w-full">
           <Heading text="Generate Tax Invoice" showHeading />
         </div>
 

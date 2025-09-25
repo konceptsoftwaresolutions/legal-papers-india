@@ -59,7 +59,7 @@ const Navbar = () => {
             ""
           ) : (
             <OpacityButton
-              className="rounded-full"
+              className="rounded-full ml-8 sm:ml-0"
               onClick={() => setShowQuotation(true)}
             >
               <MdOutlineSearch size={22} className="rotate-90" />
@@ -67,7 +67,7 @@ const Navbar = () => {
           )}
         </div>
 
-        <div className="flex justify-center gap-x-3 items-center">
+        <div className="flex justify-center gap-x-0 sm:gap-x-3 items-center">
           {/* <OpacityButton className="rounded-full" update={true}>
                     <IoMdNotificationsOutline size={22} />
                 </OpacityButton> */}

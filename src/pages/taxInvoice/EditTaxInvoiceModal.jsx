@@ -335,8 +335,8 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
           </div>
         ) : (
           <>
-            <DialogBody className="max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-3 gap-4">
+            <DialogBody className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <InputField
                   name="invoiceNo"
                   label="Invoice No"
@@ -352,8 +352,8 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                   control={control}
                   errors={errors}
                   options={addresses.map((address) => ({
-                    value: address.addressLine1, // Send original HTML in payload
-                    label: stripHTMLTags(address.addressLine1), // Display plain text in dropdown
+                    value: address.addressLine1,
+                    label: stripHTMLTags(address.addressLine1),
                   }))}
                 />
                 <InputField
@@ -388,8 +388,8 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                   }))}
                 />
 
-                {/* Address */}
-                <div className="col-span-3">
+                {/* Address - Full width on all screens */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                   <label className="block font-semibold mb-2">Address</label>
                   <Controller
                     name="address"
@@ -419,7 +419,8 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                   )}
                 </div>
 
-                <div className="col-span-3">
+                {/* Services - Full width */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                   <InputField
                     name="selectedServices"
                     label="Select Services"
@@ -434,38 +435,44 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                   />
                 </div>
 
+                {/* Service Details - Responsive layout */}
                 {selectedServiceIds?.length > 0 && (
-                  <div className="col-span-3 space-y-4">
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-3 space-y-4">
                     {selectedServiceIds.map((id) => {
                       const service = services.find((s) => s._id === id);
                       return (
-                        <div key={id} className="flex items-center gap-4">
+                        <div
+                          key={id}
+                          className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4"
+                        >
                           <span className="flex-1 font-medium">
                             {service?.name || "Service"}
                           </span>
-                          <div className="w-24">
-                            <InputField
-                              name={`quantities.${id}`}
-                              label="Qty"
-                              type="number"
-                              control={control}
-                              errors={errors}
-                              defaultValue={watch(`quantities.${id}`) ?? 1}
-                              rules={{ required: "Required" }}
-                            />
-                          </div>
-                          <div className="w-28">
-                            <InputField
-                              name={`prices.${id}`}
-                              label="Price"
-                              type="number"
-                              control={control}
-                              errors={errors}
-                              defaultValue={
-                                watch(`prices.${id}`) ?? service?.price ?? 0
-                              }
-                              rules={{ required: "Required" }}
-                            />
+                          <div className="flex gap-2 sm:gap-4">
+                            <div className="w-full sm:w-24">
+                              <InputField
+                                name={`quantities.${id}`}
+                                label="Qty"
+                                type="number"
+                                control={control}
+                                errors={errors}
+                                defaultValue={watch(`quantities.${id}`) ?? 1}
+                                rules={{ required: "Required" }}
+                              />
+                            </div>
+                            <div className="w-full sm:w-28">
+                              <InputField
+                                name={`prices.${id}`}
+                                label="Price"
+                                type="number"
+                                control={control}
+                                errors={errors}
+                                defaultValue={
+                                  watch(`prices.${id}`) ?? service?.price ?? 0
+                                }
+                                rules={{ required: "Required" }}
+                              />
+                            </div>
                           </div>
                         </div>
                       );
@@ -507,8 +514,8 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                   errors={errors}
                 />
 
-                {/* ✅ FIXED TERMS & CONDITIONS */}
-                <div className="col-span-3 mt-4">
+                {/* Terms & Conditions - Full width */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 mt-4">
                   <label className="block font-semibold mb-2">
                     Terms & Conditions
                   </label>
@@ -525,7 +532,7 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
                       return (
                         <ReactQuill
                           {...field}
-                          value={field.value || termsQuill} // ✅ FALLBACK TO termsQuill
+                          value={field.value || termsQuill}
                           onChange={(val) => {
                             console.log("✏️ ReactQuill onChange:", val);
                             field.onChange(val);
@@ -553,17 +560,18 @@ const EditTaxInvoiceModal = ({ open, onClose, taxInvoiceId }) => {
               </div>
             </DialogBody>
 
-            <DialogFooter className="gap-2">
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant="text"
                 color="gray"
                 onClick={onClose}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
-                className="main-bg text-white flex items-center justify-center gap-2"
+                className="main-bg text-white flex items-center justify-center gap-2 w-full sm:w-auto"
                 onClick={handleSubmit(onSubmitForm)}
                 disabled={isSubmitting}
               >

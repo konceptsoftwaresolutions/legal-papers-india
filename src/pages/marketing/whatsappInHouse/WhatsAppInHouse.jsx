@@ -649,48 +649,53 @@ const WhatsappInhouse = () => {
             </>
           )}
 
-          <div className="flex gap-3 mt-5">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-5">
+            {/* Save Button - Always visible */}
             <button
-              className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
+              className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white w-full sm:w-auto transition-all duration-200 hover:shadow-md active:scale-95"
               type="submit"
               onClick={() => setSubmitAction("save")}
             >
               Save
             </button>
+
+            {/* Save & Send Buttons - Conditional */}
             {!showFilterSection && (
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                 {/* Excel Save & Send */}
                 <button
-                  className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
+                  className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white w-full sm:w-auto transition-all duration-200 hover:shadow-md active:scale-95"
                   type="button"
                   onClick={() => {
-                    setSendType("excel"); // type set
-                    setShowExcelModal(true); // open Excel modal
+                    setSendType("excel");
+                    setShowExcelModal(true);
                   }}
                 >
-                  Save & Send (Excel)
+                  <span className="text-center">Save & Send (Excel)</span>
                 </button>
 
                 {/* Normal Save & Send */}
                 <button
-                  className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
+                  className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white w-full sm:w-auto transition-all duration-200 hover:shadow-md active:scale-95"
                   type="submit"
                   onClick={() => {
-                    setSendType("normal"); // type set
-                    setSubmitAction("send"); // normal send
-                    setShowFilterSection(true); // show filter section
+                    setSendType("normal");
+                    setSubmitAction("send");
+                    setShowFilterSection(true);
                   }}
                 >
-                  Save & Send (Normal)
+                  <span className="text-center">Save & Send (Normal)</span>
                 </button>
               </div>
             )}
 
+            {/* Final Send Button - When filter section is shown */}
             {showFilterSection && (
               <button
-                className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white"
+                className="main-bg flex text-[14px] justify-center py-2 px-4 rounded-md items-center gap-x-2 text-white w-full sm:w-auto transition-all duration-200 hover:shadow-md active:scale-95 disabled:opacity-50"
                 type="submit"
                 onClick={() => setSubmitAction("send")}
+                disabled={savesendLoading}
               >
                 {savesendLoading ? "Sending..." : "Save & Send"}
               </button>

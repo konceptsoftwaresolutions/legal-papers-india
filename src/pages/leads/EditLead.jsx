@@ -1345,28 +1345,34 @@ const EditLead = () => {
                   disabled={isFieldDisabled("leadId", role, isEditable)}
                 />
               )} */}
-              <div className="flex justify-start items-end gap-2">
+              <div className="flex flex-col sm:flex-row sm:justify-start sm:items-end gap-2 sm:gap-3">
                 <Button
-                  className="capitalize"
+                  className="capitalize w-full sm:w-auto"
                   onClick={() => setShowTaskModal(!showTaskModal)}
                 >
                   Create Task
                 </Button>
+
                 <Button
-                  className="capitalize"
+                  className="capitalize w-full sm:w-auto"
                   onClick={handlePerformaInvoiceClick}
                 >
-                  Generate Performa Invoice
+                  <span className="hidden sm:inline">
+                    Generate Performa Invoice
+                  </span>
+                  <span className="sm:hidden">Performa Invoice</span>
                 </Button>
+
                 {(role === "superAdmin" || role === "salesTl") && (
-                  <div className="flex gap-2">
-                    <Button
-                      className="capitalize"
-                      onClick={handleTaxInvoiceClick}
-                    >
+                  <Button
+                    className="capitalize w-full sm:w-auto"
+                    onClick={handleTaxInvoiceClick}
+                  >
+                    <span className="hidden sm:inline">
                       Generate Tax Invoice
-                    </Button>
-                  </div>
+                    </span>
+                    <span className="sm:hidden">Tax Invoice</span>
+                  </Button>
                 )}
               </div>
             </div>

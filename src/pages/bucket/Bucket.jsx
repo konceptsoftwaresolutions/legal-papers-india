@@ -31,7 +31,7 @@ const Bucket = () => {
 
   return (
     <>
-      <div className="p-3 flex justify-center flex-wrap gap-x-20 gap-y-10 pt-20 items-center">
+      <div className="p-3 flex justify-center flex-wrap gap-x-4 gap-y-6 sm:gap-x-10 sm:gap-y-8 md:gap-x-20 md:gap-y-10 pt-10 sm:pt-14 md:pt-6 items-center">
         {/* {(role === "superAdmin" || role === "salesTl") && (
           <BucketCard
             icon={<TbBucket size={50} />}
@@ -58,7 +58,9 @@ const Bucket = () => {
         )}
 
         {/* {(role === "superAdmin" || role === "salesTl" || role === "salesExecutive") && ( */}
-        {(role === "superAdmin" || role === "salesTl" || role === "salesExecutive") && (
+        {(role === "superAdmin" ||
+          role === "salesTl" ||
+          role === "salesExecutive") && (
           <>
             <BucketCard
               icon={<TbBucketDroplet size={50} />}

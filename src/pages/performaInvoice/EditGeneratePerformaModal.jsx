@@ -363,61 +363,79 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
           </div>
         ) : (
           <>
-            <DialogBody className="max-h-[70vh] overflow-y-auto">
-              <div className="grid grid-cols-3 gap-4">
-                <InputField
-                  name="invoiceNo"
-                  label="Invoice No"
-                  control={control}
-                  errors={errors}
-                  rules={{ required: "Invoice number is required" }}
-                />
-                <InputField
-                  name="addressDropdown"
-                  label="Select Address"
-                  type="select"
-                  mode="single"
-                  control={control}
-                  errors={errors}
-                  options={addresses.map((address) => ({
-                    value: address.addressLine1, // Send original HTML in payload
-                    label: stripHTMLTags(address.addressLine1), // Display plain text in dropdown
-                  }))}
-                />
-                <InputField
-                  name="name"
-                  label="Name"
-                  control={control}
-                  errors={errors}
-                />
-                <InputField
-                  name="mobileNumber"
-                  label="Mobile No"
-                  control={control}
-                  errors={errors}
-                />
-                <InputField
-                  name="gstNo"
-                  label="GST No"
-                  control={control}
-                  errors={errors}
-                />
+            <DialogBody className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto px-4 py-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {/* Row 1 - Always single column on mobile */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                  <InputField
+                    name="invoiceNo"
+                    label="Invoice No"
+                    control={control}
+                    errors={errors}
+                    rules={{ required: "Invoice number is required" }}
+                  />
+                </div>
 
-                <InputField
-                  name="placeOfSupply"
-                  label="Place of Supply"
-                  type="select"
-                  mode="single"
-                  control={control}
-                  errors={errors}
-                  options={gstStates.map((state) => ({
-                    value: `${state.code}-${state.name}`,
-                    label: `${state.code}-${state.name}`,
-                  }))}
-                />
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                  <InputField
+                    name="addressDropdown"
+                    label="Select Address"
+                    type="select"
+                    mode="single"
+                    control={control}
+                    errors={errors}
+                    options={addresses.map((address) => ({
+                      value: address.addressLine1,
+                      label: stripHTMLTags(address.addressLine1),
+                    }))}
+                  />
+                </div>
 
-                {/* Address */}
-                <div className="col-span-3">
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                  <InputField
+                    name="name"
+                    label="Name"
+                    control={control}
+                    errors={errors}
+                  />
+                </div>
+
+                {/* Row 2 */}
+                <div className="col-span-1 sm:col-span-1 lg:col-span-1">
+                  <InputField
+                    name="mobileNumber"
+                    label="Mobile No"
+                    control={control}
+                    errors={errors}
+                  />
+                </div>
+
+                <div className="col-span-1 sm:col-span-1 lg:col-span-1">
+                  <InputField
+                    name="gstNo"
+                    label="GST No"
+                    control={control}
+                    errors={errors}
+                  />
+                </div>
+
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                  <InputField
+                    name="placeOfSupply"
+                    label="Place of Supply"
+                    type="select"
+                    mode="single"
+                    control={control}
+                    errors={errors}
+                    options={gstStates.map((state) => ({
+                      value: `${state.code}-${state.name}`,
+                      label: `${state.code}-${state.name}`,
+                    }))}
+                  />
+                </div>
+
+                {/* Address - Full width */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                   <label className="block font-semibold mb-2">Address</label>
                   <Controller
                     name="address"
@@ -433,8 +451,8 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                         formats={quillFormats}
                         className="bg-white"
                         style={{
-                          minHeight: "100px",
-                          maxHeight: "200px",
+                          minHeight: "80px",
+                          maxHeight: "150px",
                           overflowY: "auto",
                         }}
                       />
@@ -447,7 +465,8 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                   )}
                 </div>
 
-                <div className="col-span-3">
+                {/* Services - Full width */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                   <InputField
                     name="selectedServices"
                     label="Select Services"
@@ -462,39 +481,46 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                   />
                 </div>
 
+                {/* Service Details - Full width, responsive layout */}
                 {selectedServiceIds?.length > 0 && (
-                  <div className="col-span-3 space-y-4">
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-3 space-y-3 sm:space-y-4">
                     {selectedServiceIds.map((id) => {
                       const service = services.find((s) => s._id === id);
                       return (
-                        <div key={id} className="flex items-center gap-4">
-                          <span className="flex-1 font-medium">
+                        <div
+                          key={id}
+                          className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 p-3 bg-gray-50 rounded-lg"
+                        >
+                          <span className="flex-1 font-medium text-sm sm:text-base mb-2 sm:mb-0">
                             {service?.name || "Service"}
                           </span>
-                          <div className="w-24">
-                            <InputField
-                              name={`quantities.${id}`}
-                              label="Qty"
-                              type="number"
-                              control={control}
-                              errors={errors}
-                              defaultValue={watch(`quantities.${id}`) ?? 1}
-                              rules={{ required: "Required" }}
-                            />
-                          </div>
-                          {/* ✅ ADDED PRICE INPUT */}
-                          <div className="w-28">
-                            <InputField
-                              name={`prices.${id}`}
-                              label="Price"
-                              type="number"
-                              control={control}
-                              errors={errors}
-                              defaultValue={
-                                watch(`prices.${id}`) ?? service?.price ?? 0
-                              }
-                              rules={{ required: "Required" }}
-                            />
+
+                          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+                            <div className="w-full sm:w-20 lg:w-24">
+                              <InputField
+                                name={`quantities.${id}`}
+                                label="Qty"
+                                type="number"
+                                control={control}
+                                errors={errors}
+                                defaultValue={watch(`quantities.${id}`) ?? 1}
+                                rules={{ required: "Required" }}
+                              />
+                            </div>
+
+                            <div className="w-full sm:w-24 lg:w-28">
+                              <InputField
+                                name={`prices.${id}`}
+                                label="Price"
+                                type="number"
+                                control={control}
+                                errors={errors}
+                                defaultValue={
+                                  watch(`prices.${id}`) ?? service?.price ?? 0
+                                }
+                                rules={{ required: "Required" }}
+                              />
+                            </div>
                           </div>
                         </div>
                       );
@@ -502,43 +528,55 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                   </div>
                 )}
 
-                <InputField
-                  name="taxType"
-                  label="Tax Type"
-                  type="select"
-                  mode="single"
-                  control={control}
-                  errors={errors}
-                  options={[
-                    { value: "inter", label: "Inter-state (IGST)" },
-                    { value: "intra", label: "Intra-state (CGST + SGST)" },
-                  ]}
-                />
-                <InputField
-                  name="date"
-                  label="Date"
-                  type="date"
-                  control={control}
-                  errors={errors}
-                />
-                <InputField
-                  name="validUntil"
-                  label="Valid Until"
-                  type="date"
-                  control={control}
-                  errors={errors}
-                />
-                {/* ✅ ADDED DISCOUNT FIELD */}
-                <InputField
-                  name="discount"
-                  label="Discount"
-                  type="number"
-                  control={control}
-                  errors={errors}
-                />
+                {/* Tax and Date Row */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                  <InputField
+                    name="taxType"
+                    label="Tax Type"
+                    type="select"
+                    mode="single"
+                    control={control}
+                    errors={errors}
+                    options={[
+                      { value: "inter", label: "Inter-state (IGST)" },
+                      { value: "intra", label: "Intra-state (CGST + SGST)" },
+                    ]}
+                  />
+                </div>
 
-                {/* ✅ FIXED TERMS & CONDITIONS */}
-                <div className="col-span-3 mt-4">
+                <div className="col-span-1 sm:col-span-1 lg:col-span-1">
+                  <InputField
+                    name="date"
+                    label="Date"
+                    type="date"
+                    control={control}
+                    errors={errors}
+                  />
+                </div>
+
+                <div className="col-span-1 sm:col-span-1 lg:col-span-1">
+                  <InputField
+                    name="validUntil"
+                    label="Valid Until"
+                    type="date"
+                    control={control}
+                    errors={errors}
+                  />
+                </div>
+
+                {/* Discount */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-1">
+                  <InputField
+                    name="discount"
+                    label="Discount"
+                    type="number"
+                    control={control}
+                    errors={errors}
+                  />
+                </div>
+
+                {/* Terms & Conditions - Full width */}
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3 mt-4">
                   <label className="block font-semibold mb-2">
                     Terms & Conditions
                   </label>
@@ -555,7 +593,7 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                       return (
                         <ReactQuill
                           {...field}
-                          value={field.value || termsQuill} // ✅ FALLBACK TO termsQuill
+                          value={field.value || termsQuill}
                           onChange={(val) => {
                             console.log("✏️ ReactQuill onChange:", val);
                             field.onChange(val);
@@ -566,8 +604,8 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
                           formats={quillFormats}
                           className="bg-white text-black"
                           style={{
-                            minHeight: "120px",
-                            maxHeight: "250px",
+                            minHeight: "100px",
+                            maxHeight: "200px",
                             overflowY: "auto",
                           }}
                         />
@@ -583,17 +621,19 @@ const EditGeneratePerformaModal = ({ open, onClose, invoiceId }) => {
               </div>
             </DialogBody>
 
-            <DialogFooter className="gap-2">
+            {/* Responsive DialogFooter */}
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-2 p-4">
               <Button
                 variant="text"
                 color="gray"
                 onClick={onClose}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button
-                className="main-bg text-white flex items-center justify-center gap-2"
+                className="main-bg text-white flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
                 onClick={handleSubmit(onSubmitForm)}
                 disabled={isSubmitting}
               >
